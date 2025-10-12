@@ -43,6 +43,17 @@
 
    - รอสักครู่จนกว่า container จะเริ่มทำงาน (ประมาณ 10-30 วินาที)
 
+5. **Restore ฐานข้อมูล (เฉพาะครั้งแรกเท่านั้น)**
+   สำคัญ: รันคำสั่งนี้เฉพาะครั้งแรกที่ setup เท่านั้น หากเคย restore แล้ว ข้อมูลจะถูกเก็บไว้ในเครื่องอัตโนมัติ
+
+   ```bash
+   docker exec -it mssql-server /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "MyStrong!Pass123" -C -Q "RESTORE DATABASE [SampleDB] FROM DISK = '/backups/SampleDB.bak' WITH MOVE 'SampleDB' TO '/var/opt/mssql/data/SampleDB.mdf', MOVE 'SampleDB_log' TO '/var/opt/mssql/data/SampleDB_log.ldf', REPLACE"
+    ```
+   
+   - หากเห็นข้อความว่า restore สำเร็จ แสดงว่าพร้อมใช้งานแล้ว!
+
+ข้อมูลสำหรับ Connect เข้า Database
+ใช้ข้อมูลด้านล่างนี้เมื่อต้องการเชื่อมต่อกับ SQL Server (เช่น ผ่าน SQL Server Management Studio, Azure Data Studio, หรือในโค้ด)
 ---
 
 ### ข้อมูลสำหรับเชื่อมต่อ
