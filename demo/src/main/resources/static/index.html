@@ -25,93 +25,109 @@
 
     </main>
     
-    <script>
-        // ใช้ Mock Data แทน API Call จริง
-        const MOCK_PRODUCTS = [
-            // Mock data structure based on initial app.js and images
-            { id: 101, name: 'Wireless Headphones', price: 2990, stock: 15, imageUrl: 'mock-headphone.jpg' },
-            { id: 102, name: 'Slim Monitor', price: 7500, stock: 8, imageUrl: 'mock-monitor.jpg' },
-            { id: 103, name: 'Gaming Laptop', price: 35990, stock: 5, imageUrl: 'mock-laptop.jpg' },
-            { id: 104, name: 'Gaming Console', price: 18900, stock: 3, imageUrl: 'mock-console.jpg' },
-            { id: 105, name: 'Webcam', price: 1200, stock: 22, imageUrl: 'mock-webcam.jpg' },
-            { id: 106, name: 'Portable Speaker', price: 4990, stock: 10, imageUrl: 'mock-speaker.jpg' },
-        ];
+<script>
+    // API Endpoint ที่จะใช้ Mock
+    const API_PRODUCT_ENDPOINT = '/mock/products.json'; // ใช้ mock JSON file แทน GET /api/products
 
-        // ----------------------------------------------------------------
-        // 1. HEADER & WELCOME SECTION LOGIC (Login Status)
-        // ----------------------------------------------------------------
+    // ----------------------------------------------------------------
+    // 1. HEADER & WELCOME SECTION LOGIC (Unchanged from Task 3)
+    // ----------------------------------------------------------------
 
-        function updateHeaderAndWelcome() {
+    function updateHeaderAndWelcome() {
             const username = sessionStorage.getItem('username'); // ตรวจสอบสถานะ Login
             const isLogin = sessionStorage.getItem('isLogin') === 'true';
             const linksContainer = document.getElementById('header-auth-links');
             const welcomeSection = document.getElementById('welcome-section');
-
-            // --- Update Header Links ---
-            linksContainer.innerHTML = ''; // Clear existing links
-
-            if (isLogin) {
-                // Login แล้ว: แสดง order history, {username}, ตะกร้าสินค้า
-                linksContainer.innerHTML = `
-                    <a href="order-history.html" class="nav-link">Order History</a>
-                    <a href="profile.html" class="nav-link">${username}</a>
-                    <a href="cart.html" class="nav-link cart-icon">Cart</a> 
-                `;
-                // Update Welcome Message
-                welcomeSection.innerHTML = `
-                    <h1>Welcome back, ${username}!</h1>
-                    <p>Start browsing our latest products.</p>
-                `;
-            } else {
-                // ยังไม่ Login: แสดง Login, Register
-                linksContainer.innerHTML = `
-                    <a href="login.html" class="nav-link">Login</a>
-                    <a href="register.html" class="nav-link">Register</a>
-                `;
-                // Update Welcome Message
-                welcomeSection.innerHTML = `
-                    <h1>Welcome</h1>
-                    <p>Please log in to start shopping.</p>
-                `;
-            }
         }
 
-        // ----------------------------------------------------------------
-        // 2. PRODUCT DISPLAY LOGIC (Mock Data)
-        // ----------------------------------------------------------------
-        function displayProducts() {
-            const gridElement = document.getElementById('products-grid');
-            gridElement.innerHTML = ''; // Clear loading message
+        linksContainer.innerHTML = ''; 
 
-            // ใช้ Mock Data ในการแสดงผล
-            MOCK_PRODUCTS.forEach(product => {
-                const cardHtml = `
-                    <div class="product-card" onclick="window.location.href='product-detail.html?id=${product.id}'">
-                        <div class="product-image">
-                            <img src="${product.imageUrl || 'placeholder.png'}" alt="${product.name}" style="width: 100%; height: auto;">
-                        </div>
-                        <div class="product-info-grid">
-                            <div class="product-text-details">
-                                <p class="product-name">${product.name}</p>
-                                <p class="product-price">฿ ${product.price.toLocaleString()}</p>
-                                <p class="product-stock">in stock: x${product.stock || '?'}</p> 
-                            </div>
-                            <button class="add-to-cart-btn" data-product-id="${product.id}">Add</button>
-                        </div>
+        if (isLogin) {
+            // Login แล้ว: แสดง order history, {username}, ตะกร้าสินค้า
+            linksContainer.innerHTML = `
+                <a href="order-history.html" class="nav-link">Order History</a>
+                <a href="profile.html" class="nav-link">${username}</a>
+                <a href="cart.html" class="nav-link cart-icon">Cart</a> 
+            `;
+            welcomeSection.innerHTML = `
+                <h1>Welcome back, ${username}!</h1>
+                <p>Start browsing our latest products.</p>
+            `;
+        } else {
+            // ยังไม่ Login: แสดง Login, Register
+            linksContainer.innerHTML = `
+                <a href="login.html" class="nav-link">Login</a>
+                <a href="register.html" class="nav-link">Register</a>
+            `;
+            welcomeSection.innerHTML = `
+                <h1>Welcome</h1>
+                <p>Please log in to start shopping.</p>
+            `;
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // 2. PRODUCT DISPLAY LOGIC (Revised to fetch from Mock JSON)
+    // ----------------------------------------------------------------
+    
+    // ฟังก์ชันสร้าง Card (แยกออกมาเพื่อให้โค้ดหลักสะอาดขึ้น)
+    function renderProducts(products) {
+        const gridElement = document.getElementById('products-grid');
+        gridElement.innerHTML = ''; // Clear loading message
+
+        products.forEach(product => {
+            const cardHtml = `
+                <div class="product-card" onclick="window.location.href='product-detail.html?id=${product.id}'">
+                    <div class="product-image">
+                        <img src="${product.imageUrl || 'placeholder.png'}" alt="${product.name}" style="width: 100%; height: auto;">
                     </div>
-                `;
-                gridElement.innerHTML += cardHtml;
-            });
-        }
-
-        // ----------------------------------------------------------------
-        // 3. INITIALIZATION
-        // ----------------------------------------------------------------
-        document.addEventListener('DOMContentLoaded', () => {
-            updateHeaderAndWelcome();
-            displayProducts(); // แสดงสินค้าทั้งหมด
-            // NOTE: Add to Cart logic should be added here or in a centralized app.js if allowed
+                    <div class="product-info-grid">
+                        <div class="product-text-details">
+                            <p class="product-name">${product.name}</p>
+                            <p class="product-price">฿ ${product.price.toLocaleString()}</p>
+                            <p class="product-stock">in stock: x${product.stock || '?'}</p> 
+                        </div>
+                        <button class="add-to-cart-btn" data-product-id="${product.id}">Add</button>
+                    </div>
+                </div>
+            `;
+            gridElement.innerHTML += cardHtml;
         });
-    </script> 
+    }
+
+    // ฟังก์ชันดึงข้อมูลสินค้า
+    async function fetchAndDisplayProducts() {
+        const gridElement = document.getElementById('products-grid');
+        gridElement.innerHTML = '<p style="text-align: center; padding: 20px;">Fetching product data...</p>';
+
+        try {
+            // ใช้ fetch เพื่อดึงข้อมูลจาก Mock JSON file
+            const response = await fetch(API_PRODUCT_ENDPOINT); 
+            
+            if (!response.ok) {
+                // หากดึงข้อมูลไม่ได้ ให้แจ้งข้อผิดพลาด
+                throw new Error(`Failed to fetch products: ${response.status}`);
+            }
+
+            const products = await response.json(); // แปลง response เป็น JSON
+            
+            renderProducts(products); // นำข้อมูลมาแสดงผล
+
+        } catch (error) {
+            console.error('Error loading products:', error);
+            gridElement.innerHTML = '<p style="color: red; padding: 20px;">Could not load products. Using Mock JSON failed.</p>';
+        }
+    }
+
+
+    // ----------------------------------------------------------------
+    // 3. INITIALIZATION
+    // ----------------------------------------------------------------
+    document.addEventListener('DOMContentLoaded', () => {
+        updateHeaderAndWelcome();
+        fetchAndDisplayProducts(); // เรียกใช้ฟังก์ชัน fetch ใหม่
+        // Note: Add to Cart logic (handleAddToCart) should be implemented here for next task
+    });
+</script>
 </body>
 </html>
