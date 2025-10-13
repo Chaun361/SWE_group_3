@@ -46,121 +46,143 @@
     </main>
     
     <script>
-        // API Endpoint ที่จะใช้ Mock JSON
-        const MOCK_CART_ENDPOINT = '/mock/cart.json'; 
+    // API Endpoint ที่จะใช้ Mock JSON
+    const MOCK_CART_ENDPOINT = '/mock/cart.json'; 
+    const CHECKOUT_PAGE = 'checkout.html';
+    const LOGIN_PAGE = 'login.html';
 
-        // ----------------------------------------------------------------
-        // 1. HEADER LOGIC (Copy from index.html Task 5)
-        // ----------------------------------------------------------------
-        function updateHeader() {
-            const username = sessionStorage.getItem('username');
-            const isLogin = sessionStorage.getItem('isLogin') === 'true';
-            const linksContainer = document.getElementById('header-auth-links');
+    // ----------------------------------------------------------------
+    // 1. HEADER LOGIC (Unchanged)
+    // ----------------------------------------------------------------
+    function updateHeader() {
+        // ... (โค้ด updateHeader เดิม) ...
+        const username = sessionStorage.getItem('username');
+        const isLogin = sessionStorage.getItem('isLogin') === 'true';
+        const linksContainer = document.getElementById('header-auth-links');
 
-            linksContainer.innerHTML = ''; 
+        linksContainer.innerHTML = ''; 
 
-            if (isLogin) {
-                // Login แล้ว: แสดง order history, {username}, ตะกร้าสินค้า
-                linksContainer.innerHTML = `
-                    <a href="order-history.html" class="nav-link">Order History</a>
-                    <a href="profile.html" class="nav-link">${username}</a>
-                    <a href="cart.html" class="nav-link cart-icon">Cart</a> 
-                `;
-            } else {
-                // หากไม่มี Login ให้ redirect กลับหน้า Login/Home (ป้องกันการเข้าถึง Cart โดยตรง)
-                // เราจะให้มันแสดงแค่ Login/Register เพื่อให้ผู้ใช้ล็อกอินก่อน
-                linksContainer.innerHTML = `
-                    <a href="login.html" class="nav-link">Login</a>
-                    <a href="register.html" class="nav-link">Register</a>
-                `;
-            }
+        if (isLogin) {
+            linksContainer.innerHTML = `
+                <a href="order-history.html" class="nav-link">Order History</a>
+                <a href="profile.html" class="nav-link">${username}</a>
+                <a href="cart.html" class="nav-link cart-icon">Cart</a> 
+            `;
+        } else {
+            linksContainer.innerHTML = `
+                <a href="${LOGIN_PAGE}" class="nav-link">Login</a>
+                <a href="register.html" class="nav-link">Register</a>
+            `;
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // 2. PRODUCT RENDERING AND CALCULATION LOGIC (Unchanged)
+    // ----------------------------------------------------------------
+    
+    function renderCartItems(cartItems) {
+        // ... (โค้ด renderCartItems เดิม) ...
+        const container = document.getElementById('cart-items-container');
+        let subtotal = 0;
+        container.innerHTML = '';
+
+        if (!cartItems || cartItems.length === 0) {
+            container.innerHTML = '<p style="text-align: center; padding: 20px;">Your cart is empty.</p>';
+            // ปิดปุ่ม Checkout
+            document.querySelector('.checkout-btn').disabled = true;
+            document.getElementById('summary-subtotal').textContent = '0 ฿';
+            document.getElementById('summary-total').textContent = '0 ฿';
+            return;
         }
 
-        // ----------------------------------------------------------------
-        // 2. PRODUCT RENDERING AND CALCULATION LOGIC
-        // ----------------------------------------------------------------
-        
-        function renderCartItems(cartItems) {
-            const container = document.getElementById('cart-items-container');
-            let subtotal = 0;
-            container.innerHTML = '';
+        document.querySelector('.checkout-btn').disabled = false;
 
-            if (cartItems.length === 0) {
-                container.innerHTML = '<p style="text-align: center; padding: 20px;">Your cart is empty.</p>';
-                return;
-            }
-
-            cartItems.forEach(item => {
-                const itemTotal = item.price * item.quantity;
-                subtotal += itemTotal;
-                
-                const itemHtml = `
-                    <div class="cart-item">
-                        <div class="item-img"></div>
-                        <div class="item-details">
-                            <p class="item-name">${item.name}</p>
-                            <p class="item-price">${item.price.toLocaleString()} ฿ / unit</p>
-                        </div>
-                        <div class="item-quantity">
-                            <input type="number" value="${item.quantity}" min="1" disabled>
-                        </div>
-                        <div class="item-subtotal">
-                            ${itemTotal.toLocaleString()} ฿
-                        </div>
-                        <button class="item-remove" onclick="alert('Item ${item.id} removed (Mock)')">&times;</button>
-                    </div>
-                `;
-                container.innerHTML += itemHtml;
-            });
+        cartItems.forEach(item => {
+            const itemTotal = item.price * item.quantity;
+            subtotal += itemTotal;
             
-            // อัพเดท Summary
-            document.getElementById('summary-subtotal').textContent = subtotal.toLocaleString() + ' ฿';
-            document.getElementById('summary-total').textContent = subtotal.toLocaleString() + ' ฿'; // Shipping assumed free
-        }
-
-
-        // ----------------------------------------------------------------
-        // 3. DATA FETCHING (Mock Logic)
-        // ----------------------------------------------------------------
-        async function fetchAndRenderCart() {
-            const userId = sessionStorage.getItem('userId');
-            const isLogin = sessionStorage.getItem('isLogin') === 'true';
-
-            if (!isLogin || !userId) {
-                alert('Please log in to view your cart.');
-                window.location.href = 'login.html'; 
-                return;
-            }
-
-            try {
-                // จำลองการเรียก API /api/cart/{userId} โดยใช้ Mock JSON file
-                const response = await fetch(MOCK_CART_ENDPOINT); 
-                
-                if (!response.ok) {
-                    throw new Error('Failed to fetch cart data (Mock)');
-                }
-
-                const cartData = await response.json(); 
-                
-                // ในโค้ดจริง: cartData = response.json()
-                // แต่เนื่องจากเราใช้ Mock File เราจะใช้ข้อมูลจาก Mock JSON เลย
-                
-                renderCartItems(cartData); 
-
-            } catch (error) {
-                console.error('Cart Load Error:', error);
-                document.getElementById('cart-items-container').innerHTML = 
-                    '<p style="color: red; text-align: center; padding: 20px;">Could not load cart data. Please check Mock file.</p>';
-            }
-        }
-
-        // ----------------------------------------------------------------
-        // 4. INITIALIZATION
-        // ----------------------------------------------------------------
-        document.addEventListener('DOMContentLoaded', () => {
-            updateHeader();
-            fetchAndRenderCart();
+            const itemHtml = `
+                <div class="cart-item">
+                    <div class="item-img"></div>
+                    <div class="item-details">
+                        <p class="item-name">${item.name}</p>
+                        <p class="item-price">${item.price.toLocaleString()} ฿ / unit</p>
+                    </div>
+                    <div class="item-quantity">
+                        <input type="number" value="${item.quantity}" min="1" disabled>
+                    </div>
+                    <div class="item-subtotal">
+                        ${itemTotal.toLocaleString()} ฿
+                    </div>
+                    <button class="item-remove" onclick="alert('Item ${item.id} removed (Mock)')">&times;</button>
+                </div>
+            `;
+            container.innerHTML += itemHtml;
         });
-    </script> 
+        
+        document.getElementById('summary-subtotal').textContent = subtotal.toLocaleString() + ' ฿';
+        document.getElementById('summary-total').textContent = subtotal.toLocaleString() + ' ฿';
+    }
+
+
+    // ----------------------------------------------------------------
+    // 3. DATA FETCHING (Mock Logic - Revised for Task 6)
+    // ----------------------------------------------------------------
+    async function fetchAndRenderCart() {
+        const userId = sessionStorage.getItem('userId');
+        const isLogin = sessionStorage.getItem('isLogin') === 'true';
+        const container = document.getElementById('cart-items-container');
+
+        if (!isLogin || !userId) {
+            // ป้องกันการเข้าถึงหากไม่ได้ Login
+            alert('Please log in to view your cart.');
+            window.location.href = LOGIN_PAGE; 
+            return;
+        }
+
+        try {
+            // **Mock Logic สำหรับเงื่อนไข 204 และ 404**
+            // ในสถานการณ์จริง API จะจัดการ response status
+            // แต่เนื่องจากใช้ Mock JSON file เราจะจำลองสถานะด้วยเงื่อนไข userId
+            
+            // Scenario 1: ตะกร้าว่าง (Mock 204)
+            if (userId === '999') { 
+                 renderCartItems([]); // ส่ง array ว่างไป render
+                 return;
+            }
+
+            // Scenario 2: ไม่พบตะกร้า (Mock 404)
+            if (userId === '000') {
+                 container.innerHTML = '<p style="color: red; text-align: center; padding: 20px;">Error 404: Cart not found for this user.</p>';
+                 return;
+            }
+
+            // Scenario 3: ตะกร้ามีสินค้า (Mock 200) - ดึงจาก MOCK_CART_ENDPOINT
+            const response = await fetch(MOCK_CART_ENDPOINT); 
+            
+            if (!response.ok) {
+                // หากดึงข้อมูล Mock ไม่ได้ ให้แจ้ง Error
+                throw new Error(`Failed to fetch cart data: ${response.status}`);
+            }
+
+            const cartData = await response.json(); 
+            
+            renderCartItems(cartData); 
+
+        } catch (error) {
+            console.error('Cart Load Error:', error);
+            container.innerHTML = 
+                '<p style="color: red; text-align: center; padding: 20px;">Could not load cart data. Please check Mock file/Server.</p>';
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // 4. INITIALIZATION
+    // ----------------------------------------------------------------
+    document.addEventListener('DOMContentLoaded', () => {
+        updateHeader();
+        fetchAndRenderCart();
+    });
+</script>
 </body>
 </html>
