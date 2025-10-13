@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout | WEBSITE NAME</title>
+    <link rel="stylesheet" href="styles.css"> 
+    <link rel="stylesheet" href="css/checkout.css"> 
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="logo">WEBSITE NAME</div>
+        <nav class="auth-links" id="header-auth-links">
+            </nav>
+    </header>
+
+    <main class="container">
+        <h1 class="page-title">Checkout</h1>
+        
+        <form id="checkout-form" class="checkout-grid">
+            
+            <div class="checkout-forms">
+                <div class="checkout-box" id="shipping-address-box">
+                    <h2>1. Shipping Address</h2>
+                    <p>Loading address...</p>
+                    </div>
+
+                <div class="checkout-box">
+                    <h2>2. Payment Method</h2>
+                    <div class="form-group">
+                        <div class="payment-option selected">
+                            <input type="radio" name="payment" value="credit_card" id="cc" checked>
+                            <label for="cc">Credit Card / Debit Card</label>
+                            <p class="small-text">Secure payment via gateway</p>
+                        </div>
+                        <div class="payment-option">
+                            <input type="radio" name="payment" value="cod" id="cod">
+                            <label for="cod">Cash on Delivery (COD)</label>
+                            <p class="small-text">Pay upon receipt of goods</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cart-summary">
+                <h2>Order Summary</h2>
+                <div id="order-items-summary">
+                    <p>Loading items...</p>
+                </div>
+                
+                <div class="summary-line">
+                    <span>Subtotal</span>
+                    <span id="summary-subtotal">0 ฿</span>
+                </div>
+                <div class="summary-line">
+                    <span>Shipping</span>
+                    <span id="summary-shipping">Free</span>
+                </div>
+                <div class="summary-line total">
+                    <span>Total Payable</span>
+                    <span id="summary-total">0 ฿</span>
+                </div>
+                
+                <button type="submit" class="submit-btn final-checkout">Place Order</button>
+            </div>
+
+        </form>
+    </main>
+    
+    <script>
+        // API Endpoint และค่าคงที่
+        const CHECKOUT_API = '/api/orders/checkout'; // API Path ตาม Task
+        const MOCK_PROFILE_ENDPOINT = '/mock/profile.json'; // ดึงข้อมูลที่อยู่
+        const MOCK_CART_ENDPOINT = '/mock/cart.json'; // ดึงรายการสินค้า
+        const SUCCESS_REDIRECT = 'cart.html'; // เมื่อสำเร็จให้ redirect ไป cart.html (ตาม Task)
+        const LOGIN_PAGE = 'login.html';
+
+        // ----------------------------------------------------------------
+        // 1. DATA RENDERING & HEADER LOGIC (reuse existing logic)
+        // ----------------------------------------------------------------
+        function updateHeader() {
+            // (ใช้ Logic จาก cart.html หรือ index.html มาวางที่นี่)
+            const username = sessionStorage.getItem('username');
+            const isLogin = sessionStorage.getItem('isLogin') === 'true';
+            const linksContainer = document.getElementById('header-auth-links');
+
+            linksContainer.innerHTML = ''; 
+
+            if (isLogin) {
+                linksContainer.innerHTML = `
+                    <a href="order-history.html" class="nav-link">Order History</a>
+                    <a href="profile.html" class="nav-link">${username}</a>
+                    <a href="cart.html" class="nav-link cart-icon">Cart</a> 
+                `;
+            } else {
+                window.location.href = LOGIN_PAGE; // บังคับ Login หากเข้ามาหน้า Checkout โดยตรง
+            }
+        }
+        
+        async function fetchAddressAndSummary() {
+            const userId = sessionStorage.getItem('userId');
+            const addressBox = document.getElementById('shipping-address-box');
+            const itemsSummary = document.getElementById('order-items-summary');
+            
+            // Fetch Address (Mock)
+            try {
+                const profileResponse = await fetch(MOCK_PROFILE_ENDPOINT);
+                const profileData = await profileResponse.json();
+                
+                addressBox.innerHTML = `
+                    <h2>1. Shipping Address</h2>
+                    <p><strong>${profileData.fullName}</strong> (${profileData.phone})</p>
+                    <p>${profileData.userAddress}</p>
+                    <p style="margin-top: 10px;">(Address Mocked from /mock/profile.json)</p>
+                `;
+            } catch (e) {
+                addressBox.innerHTML = `<h2>1. Shipping Address</h2><p style="color:red;">Error loading address mock data.</p>`;
+            }
+
+            // Fetch Cart Summary (Mock)
+            try {
+                const cartResponse = await fetch(MOCK_CART_ENDPOINT);
+                const cartItems = await cartResponse.json();
+                
+                let subtotal = 0;
+                itemsSummary.innerHTML = '<ul>';
+                cartItems.forEach(item => {
+                    const itemTotal = item.price * item.quantity;
+                    subtotal += itemTotal;
+                    itemsSummary.innerHTML += `<li>${item.name} x ${item.quantity} (${itemTotal.toLocaleString()} ฿)</li>`;
+                });
+                itemsSummary.innerHTML += '</ul>';
+
+                document.getElementById('summary-subtotal').textContent = subtotal.toLocaleString() + ' ฿';
+                document.getElementById('summary-total').textContent = subtotal.toLocaleString() + ' ฿';
+                
+            } catch (e) {
+                 itemsSummary.innerHTML = '<p style="color:red;">Error loading cart summary mock data.</p>';
+            }
+        }
+
+        // ----------------------------------------------------------------
+        // 2. CHECKOUT LOGIC (POST API)
+        // ----------------------------------------------------------------
+
+        async function handleCheckout(e) {
+            e.preventDefault();
+            const userId = sessionStorage.getItem('userId');
+            
+            // Mock Body: ส่ง userId ไปเท่านั้น
+            const requestBody = { userId: userId };
+            
+            // --- Mock Logic: จำลองการสั่งซื้อ ---
+            
+            // Scenario 1: Mock Error 400/404/409
+            if (userId === '000') {
+                 // Mock 400 Bad Request
+                 alert('Order failed: Your cart is no longer valid (Mock 400).');
+                 return;
+            }
+
+            // Mock Success
+            try {
+                 // Simulate API POST
+                 console.log(`Mock POST to ${CHECKOUT_API} with body:`, requestBody);
+                 
+                 setTimeout(() => {
+                    // Success: แสดง alert และ redirect
+                    alert("Order placed successfully!");
+                    window.location.href = SUCCESS_REDIRECT; 
+                 }, 1000);
+
+            } catch (error) {
+                // Network error (in real scenario)
+                alert("An unexpected error occurred. Please try again."); 
+            }
+        }
+
+        // ----------------------------------------------------------------
+        // 3. INITIALIZATION
+        // ----------------------------------------------------------------
+        document.addEventListener('DOMContentLoaded', () => {
+            if (sessionStorage.getItem('isLogin') !== 'true') {
+                 window.location.href = LOGIN_PAGE; // บังคับ Login
+                 return;
+            }
+            
+            updateHeader();
+            fetchAddressAndSummary();
+
+            const checkoutForm = document.getElementById('checkout-form');
+            if (checkoutForm) {
+                checkoutForm.addEventListener('submit', handleCheckout);
+            }
+        });
+    </script> 
+</body>
+</html>
