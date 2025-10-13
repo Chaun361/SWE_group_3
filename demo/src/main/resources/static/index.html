@@ -34,11 +34,10 @@
     // ----------------------------------------------------------------
 
     function updateHeaderAndWelcome() {
-            const username = sessionStorage.getItem('username'); // ตรวจสอบสถานะ Login
-            const isLogin = sessionStorage.getItem('isLogin') === 'true';
-            const linksContainer = document.getElementById('header-auth-links');
-            const welcomeSection = document.getElementById('welcome-section');
-        }
+        const username = sessionStorage.getItem('username');
+        const isLogin = sessionStorage.getItem('isLogin') === 'true';
+        const linksContainer = document.getElementById('header-auth-links');
+        const welcomeSection = document.getElementById('welcome-section');
 
         linksContainer.innerHTML = ''; 
 

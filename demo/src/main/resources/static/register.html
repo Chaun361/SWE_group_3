@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | WEBSITE NAME</title>
+    <link rel="stylesheet" href="styles.css"> 
+    <link rel="stylesheet" href="css/register.css"> 
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="logo">WEBSITE NAME</div>
+        <nav class="auth-links">
+            <a href="login.html" class="nav-link">Login</a>
+            <a href="register.html" class="nav-link">Register</a>
+        </nav>
+    </header>
+
+    <main class="register-page">
+        <div class="register-box">
+            <h2>Register</h2>
+            
+            <p id="register-message" style="text-align: center; color: #cc0000; margin-bottom: 15px; font-weight: 500; display: none;">Registration failed.</p>
+            
+            <form id="register-form">
+                
+                <div class="form-group">
+                    <label for="username">Username (Email)</label>
+                    <input type="email" id="username" name="username" required autocomplete="email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required autocomplete="new-password">
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone</label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" name="fullName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <textarea id="address" name="address" rows="3" required></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn">Submit</button>
+            </form>
+
+            <p class="register-link">
+                Already have an account? <a href="login.html">Login here</a>
+            </p>
+        </div>
+    </main>
+    
+    <script>
+        // ใช้ Mock Logic แทนการ Fetch จริง
+        const REGISTER_API = '/api/users/register'; 
+        const SUCCESS_REDIRECT = 'login.html'; // หลังสมัครสำเร็จจะไปหน้า login.html
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const registerForm = document.getElementById('register-form');
+            const registerMessage = document.getElementById('register-message');
+
+            if (registerForm) {
+                registerForm.addEventListener('submit', async (e) => {
+                    e.preventDefault(); 
+                    registerMessage.style.display = 'none';
+
+                    const username = document.getElementById('username').value;
+                    const password = document.getElementById('password').value;
+                    const phone = document.getElementById('phone').value;
+                    const fullName = document.getElementById('fullName').value;
+                    const address = document.getElementById('address').value;
+
+                    const requestBody = {
+                        username: username,
+                        password: password,
+                        phone: phone,
+                        fullName: fullName,
+                        address: address
+                    }; // body สำหรับส่งข้อมูล
+
+                    // --- Mock/Real Fetch Logic ---
+                    // เนื่องจาก Backend ยังไม่พร้อม เราจะใช้ Mock Logic จำลองการตอบกลับ 
+                    
+                    // Mock Error Condition (e.g., username already exists)
+                    if (username === 'mock_fail@example.com') {
+                        // 409 Conflict/Error
+                        alert('Registration Failed: Username already exists (Mock 409).'); 
+                        registerMessage.textContent = 'Username already exists.';
+                        registerMessage.style.display = 'block';
+                        return;
+                    }
+
+                    // Mock Success Condition
+                    alert('Sending data to ' + REGISTER_API + ' with body: ' + JSON.stringify(requestBody));
+
+                    // จำลองการหน่วงเวลาของ API Call
+                    setTimeout(() => {
+                        // Success Logic (Mock 200/201)
+                        alert('Registration Successful! Redirecting to login.html.'); 
+                        // หลังสมัครสำเร็จ redirect ไปหน้า login.html
+                        window.location.href = SUCCESS_REDIRECT; 
+                    }, 1500);
+                    
+                    /*
+                    // โค้ดจริงเมื่อ Backend พร้อม:
+                    try {
+                        const response = await fetch(REGISTER_API, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(requestBody)
+                        });
+
+                        if (response.ok) { // 2xx success
+                            alert('Registration Successful! Redirecting to login.html.'); 
+                            window.location.href = SUCCESS_REDIRECT;
+                        } else {
+                            const data = await response.json();
+                            // แสดงข้อความแจ้งเตือน alert() เมื่อเกิด error (400/409)
+                            const errorMessage = data.message || `Registration failed with status ${response.status}.`;
+                            alert(errorMessage);
+                            registerMessage.textContent = errorMessage;
+                            registerMessage.style.display = 'block';
+                        }
+                    } catch (error) {
+                        alert('Network Error: Could not connect to the API.');
+                        registerMessage.textContent = 'Network Error: Could not connect to the API.';
+                        registerMessage.style.display = 'block';
+                    }
+                    */
+                });
+            }
+        });
+    </script> 
+</body>
+</html>
