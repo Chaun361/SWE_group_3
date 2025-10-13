@@ -1,6 +1,6 @@
 /*
     -------------------------------------------
-    Task 5: Custom Styles for profile.html
+    PROFILE & ORDER HISTORY STYLES (Moved from Section 9)
     -------------------------------------------
 */
 /* Layout สำหรับหน้า Profile/Order History */
@@ -40,6 +40,16 @@
     font-weight: 600;
 }
 
+.logout-link {
+    color: #cc0000; 
+    margin-top: 15px;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+}
+.logout-link:hover {
+    background-color: #ffeaea;
+}
+
 .profile-main {
     background-color: #fff;
     padding: 30px;
@@ -53,37 +63,44 @@
     margin-bottom: 25px;
 }
 
-/* Profile Form (Read-only display for Task 5) */
-.profile-info-display p {
-    margin-bottom: 15px;
-    border-bottom: 1px dashed #eee;
-    padding-bottom: 5px;
-    font-size: 16px;
+/* Profile Form adjustments */
+.profile-form input[readonly], .profile-form textarea[readonly] {
+    background-color: #f5f5f5; 
+    border-color: #eee;
 }
 
-.profile-info-display strong {
-    display: inline-block;
-    min-width: 120px;
-    font-weight: 600;
-    color: #555;
-}
-
-.logout-btn-container {
-    margin-top: 30px;
-    border-top: 1px solid #eee;
-    padding-top: 20px;
-}
-.logout-btn {
-    background-color: #cc0000; /* Red color for Logout */
-    color: #fff;
-    border: none;
-    padding: 12px 20px;
-    font-size: 16px;
-    font-weight: 600;
+.profile-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
     border-radius: 4px;
+    font-family: 'Kanit', sans-serif;
+    font-size: 16px;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.update-btn {
+    width: 250px;
+    margin-top: 20px;
+}
+
+.change-pass-btn {
+    background: none;
+    border: none;
+    color: #000;
+    text-decoration: underline;
+    font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.3s;
+    display: block;
+    margin-top: 15px;
+    padding: 0;
 }
-.logout-btn:hover {
-    background-color: #aa0000;
+
+/* Order History Table */
+.order-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
 }
+/* ... (ใส่ styles ของ .order-table th/td และ .status-shipped/delivered/cancelled ที่นี่) ... */

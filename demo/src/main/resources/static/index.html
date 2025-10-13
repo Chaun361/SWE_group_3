@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Homepage | WEBSITE NAME</title>
-    <link rel="stylesheet" href="styles.css"> 
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -25,14 +25,120 @@
 
     </main>
 <script>
-    // ... (ส่วน MOCK_PRODUCTS และ API ENDPOINTS เดิม) ...
-    const CART_COUNT_API = '/api/cart/items/count'; // API Mock สำหรับนับจำนวน
-    
-    // Global variable to mock the cart count
+    // API Endpoint และค่าคงที่
+    const ADD_TO_CART_MOCK_ENDPOINT = '/mock/add_to_cart.json'; 
+    const ADD_TO_CART_API = '/api/cart/items'; 
+    const API_PRODUCT_ENDPOINT = '/mock/products.json'; // ใช้ Mock JSON file
+    const QUANTITY = 1; 
+    const LOGIN_PAGE = 'login.html';
+
+    // Global variable to mock the cart count (สำหรับการอัปเดต Cart Count ทันที)
     let currentCartCount = 0; 
 
     // ----------------------------------------------------------------
-    // 4. NEW CART COUNT LOGIC (Task 2)
+    // 1. HEADER & WELCOME SECTION LOGIC (Task 3/5)
+    // ----------------------------------------------------------------
+
+    function updateHeaderAndWelcome() {
+        const username = sessionStorage.getItem('username'); // ตรวจสอบสถานะ Login
+        const isLogin = sessionStorage.getItem('isLogin') === 'true';
+        const linksContainer = document.getElementById('header-auth-links');
+        const welcomeSection = document.getElementById('welcome-section');
+
+        linksContainer.innerHTML = ''; 
+
+        if (isLogin) {
+            // Login แล้ว: แสดง order history, {username}, ตะกร้าสินค้า (พร้อม Cart Count)
+            linksContainer.innerHTML = `
+                <a href="order-history.html" class="nav-link">Order History</a>
+                <a href="profile.html" class="nav-link">${username}</a>
+                <a href="cart.html" class="nav-link cart-icon">🛒 (<span id="cart-count">0</span>)</a> 
+            `;
+            // Update Welcome Message
+            welcomeSection.innerHTML = `
+                <h1>Welcome back, ${username}!</h1>
+                <p>Start browsing our latest products.</p>
+            `;
+             // ดึงจำนวนสินค้าในตะกร้าทันทีที่ Header ถูก Render
+            fetchCartCount(); 
+        } else {
+            // ยังไม่ Login: แสดง Login, Register
+            linksContainer.innerHTML = `
+                <a href="${LOGIN_PAGE}" class="nav-link">Login</a>
+                <a href="register.html" class="nav-link">Register</a>
+            `;
+            // Update Welcome Message
+            welcomeSection.innerHTML = `
+                <h1>Welcome</h1>
+                <p>Please log in to start shopping.</p>
+            `;
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // 2. PRODUCT DISPLAY LOGIC (Task 4 - Revised for new JSON structure)
+    // ----------------------------------------------------------------
+    
+    function renderProducts(products) {
+        const gridElement = document.getElementById('products-grid');
+        gridElement.innerHTML = ''; 
+
+        products.forEach(product => {
+            // ใช้ชื่อฟิลด์ใหม่: productId, productName, stockQuantity
+            const cardHtml = `
+                <div class="product-card" onclick="window.location.href='product-detail.html?id=${product.productId}'">
+                    <div class="product-image">
+                        <img src="${product.imageUrl || 'placeholder.png'}" alt="${product.productName}" style="width: 100%; height: auto;">
+                    </div>
+                    <div class="product-info-grid">
+                        <div class="product-text-details">
+                            <p class="product-name">${product.productName}</p>
+                            <p class="product-price">฿ ${product.price.toLocaleString()}</p>
+                            <p class="product-stock">in stock: x${product.stockQuantity || '?'}</p> 
+                        </div>
+                        <button class="add-to-cart-btn" data-product-id="${product.productId}">Add</button>
+                    </div>
+                </div>
+            `;
+            gridElement.innerHTML += cardHtml;
+        });
+    }
+
+    async function fetchAndDisplayProducts() {
+        const gridElement = document.getElementById('products-grid');
+        gridElement.innerHTML = '<p style="text-align: center; padding: 20px;">Fetching product data...</p>';
+
+        // Hardcoded Fallback Data (ใช้สำหรับกรณีที่ fetch ไฟล์ Mock ล้มเหลว)
+        const FALLBACK_PRODUCTS = [
+             { "productId": 1, "productName": "Wireless Mouse", "price": 450.0, "stockQuantity": 30, "imageUrl": "mock-mouse.jpg" },
+             { "productId": 2, "productName": "Mechanical Keyboard", "price": 1250.0, "stockQuantity": 20, "imageUrl": "mock-keyboard.jpg" },
+             { "productId": 4, "productName": "Gaming Headset", "price": 990.0, "stockQuantity": 25, "imageUrl": "mock-headset.jpg" },
+             { "productId": 5, "productName": "USB-C Charger 65W", "price": 799.0, "stockQuantity": 40, "imageUrl": "mock-charger.jpg" },
+        ];
+
+        try {
+            // ลองใช้ fetch จาก Mock JSON file
+            const response = await fetch(API_PRODUCT_ENDPOINT); 
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch products: ${response.status}`);
+            }
+
+            const products = await response.json(); 
+            renderProducts(products); 
+            
+        } catch (error) {
+            console.error('Error loading products from file. Using hardcoded fallback.', error);
+            
+            // ใช้ Hardcoded Fallback Data
+            gridElement.innerHTML = '<p style="color: orange; padding: 10px;">Could not fetch product file. Displaying fallback data.</p>';
+            renderProducts(FALLBACK_PRODUCTS); 
+
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // 3. CART COUNT LOGIC (Task 2)
     // ----------------------------------------------------------------
     
     // ฟังก์ชันดึงจำนวนสินค้าในตะกร้า (Mock Logic)
@@ -42,31 +148,21 @@
         
         if (!userId || !countElement) return;
 
-        try {
-            // Mock API call to /api/cart/items/count
-            // ใน Mock เราจะใช้ค่าที่เก็บใน currentCartCount แทนการ fetch
-            // ในสถานการณ์จริง: fetch(CART_COUNT_API + '?userId=' + userId) 
-            
-            // ใช้ค่าจาก currentCartCount ที่ถูกอัปเดตด้วย Add to Cart
-            const count = currentCartCount; 
-            
-            countElement.textContent = count.toString(); 
-
-        } catch (error) {
-            console.error('Fetch Cart Count Error:', error);
-            if (countElement) countElement.textContent = '?';
-        }
+        // ใช้ค่าจาก currentCartCount ที่ถูกอัปเดตด้วย Add to Cart
+        const count = currentCartCount; 
+        
+        countElement.textContent = count.toString(); 
     }
-    
+
     // ----------------------------------------------------------------
-    // 5. HANDLE ADD TO CART LOGIC (แก้ไขเพื่อให้มีการอัปเดตจำนวน)
+    // 4. ADD TO CART LOGIC (Task 1)
     // ----------------------------------------------------------------
 
     async function handleAddToCart(e) {
-        // ... (โค้ดตรวจสอบ Login และดึง productId เดิม) ...
         const userId = sessionStorage.getItem('userId');
         const isLogin = sessionStorage.getItem('isLogin') === 'true';
 
+        // 1. ตรวจสอบสถานะ Login
         if (!isLogin || !userId) {
             alert('Please log in to add items to your cart.');
             return;
@@ -77,10 +173,18 @@
 
         if (!productId) return;
 
-        // ... (โค้ด Mock Fetch เดิม) ...
+        const requestBody = {
+            userId: userId,
+            productId: parseInt(productId), 
+            quantity: QUANTITY
+        }; 
+
         try {
+            // ใช้ Mock Logic แทน Fetch จริง 
             const response = await fetch(ADD_TO_CART_MOCK_ENDPOINT);
             const data = await response.json();
+            
+            // --- Mock Logic: จำลองเงื่อนไข Success/Error ---
             
             // Mock Error Scenario (สมมติว่าถ้า productId เป็น 9 จะ Out of Stock)
             if (productId === '9') { 
@@ -89,13 +193,11 @@
             }
             
             if (data.success) {
-                alert(`Product added to cart successfully! (Product ID: ${productId})`);
+                alert(`Product added to cart successfully! (Product ID: ${productId})`); 
                 
-                // ********************
-                // * เพิ่มส่วนนี้: อัปเดต Cart Count *
-                // ********************
-                currentCartCount += QUANTITY; // เพิ่มจำนวนสินค้าในตะกร้า
-                fetchCartCount(); // อัปเดตการแสดงผลบน Header ทันที
+                // อัปเดต Cart Count ทันที
+                currentCartCount += QUANTITY; 
+                fetchCartCount(); 
 
             } else {
                 alert(data.message || "An unknown error occurred during add to cart."); 
@@ -107,18 +209,28 @@
         }
     }
 
-    // ... (ส่วน setupAddToCartHandlers และ updateHeaderAndWelcome เดิม) ...
+    // Sets up click listeners using Event Delegation 
+    function setupAddToCartHandlers() {
+        const productsGrid = document.getElementById('products-grid');
 
+        if (productsGrid) {
+            productsGrid.addEventListener('click', (e) => {
+                if (e.target.classList.contains('add-to-cart-btn')) {
+                    e.stopPropagation(); 
+                    handleAddToCart(e);
+                }
+            });
+        }
+    }
+    
     // ----------------------------------------------------------------
-    // 6. INITIALIZATION (แก้ไขส่วนนี้)
+    // 5. INITIALIZATION
     // ----------------------------------------------------------------
     document.addEventListener('DOMContentLoaded', () => {
-        // ... (โค้ดเรียก updateHeaderAndWelcome และ fetchAndDisplayProducts เดิม) ...
         updateHeaderAndWelcome();
         fetchAndDisplayProducts(); 
         setupAddToCartHandlers(); 
-        // NOTE: fetchCartCount ถูกเรียกอยู่แล้วภายใน updateHeaderAndWelcome เมื่อ login
     });
-    </script>
+</script>
 </body>
 </html>

@@ -1,3 +1,9 @@
+/*
+    -------------------------------------------
+    0. GLOBAL STYLES & FONT SETUP
+    -------------------------------------------
+*/
+/* Import Kanit font from Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
 
 /* Basic CSS Reset */
@@ -14,6 +20,7 @@ body {
     line-height: 1.6;
 }
 
+
 /*
     -------------------------------------------
     1. HEADER / NAVIGATION BAR (Top Black Bar)
@@ -28,7 +35,7 @@ body {
     align-items: center;
     height: 60px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); 
-    position: sticky;
+    position: sticky; 
     top: 0;
     z-index: 1000; 
 }
@@ -51,31 +58,136 @@ body {
     background-color: #333;
     border-radius: 4px;
 }
+/* Section 6: Logged-in Header Styles */
+.auth-links.logged-in .nav-link {
+    font-weight: 400;
+}
+.cart-icon {
+    margin-right: 10px;
+}
+
 
 /*
     -------------------------------------------
-    4. LOGIN & REGISTER STYLES (Form Box)
+    2. MAIN CONTAINER & WELCOME SECTION (Homepage Shared)
     -------------------------------------------
 */
-.login-page {
+.container {
+    max-width: 1280px; 
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.welcome-section {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 30px;
+    margin-bottom: 40px; 
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); 
+}
+
+.welcome-section h1 {
+    font-size: 28px;
+    font-weight: 500;
+    color: #333;
+}
+
+
+/*
+    -------------------------------------------
+    3. PRODUCTS GRID LAYOUT (Homepage Shared)
+    -------------------------------------------
+*/
+.products-grid {
+    display: grid; /* IMPORTANT: Needs display: grid to function */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+    gap: 30px; 
+}
+
+.product-card {
+    background-color: #fff;
+    border: none; 
+    border-radius: 8px;
+    overflow: hidden; 
+    padding: 15px;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); 
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.product-image {
+    height: 180px;
+    background-color: #f0f0f0; 
+    margin-bottom: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
-    /* Full height of viewport minus header height */
+    color: #666;
+    font-size: 14px;
+}
+/* Ensure product image rendering is styled here if applicable */
+
+.product-info {
+    padding: 10px 0;
+}
+
+.product-name {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.product-price {
+    font-size: 18px;
+    font-weight: 700; 
+    color: #000; 
+    margin-bottom: 15px;
+}
+
+.add-to-cart-btn {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 12px 0; 
+    font-size: 15px; 
+    font-weight: 500;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.add-to-cart-btn:hover {
+    background-color: #333;
+}
+
+
+/*
+    -------------------------------------------
+    4. LOGIN & REGISTER STYLES (Form Box - Shared)
+    -------------------------------------------
+*/
+.login-page, .register-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     min-height: calc(100vh - 60px); 
     padding: 20px;
 }
 
-.login-box {
+.login-box, .register-box {
     background-color: #fff;
     padding: 40px;
-    border-radius: 12px; /* เพิ่มความโค้งมน */
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* เพิ่มเงาให้ดูเด่น */
+    border-radius: 12px; 
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); 
     max-width: 450px; 
-    width: 100%; /* Ensure it adapts to max-width */
+    width: 100%; 
 }
 
-.login-box h2 {
+.login-box h2, .register-box h2 {
     font-size: 24px;
     font-weight: 600;
     margin-bottom: 30px;
@@ -94,25 +206,26 @@ body {
     margin-bottom: 5px;
 }
 
-.form-group input {
+.form-group input, .form-group textarea { /* Added textarea for register form */
     width: 100%;
-    padding: 12px; /* เพิ่ม Padding */
-    border: 1px solid #ccc; /* ขอบสีอ่อนลง */
+    padding: 12px; 
+    border: 1px solid #ccc; 
     border-radius: 6px;
     font-size: 16px;
+    font-family: 'Kanit', sans-serif; /* Ensure textarea uses Kanit */
 }
 
+/* Reusing the black button style */
 .submit-btn {
-    background-color: #000;
-    color: #fff;
-    border: none;
     padding: 14px 0;
     font-size: 17px;
     font-weight: 600;
+    background-color: #000; /* Re-added color as it was missing */
+    color: #fff;
+    border: none;
     border-radius: 4px;
     width: 100%;
     cursor: pointer;
-    transition: background-color 0.3s;
 }
 
 .submit-btn:hover {
@@ -130,43 +243,23 @@ body {
     font-weight: 500;
     text-decoration: none;
 }
-#login-message {
+#login-message, #register-message { /* Combined message styles */
     text-align: center;
     color: red;
     margin-bottom: 15px;
     font-weight: 500;
-    display: none; /* Hidden by default */
+    display: none; 
 }
 /*
     -------------------------------------------
-    Task 7: Custom Styles for register.html
+    CUSTOM STYLES FOR REGISTER.HTML (Task 7)
     -------------------------------------------
 */
-
-/* เนื่องจากหน้าลงทะเบียนมี input มากกว่าหน้า login 
-   เราอาจต้องเพิ่มความกว้างของฟอร์มเล็กน้อย หรือปรับพื้นที่ */
 .register-box {
     max-width: 550px !important; /* ขยายความกว้างของกล่องลงทะเบียน */
 }
 
-.register-page {
-    /* อาจเพิ่ม padding ด้านบน/ล่างเล็กน้อยหากฟอร์มยาวกว่าปกติ */
-    padding: 30px 20px; 
-}
-
-/* ปรับให้ textarea ดูดีขึ้น */
-.register-box textarea {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 16px;
-    font-family: 'Kanit', sans-serif;
-    resize: vertical; /* อนุญาตให้เปลี่ยนขนาดความสูงได้ */
-}
-
-/* ทำให้ปุ่ม Submit ดูเด่นขึ้นเมื่อกด */
-.submit-btn:active {
-    transform: translateY(1px);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+/* หากต้องการให้ textarea ใน register form ดูดีขึ้น */
+.form-group textarea {
+    resize: vertical; 
 }
