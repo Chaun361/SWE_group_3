@@ -1,0 +1,50 @@
+[
+  {
+    "productId": 1,
+    "productName": "Wireless Mouse",
+    "price": 450.0,
+    "stockQuantity": 30
+  },
+  {
+    "productId": 2,
+    "productName": "Mechanical Keyboard",
+    "price": 1250.0,
+    "stockQuantity": 20
+  },
+  {
+    "productId": 4,
+    "productName": "Gaming Headset",
+    "price": 990.0,
+    "stockQuantity": 25
+  },
+  {
+    "productId": 5,
+    "productName": "USB-C Charger 65W",
+    "price": 799.0,
+    "stockQuantity": 40
+  },
+  {
+    "productId": 6,
+    "productName": "27-inch 4K Monitor",
+    "price": 8990.0,
+    "stockQuantity": 8
+  },
+  {
+    "productId": 7,
+    "productName": "Laptop Stand Adjustable",
+    "price": 650.0,
+    "stockQuantity": 18
+  },
+  {
+    "productId": 8,
+    "productName": "External SSD 1TB",
+    "price": 3290.0,
+    "stockQuantity": 12
+  },
+  {
+    "productId": 9,
+    "productName": "Bluetooth Speaker",
+    "price": 1150.0,
+    "stockQuantity": 22
+  }
+]
