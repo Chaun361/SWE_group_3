@@ -60,85 +60,74 @@
     </main>
     
     <script>
-        // ใช้ Mock Logic แทนการ Fetch จริง
-        const REGISTER_API = '/api/users/register'; 
-        const SUCCESS_REDIRECT = 'login.html'; // หลังสมัครสำเร็จจะไปหน้า login.html
+    // ใช้ Mock Logic แทนการ Fetch จริง
+    const REGISTER_API = '/api/users/register'; 
+    const SUCCESS_REDIRECT = 'login.html'; 
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const registerForm = document.getElementById('register-form');
-            const registerMessage = document.getElementById('register-message');
+    // ฟังก์ชันตรวจสอบความว่างเปล่าและแสดง alert
+    function validateForm(data) {
+        const { username, password, phone, fullName, address } = data;
+        
+        // 1. ตรวจสอบช่องว่างทั้งหมด
+        if (!username || !password || !phone || !fullName || !address) {
+            alert("Registration Error: All fields are required. Please fill in all information.");
+            return false;
+        }
 
-            if (registerForm) {
-                registerForm.addEventListener('submit', async (e) => {
-                    e.preventDefault(); 
-                    registerMessage.style.display = 'none';
+        // 2. ตรวจสอบเบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลัก
+        const phoneRegex = /^\d{10}$/;
+        if (!phoneRegex.test(phone)) {
+            alert("Registration Error: Phone number must be exactly 10 digits and contain only numbers.");
+            return false;
+        }
 
-                    const username = document.getElementById('username').value;
-                    const password = document.getElementById('password').value;
-                    const phone = document.getElementById('phone').value;
-                    const fullName = document.getElementById('fullName').value;
-                    const address = document.getElementById('address').value;
+        // 3. (Optional but good practice) ตรวจสอบความยาวรหัสผ่านเบื้องต้น
+        if (password.length < 6) {
+             alert("Registration Error: Password must be at least 6 characters long.");
+             return false;
+        }
 
-                    const requestBody = {
-                        username: username,
-                        password: password,
-                        phone: phone,
-                        fullName: fullName,
-                        address: address
-                    }; // body สำหรับส่งข้อมูล
+        return true; // ผ่านการตรวจสอบทั้งหมด
+    }
 
-                    // --- Mock/Real Fetch Logic ---
-                    // เนื่องจาก Backend ยังไม่พร้อม เราจะใช้ Mock Logic จำลองการตอบกลับ 
-                    
-                    // Mock Error Condition (e.g., username already exists)
-                    if (username === 'mock_fail@example.com') {
-                        // 409 Conflict/Error
-                        alert('Registration Failed: Username already exists (Mock 409).'); 
-                        registerMessage.textContent = 'Username already exists.';
-                        registerMessage.style.display = 'block';
-                        return;
-                    }
 
-                    // Mock Success Condition
-                    alert('Sending data to ' + REGISTER_API + ' with body: ' + JSON.stringify(requestBody));
+    document.addEventListener('DOMContentLoaded', () => {
+        const registerForm = document.getElementById('register-form');
+        const registerMessage = document.getElementById('register-message');
 
-                    // จำลองการหน่วงเวลาของ API Call
-                    setTimeout(() => {
-                        // Success Logic (Mock 200/201)
-                        alert('Registration Successful! Redirecting to login.html.'); 
-                        // หลังสมัครสำเร็จ redirect ไปหน้า login.html
-                        window.location.href = SUCCESS_REDIRECT; 
-                    }, 1500);
-                    
-                    /*
-                    // โค้ดจริงเมื่อ Backend พร้อม:
-                    try {
-                        const response = await fetch(REGISTER_API, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(requestBody)
-                        });
+        if (registerForm) {
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault(); 
+                registerMessage.style.display = 'none';
 
-                        if (response.ok) { // 2xx success
-                            alert('Registration Successful! Redirecting to login.html.'); 
-                            window.location.href = SUCCESS_REDIRECT;
-                        } else {
-                            const data = await response.json();
-                            // แสดงข้อความแจ้งเตือน alert() เมื่อเกิด error (400/409)
-                            const errorMessage = data.message || `Registration failed with status ${response.status}.`;
-                            alert(errorMessage);
-                            registerMessage.textContent = errorMessage;
-                            registerMessage.style.display = 'block';
-                        }
-                    } catch (error) {
-                        alert('Network Error: Could not connect to the API.');
-                        registerMessage.textContent = 'Network Error: Could not connect to the API.';
-                        registerMessage.style.display = 'block';
-                    }
-                    */
-                });
-            }
-        });
-    </script> 
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const phone = document.getElementById('phone').value;
+                const fullName = document.getElementById('fullName').value;
+                const address = document.getElementById('address').value;
+
+                const requestBody = { username, password, phone, fullName, address }; 
+
+                // --- Client-side Validation ---
+                if (!validateForm(requestBody)) {
+                    // หาก Validation ไม่ผ่าน จะถูก alert() ในฟังก์ชัน validateForm แล้ว
+                    return; 
+                }
+                
+                // --- Mock Success Condition (ถ้า Validation ผ่าน) ---
+                
+                alert('Validation successful! Sending data to ' + REGISTER_API + ' (Mock API).');
+
+                // จำลองการหน่วงเวลาของ API Call
+                setTimeout(() => {
+                    // Success Logic (Mock 200/201)
+                    // ใน Task 7 เราได้ตั้งเงื่อนไข fail/success ใน Mock ไปแล้ว แต่ใน Task 8 เราเน้น Client Validation
+                    alert('Registration Successful! Redirecting to login.html.'); 
+                    window.location.href = SUCCESS_REDIRECT; 
+                }, 1500);
+            });
+        }
+    });
+</script>
 </body>
 </html>
