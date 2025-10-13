@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile | WEBSITE NAME</title>
+    <link rel="stylesheet" href="styles.css"> 
+    <link rel="stylesheet" href="css/profile.css"> 
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="logo">WEBSITE NAME</div>
+        <nav class="auth-links" id="header-auth-links">
+            </nav>
+    </header>
+
+    <main class="container">
+        <h1 class="page-title">My Account</h1>
+
+        <div class="profile-content-grid">
+
+            <div class="profile-sidebar">
+                <nav>
+                    <a href="profile.html" class="sidebar-link active">Profile</a>
+                    <a href="order-history.html" class="sidebar-link">Order History</a>
+                    <div class="logout-btn-container">
+                        <a href="#" id="logout-link" class="sidebar-link logout-link">Logout</a>
+                    </div>
+                </nav>
+            </div>
+
+            <div class="profile-main">
+                <div id="profile-container">
+                    <h2>Profile Information</h2>
+                    <div class="profile-info-display" id="profile-info-display">
+                        <p><strong>Full Name:</strong> <span id="full-name">Loading...</span></p>
+                        <p><strong>Username:</strong> <span id="username-display">Loading...</span></p>
+                        <p><strong>Phone:</strong> <span id="phone-display">Loading...</span></p>
+                        <p><strong>Address:</strong> <span id="address-display">Loading...</span></p>
+                    </div>
+
+                    </div>
+            </div>
+
+        </div>
+    </main>
+    
+    <script>
+        const LOGIN_PAGE = 'login.html';
+        
+        // ----------------------------------------------------------------
+        // 1. HEADER & LOGIN CHECK (Task 5 requirement)
+        // ----------------------------------------------------------------
+        function updateHeader() {
+            const username = sessionStorage.getItem('username');
+            const isLogin = sessionStorage.getItem('isLogin') === 'true';
+            const linksContainer = document.getElementById('header-auth-links');
+
+            linksContainer.innerHTML = ''; 
+
+            // ตรวจสอบมี sessionStorage.username ก่อน render
+            if (!isLogin || !username) {
+                window.location.href = LOGIN_PAGE; // บังคับให้ Login
+                return;
+            }
+            
+            // Render Logged-in Header
+            linksContainer.innerHTML = `
+                <a href="order-history.html" class="nav-link">Order History</a>
+                <a href="profile.html" class="nav-link">${username}</a>
+                <a href="cart.html" class="nav-link cart-icon">Cart</a> 
+            `;
+        }
+
+        // ----------------------------------------------------------------
+        // 2. MOCK DATA RENDER (เพื่อแสดงโครงสร้างใน Task 5)
+        // ----------------------------------------------------------------
+        function mockRenderProfile() {
+            // Task 5 ไม่ต้อง fetch แต่ต้องแสดงโครงสร้าง
+            const fullName = document.getElementById('full-name');
+            const usernameDisplay = document.getElementById('username-display');
+            const phoneDisplay = document.getElementById('phone-display');
+            const addressDisplay = document.getElementById('address-display');
+            
+            // แสดงข้อมูลจาก sessionStorage และ Placeholder
+            usernameDisplay.textContent = sessionStorage.getItem('username') || 'N/A';
+            fullName.textContent = 'Mock Full Name';
+            phoneDisplay.textContent = 'Mock Phone';
+            addressDisplay.textContent = 'Mock Address';
+        }
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateHeader();
+            mockRenderProfile(); // แสดง Mock Data เพื่อให้โครงสร้าง Profile ทำงานได้
+            
+            // ปุ่ม Logout (ไม่มีพฤติกรรมใน Task 5)
+            const logoutLink = document.getElementById('logout-link');
+            if (logoutLink) {
+                 logoutLink.addEventListener('click', (e) => {
+                    e.preventDefault(); 
+                    alert('Logout button clicked (No behavior for Task 5 yet)');
+                    // Task 6: U10 จะเพิ่ม Logic การ Logout
+                 });
+            }
+        });
+    </script> 
+</body>
+</html>

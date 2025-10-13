@@ -1,0 +1,5 @@
+{
+    "success": true,
+    "message": "Product added to cart successfully",
+    "cartId": 12345
+}
