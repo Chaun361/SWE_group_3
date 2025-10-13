@@ -1,11 +1,52 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Homepage | WEBSITE NAME</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homepage | WEBSITE NAME</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Hello</h1>
+
+    <header class="main-header">
+        <div class="logo">WEBSITE NAME</div>
+        <nav class="auth-links">
+            <a href="login.html" class="nav-link">Login</a>
+            <a href="register.html" class="nav-link">Register</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="welcome-section dark-bg">
+            <h1>Welcome</h1>
+            <p>Please log in to start shopping.</p>
+        </section>
+
+        <section class="products-grid">
+            <div class="product-card">
+                <div class="product-image"></div>
+                <div class="product-info-grid">
+                    <div class="product-text-details">
+                        <p class="product-name">Product Name</p>
+                        <p class="product-price">0 Baht</p>
+                        <p class="product-stock">in stock: x0</p> 
+                    </div>
+                    <button class="add-to-cart-btn">Add</button> 
+                </div>
+            </div>
+            </section>
+
+    </main>
+    
+    <script src="app.js"></script> 
 </body>
 </html>
