@@ -1,8 +1,10 @@
 /*
     -------------------------------------------
-    CHECKOUT STYLES (Moved from Section 8)
+    CHECKOUT STYLES
     -------------------------------------------
 */
+
+/* Layout: Two-column grid for Forms and Summary */
 .checkout-grid {
     display: flex;
     gap: 30px;
@@ -13,6 +15,7 @@
     flex: 2; 
 }
 
+/* Box Style for address and payment sections */
 .checkout-box {
     background-color: #fff;
     padding: 30px;
@@ -29,33 +32,61 @@
     border-bottom: 1px solid #eee;
 }
 
-/* Payment Method Styling */
+/* -------------------------------------------
+   Payment Method Styling (Fixes Vertical Alignment)
+   ------------------------------------------- */
 .payment-option {
     border: 1px solid #ddd;
     padding: 15px;
     border-radius: 6px;
-    margin-bottom: 10px;
+    margin-bottom: 15px; /* เพิ่มระยะห่างระหว่างตัวเลือก */
     cursor: pointer;
+    position: relative; /* สำคัญ: เพื่อให้ปุ่มวิทยุ (radio) จัดวางแบบ absolute ได้ */
+    overflow: hidden; /* ป้องกันไม่ให้ float หรือ content ล้น */
 }
+
 .payment-option.selected {
     border-color: #000;
     background-color: #f9f9f9;
 }
-.payment-option label {
+
+/* 1. จัด Layout ของ Label/Icon/Title ให้อยู่ตรงกลางแนวตั้ง */
+.payment-option label.payment-label {
+    display: flex; /* **ใช้ Flexbox จัดเรียงไอคอนและข้อความ** */
+    align-items: center; /* **จัดองค์ประกอบย่อย (ไอคอน/ชื่อ) ให้อยู่ตรงกลางแนวตั้ง** */
+    gap: 10px; /* ระยะห่างระหว่างไอคอนกับข้อความ */
     font-weight: 500;
-    margin-left: 5px;
+    margin-left: 0;
+    width: 90%; /* จำกัดความกว้างไม่ให้ทับปุ่มวิทยุ */
+    cursor: pointer;
 }
+
+/* 2. จัดตำแหน่ง Radio Button (ให้ลอยอยู่ตรงกลางขวา) */
 .payment-option input[type="radio"] {
-    margin-right: 5px;
+    position: absolute; 
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%); /* **จัดให้อยู่ตรงกลางแนวตั้งของกล่อง** */
+    margin: 0;
 }
+
+/* 3. จัดสไตล์ Icon */
+.card-icon {
+    width: 40px; 
+    height: auto;
+    border: 1px solid #eee; 
+    border-radius: 3px;
+}
+
+/* 4. ปรับ Small Text */
 .small-text {
     font-size: 12px;
     color: #888;
     margin-top: 5px;
-    margin-left: 25px;
+    margin-left: 50px; /* ดันข้อความอธิบายให้พ้นไอคอน */
 }
 
-/* Final Checkout Button */
+/* Final Checkout Button (Reuse submit-btn from styles.css) */
 .final-checkout {
     width: 100%;
 }

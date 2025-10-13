@@ -27,20 +27,38 @@
                     </div>
 
                 <div class="checkout-box">
-                    <h2>2. Payment Method</h2>
-                    <div class="form-group">
-                        <div class="payment-option selected">
-                            <input type="radio" name="payment" value="credit_card" id="cc" checked>
-                            <label for="cc">Credit Card / Debit Card</label>
-                            <p class="small-text">Secure payment via gateway</p>
-                        </div>
-                        <div class="payment-option">
-                            <input type="radio" name="payment" value="cod" id="cod">
-                            <label for="cod">QR payment</label>
-                            <p class="small-text">Pay upon receipt of goods</p>
-                        </div>
-                    </div>
-                </div>
+    <h2>2. Payment Method</h2>
+    <div class="form-group">
+        
+        <div class="payment-option selected">
+            <input type="radio" name="payment" value="mastercard" id="mc" checked>
+            <label for="mc"></label>
+            <div class="payment-icons">
+                <img src="images/mastercard.png" alt="MasterCard" class="card-icon">
+            </div>
+            <p class="small-text">Secure payment via gateway</p>
+        </div>
+        
+        <div class="payment-option">
+            <input type="radio" name="payment" value="visa" id="visa">
+            <label for="visa"></label>
+            <div class="payment-icons">
+                <img src="images/visa.png" alt="Visa" class="card-icon">
+            </div>
+            <p class="small-text">Secure payment via gateway</p>
+        </div>
+
+        <div class="payment-option">
+            <input type="radio" name="payment" value="qr_payment" id="qr">
+            <label for="qr"></label>
+            <div class="payment-icons">
+                <img src="images/promptpay.png" alt="QR Payment" class="card-icon qr-icon">
+            </div>
+            <p class="small-text">Pay upon receipt of goods</p>
+        </div>
+        
+    </div>
+</div>
             </div>
 
             <div class="cart-summary">

@@ -86,10 +86,11 @@
         products.forEach(product => {
             // ใช้ชื่อฟิลด์ใหม่: productId, productName, stockQuantity
             const cardHtml = `
-                <div class="product-card" onclick="window.location.href='product-detail.html?id=${product.productId}'">
-                    <div class="product-image">
-                        <img src="${product.imageUrl || 'placeholder.png'}" alt="${product.productName}" style="width: 100%; height: auto;">
-                    </div>
+        <div class="product-card" onclick="window.location.href='product-detail.html?id=${product.productId}'">
+        <div class="product-image">
+            <img src="images/${product.imageUrl || 'placeholder.png'}" alt="${product.productName}" style="width: 100%; height: auto;">
+        </div>
+        </div>
                     <div class="product-info-grid">
                         <div class="product-text-details">
                             <p class="product-name">${product.productName}</p>
@@ -110,10 +111,14 @@
 
         // Hardcoded Fallback Data (ใช้สำหรับกรณีที่ fetch ไฟล์ Mock ล้มเหลว)
         const FALLBACK_PRODUCTS = [
-             { "productId": 1, "productName": "Wireless Mouse", "price": 450.0, "stockQuantity": 30, "imageUrl": "mock-mouse.jpg" },
-             { "productId": 2, "productName": "Mechanical Keyboard", "price": 1250.0, "stockQuantity": 20, "imageUrl": "mock-keyboard.jpg" },
-             { "productId": 4, "productName": "Gaming Headset", "price": 990.0, "stockQuantity": 25, "imageUrl": "mock-headset.jpg" },
-             { "productId": 5, "productName": "USB-C Charger 65W", "price": 799.0, "stockQuantity": 40, "imageUrl": "mock-charger.jpg" },
+             { "productId": 1, "productName": "Wireless Mouse", "price": 450.0, "stockQuantity": 30, "imageUrl": "mouse.jpg" },
+             { "productId": 2, "productName": "Mechanical Keyboard", "price": 1250.0, "stockQuantity": 20, "imageUrl": "keybord.jpg" },
+             { "productId": 4, "productName": "Gaming Headset", "price": 990.0, "stockQuantity": 25, "imageUrl": "headphone.jpg" },
+             { "productId": 5, "productName": "USB-C Charger 65W", "price": 799.0, "stockQuantity": 40, "imageUrl": "adapter.jpg" },
+             { "productId": 6, "productName": "27-inch 4K Monitor", "price": 8990.0, "stockQuantity": 8, "imageUrl": "monitor.jpg" },
+             { "productId": 7, "productName": "Laptop Stand Adjustable", "price": 650.0, "stockQuantity": 18, "imageUrl": "stand-lap.jpg" },
+             { "productId": 8, "productName": "External SSD 1TB", "price": 3290.0, "stockQuantity": 12, "imageUrl": "intel core.jpg" },
+             { "productId": 9, "productName": "Bluetooth Speaker", "price": 1150.0, "stockQuantity": 22, "imageUrl": "speaker.jpg" },
         ];
 
         try {
