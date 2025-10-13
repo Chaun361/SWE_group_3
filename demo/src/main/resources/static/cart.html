@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart | WEBSITE NAME</title>
+    <link rel="stylesheet" href="styles.css"> 
+    <link rel="stylesheet" href="css/cart.css"> 
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="logo">WEBSITE NAME</div>
+        <nav class="auth-links" id="header-auth-links">
+            </nav>
+    </header>
+
+    <main class="container">
+        <h1 class="page-title">Your Cart</h1>
+
+        <div class="cart-layout">
+            
+            <div class="cart-items" id="cart-items-container">
+                <p style="text-align: center;">Loading cart items...</p>
+                </div>
+
+            <div class="cart-summary">
+                <h2>Order Summary</h2>
+                <div class="summary-line">
+                    <span>Subtotal</span>
+                    <span id="summary-subtotal">0 ฿</span>
+                </div>
+                <div class="summary-line">
+                    <span>Shipping</span>
+                    <span id="summary-shipping">Free</span>
+                </div>
+                <div class="summary-line total">
+                    <span>Total Price</span>
+                    <span id="summary-total">0 ฿</span>
+                </div>
+                
+                <button class="submit-btn checkout-btn" onclick="window.location.href='checkout.html'">Checkout</button>
+            </div>
+            
+        </div>
+    </main>
+    
+    <script>
+        // API Endpoint ที่จะใช้ Mock JSON
+        const MOCK_CART_ENDPOINT = '/mock/cart.json'; 
+
+        // ----------------------------------------------------------------
+        // 1. HEADER LOGIC (Copy from index.html Task 5)
+        // ----------------------------------------------------------------
+        function updateHeader() {
+            const username = sessionStorage.getItem('username');
+            const isLogin = sessionStorage.getItem('isLogin') === 'true';
+            const linksContainer = document.getElementById('header-auth-links');
+
+            linksContainer.innerHTML = ''; 
+
+            if (isLogin) {
+                // Login แล้ว: แสดง order history, {username}, ตะกร้าสินค้า
+                linksContainer.innerHTML = `
+                    <a href="order-history.html" class="nav-link">Order History</a>
+                    <a href="profile.html" class="nav-link">${username}</a>
+                    <a href="cart.html" class="nav-link cart-icon">Cart</a> 
+                `;
+            } else {
+                // หากไม่มี Login ให้ redirect กลับหน้า Login/Home (ป้องกันการเข้าถึง Cart โดยตรง)
+                // เราจะให้มันแสดงแค่ Login/Register เพื่อให้ผู้ใช้ล็อกอินก่อน
+                linksContainer.innerHTML = `
+                    <a href="login.html" class="nav-link">Login</a>
+                    <a href="register.html" class="nav-link">Register</a>
+                `;
+            }
+        }
+
+        // ----------------------------------------------------------------
+        // 2. PRODUCT RENDERING AND CALCULATION LOGIC
+        // ----------------------------------------------------------------
+        
+        function renderCartItems(cartItems) {
+            const container = document.getElementById('cart-items-container');
+            let subtotal = 0;
+            container.innerHTML = '';
+
+            if (cartItems.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 20px;">Your cart is empty.</p>';
+                return;
+            }
+
+            cartItems.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                
+                const itemHtml = `
+                    <div class="cart-item">
+                        <div class="item-img"></div>
+                        <div class="item-details">
+                            <p class="item-name">${item.name}</p>
+                            <p class="item-price">${item.price.toLocaleString()} ฿ / unit</p>
+                        </div>
+                        <div class="item-quantity">
+                            <input type="number" value="${item.quantity}" min="1" disabled>
+                        </div>
+                        <div class="item-subtotal">
+                            ${itemTotal.toLocaleString()} ฿
+                        </div>
+                        <button class="item-remove" onclick="alert('Item ${item.id} removed (Mock)')">&times;</button>
+                    </div>
+                `;
+                container.innerHTML += itemHtml;
+            });
+            
+            // อัพเดท Summary
+            document.getElementById('summary-subtotal').textContent = subtotal.toLocaleString() + ' ฿';
+            document.getElementById('summary-total').textContent = subtotal.toLocaleString() + ' ฿'; // Shipping assumed free
+        }
+
+
+        // ----------------------------------------------------------------
+        // 3. DATA FETCHING (Mock Logic)
+        // ----------------------------------------------------------------
+        async function fetchAndRenderCart() {
+            const userId = sessionStorage.getItem('userId');
+            const isLogin = sessionStorage.getItem('isLogin') === 'true';
+
+            if (!isLogin || !userId) {
+                alert('Please log in to view your cart.');
+                window.location.href = 'login.html'; 
+                return;
+            }
+
+            try {
+                // จำลองการเรียก API /api/cart/{userId} โดยใช้ Mock JSON file
+                const response = await fetch(MOCK_CART_ENDPOINT); 
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch cart data (Mock)');
+                }
+
+                const cartData = await response.json(); 
+                
+                // ในโค้ดจริง: cartData = response.json()
+                // แต่เนื่องจากเราใช้ Mock File เราจะใช้ข้อมูลจาก Mock JSON เลย
+                
+                renderCartItems(cartData); 
+
+            } catch (error) {
+                console.error('Cart Load Error:', error);
+                document.getElementById('cart-items-container').innerHTML = 
+                    '<p style="color: red; text-align: center; padding: 20px;">Could not load cart data. Please check Mock file.</p>';
+            }
+        }
+
+        // ----------------------------------------------------------------
+        // 4. INITIALIZATION
+        // ----------------------------------------------------------------
+        document.addEventListener('DOMContentLoaded', () => {
+            updateHeader();
+            fetchAndRenderCart();
+        });
+    </script> 
+</body>
+</html>
