@@ -24,75 +24,49 @@
         </section>
 
     </main>
-    <script>
-    // API Endpoint และค่าคงที่
-    const ADD_TO_CART_MOCK_ENDPOINT = '/mock/add_to_cart.json'; 
-    const ADD_TO_CART_API = '/api/cart/items'; 
-    const API_PRODUCT_ENDPOINT = '/mock/products.json'; // ใช้ Mock JSON file
-    const QUANTITY = 1; 
+
+    // ... (ส่วน MOCK_PRODUCTS และ API ENDPOINTS เดิม) ...
+    const CART_COUNT_API = '/api/cart/items/count'; // API Mock สำหรับนับจำนวน
     
-    // ... (ฟังก์ชัน updateHeaderAndWelcome ยังคงเหมือนเดิม) ...
+    // Global variable to mock the cart count
+    let currentCartCount = 0; 
 
     // ----------------------------------------------------------------
-    // 2. PRODUCT DISPLAY LOGIC (Revised for new JSON structure)
+    // 4. NEW CART COUNT LOGIC (Task 2)
     // ----------------------------------------------------------------
     
-    function renderProducts(products) {
-        const gridElement = document.getElementById('products-grid');
-        gridElement.innerHTML = ''; 
-
-        products.forEach(product => {
-            // ใช้ชื่อฟิลด์ใหม่: productId, productName, stockQuantity
-            const cardHtml = `
-                <div class="product-card" onclick="window.location.href='product-detail.html?id=${product.productId}'">
-                    <div class="product-image">
-                        <img src="${product.imageUrl || 'placeholder.png'}" alt="${product.productName}" style="width: 100%; height: auto;">
-                    </div>
-                    <div class="product-info-grid">
-                        <div class="product-text-details">
-                            <p class="product-name">${product.productName}</p>
-                            <p class="product-price">฿ ${product.price.toLocaleString()}</p>
-                            <p class="product-stock">in stock: x${product.stockQuantity || '?'}</p> 
-                        </div>
-                        <button class="add-to-cart-btn" data-product-id="${product.productId}">Add</button>
-                    </div>
-                </div>
-            `;
-            gridElement.innerHTML += cardHtml;
-        });
-    }
-
-    async function fetchAndDisplayProducts() {
-        const gridElement = document.getElementById('products-grid');
-        gridElement.innerHTML = '<p style="text-align: center; padding: 20px;">Fetching product data...</p>';
+    // ฟังก์ชันดึงจำนวนสินค้าในตะกร้า (Mock Logic)
+    async function fetchCartCount() {
+        const userId = sessionStorage.getItem('userId');
+        const countElement = document.getElementById('cart-count');
+        
+        if (!userId || !countElement) return;
 
         try {
-            const response = await fetch(API_PRODUCT_ENDPOINT); 
+            // Mock API call to /api/cart/items/count
+            // ใน Mock เราจะใช้ค่าที่เก็บใน currentCartCount แทนการ fetch
+            // ในสถานการณ์จริง: fetch(CART_COUNT_API + '?userId=' + userId) 
             
-            if (!response.ok) {
-                throw new Error(`Failed to fetch products: ${response.status}`);
-            }
-
-            // เนื่องจาก Mock JSON ตอนนี้ใช้ชื่อฟิลด์ใหม่แล้ว เราจึงต้องอัปเดตฟังก์ชัน render
-            const products = await response.json(); 
-            renderProducts(products); 
+            // ใช้ค่าจาก currentCartCount ที่ถูกอัปเดตด้วย Add to Cart
+            const count = currentCartCount; 
+            
+            countElement.textContent = count.toString(); 
 
         } catch (error) {
-            console.error('Error loading products:', error);
-            gridElement.innerHTML = '<p style="color: red; padding: 20px;">Could not load products. Using Mock JSON failed.</p>';
+            console.error('Fetch Cart Count Error:', error);
+            if (countElement) countElement.textContent = '?';
         }
     }
-
-
+    
     // ----------------------------------------------------------------
-    // 3. ADD TO CART LOGIC (Revised for new JSON structure in request body)
+    // 5. HANDLE ADD TO CART LOGIC (แก้ไขเพื่อให้มีการอัปเดตจำนวน)
     // ----------------------------------------------------------------
 
     async function handleAddToCart(e) {
+        // ... (โค้ดตรวจสอบ Login และดึง productId เดิม) ...
         const userId = sessionStorage.getItem('userId');
         const isLogin = sessionStorage.getItem('isLogin') === 'true';
 
-        // 1. ตรวจสอบสถานะ Login
         if (!isLogin || !userId) {
             alert('Please log in to add items to your cart.');
             return;
@@ -103,19 +77,10 @@
 
         if (!productId) return;
 
-        const requestBody = {
-            // ใช้ productId ตามโครงสร้างใหม่
-            userId: userId,
-            productId: parseInt(productId), // ส่งเป็นตัวเลขตาม API
-            quantity: QUANTITY
-        }; 
-
+        // ... (โค้ด Mock Fetch เดิม) ...
         try {
-            // ใช้ Mock Logic แทน Fetch จริง (GET MOCK_ENDPOINT) 
             const response = await fetch(ADD_TO_CART_MOCK_ENDPOINT);
             const data = await response.json();
-            
-            // --- Mock Logic: จำลองเงื่อนไข Success/Error ---
             
             // Mock Error Scenario (สมมติว่าถ้า productId เป็น 9 จะ Out of Stock)
             if (productId === '9') { 
@@ -124,7 +89,14 @@
             }
             
             if (data.success) {
-                alert(`Product added to cart successfully! (Product ID: ${productId})`); 
+                alert(`Product added to cart successfully! (Product ID: ${productId})`);
+                
+                // ********************
+                // * เพิ่มส่วนนี้: อัปเดต Cart Count *
+                // ********************
+                currentCartCount += QUANTITY; // เพิ่มจำนวนสินค้าในตะกร้า
+                fetchCartCount(); // อัปเดตการแสดงผลบน Header ทันที
+
             } else {
                 alert(data.message || "An unknown error occurred during add to cart."); 
             }
@@ -135,28 +107,17 @@
         }
     }
 
-    // Sets up click listeners using Event Delegation 
-    function setupAddToCartHandlers() {
-        const productsGrid = document.getElementById('products-grid');
+    // ... (ส่วน setupAddToCartHandlers และ updateHeaderAndWelcome เดิม) ...
 
-        if (productsGrid) {
-            productsGrid.addEventListener('click', (e) => {
-                if (e.target.classList.contains('add-to-cart-btn')) {
-                    e.stopPropagation(); 
-                    handleAddToCart(e);
-                }
-            });
-        }
-    }
-    
     // ----------------------------------------------------------------
-    // 4. INITIALIZATION
+    // 6. INITIALIZATION (แก้ไขส่วนนี้)
     // ----------------------------------------------------------------
     document.addEventListener('DOMContentLoaded', () => {
+        // ... (โค้ดเรียก updateHeaderAndWelcome และ fetchAndDisplayProducts เดิม) ...
         updateHeaderAndWelcome();
         fetchAndDisplayProducts(); 
         setupAddToCartHandlers(); 
+        // NOTE: fetchCartCount ถูกเรียกอยู่แล้วภายใน updateHeaderAndWelcome เมื่อ login
     });
-</script>
 </body>
 </html>
