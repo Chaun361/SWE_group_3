@@ -47,64 +47,100 @@
     </main>
     
     <script>
-        const LOGIN_PAGE = 'login.html';
+    const LOGIN_PAGE = 'login.html';
+    const MOCK_PROFILE_ENDPOINT = '/mock/mock-profile.json'; // ใช้ Mock JSON file
+    const USER_API = '/api/users/'; // API Path ตาม Task
+
+    // ----------------------------------------------------------------
+    // 1. HEADER & LOGIN CHECK (Unchanged from Task 5)
+    // ----------------------------------------------------------------
+    function updateHeader() {
+        const username = sessionStorage.getItem('username');
+        const isLogin = sessionStorage.getItem('isLogin') === 'true';
+        const linksContainer = document.getElementById('header-auth-links');
+
+        linksContainer.innerHTML = ''; 
+
+        // ตรวจสอบมี sessionStorage.username ก่อน render
+        if (!isLogin || !username) {
+            window.location.href = LOGIN_PAGE; // บังคับให้ Login
+            return false; // return false เพื่อหยุดการทำงาน
+        }
         
-        // ----------------------------------------------------------------
-        // 1. HEADER & LOGIN CHECK (Task 5 requirement)
-        // ----------------------------------------------------------------
-        function updateHeader() {
-            const username = sessionStorage.getItem('username');
-            const isLogin = sessionStorage.getItem('isLogin') === 'true';
-            const linksContainer = document.getElementById('header-auth-links');
+        // Render Logged-in Header
+        linksContainer.innerHTML = `
+            <a href="order-history.html" class="nav-link">Order History</a>
+            <a href="profile.html" class="nav-link">${username}</a>
+            <a href="cart.html" class="nav-link cart-icon">Cart</a> 
+        `;
+        return true;
+    }
 
-            linksContainer.innerHTML = ''; 
+    // ----------------------------------------------------------------
+    // 2. FETCH AND RENDER PROFILE DATA (New Logic for Task 6)
+    // ----------------------------------------------------------------
+    
+    async function fetchAndRenderProfile() {
+        const userId = sessionStorage.getItem('userId');
+        const displayContainer = document.getElementById('profile-info-display');
+        const profileContainer = document.getElementById('profile-container');
 
-            // ตรวจสอบมี sessionStorage.username ก่อน render
-            if (!isLogin || !username) {
-                window.location.href = LOGIN_PAGE; // บังคับให้ Login
-                return;
-            }
-            
-            // Render Logged-in Header
-            linksContainer.innerHTML = `
-                <a href="order-history.html" class="nav-link">Order History</a>
-                <a href="profile.html" class="nav-link">${username}</a>
-                <a href="cart.html" class="nav-link cart-icon">Cart</a> 
-            `;
+        if (!userId) {
+            // กรณีหลุดรอดการตรวจสอบ Login (ไม่ควรเกิดขึ้น)
+            displayContainer.innerHTML = '<p style="color: red;">Error: User ID not found in session.</p>';
+            return;
         }
 
-        // ----------------------------------------------------------------
-        // 2. MOCK DATA RENDER (เพื่อแสดงโครงสร้างใน Task 5)
-        // ----------------------------------------------------------------
-        function mockRenderProfile() {
-            // Task 5 ไม่ต้อง fetch แต่ต้องแสดงโครงสร้าง
-            const fullName = document.getElementById('full-name');
-            const usernameDisplay = document.getElementById('username-display');
-            const phoneDisplay = document.getElementById('phone-display');
-            const addressDisplay = document.getElementById('address-display');
+        try {
+            // **Mock Fetch Logic** (จำลองการเรียก GET /api/users/{userId})
+            // ในสถานการณ์จริง: const response = await fetch(`${USER_API}${userId}`);
             
-            // แสดงข้อมูลจาก sessionStorage และ Placeholder
-            usernameDisplay.textContent = sessionStorage.getItem('username') || 'N/A';
-            fullName.textContent = 'Mock Full Name';
-            phoneDisplay.textContent = 'Mock Phone';
-            addressDisplay.textContent = 'Mock Address';
-        }
-
-
-        document.addEventListener('DOMContentLoaded', () => {
-            updateHeader();
-            mockRenderProfile(); // แสดง Mock Data เพื่อให้โครงสร้าง Profile ทำงานได้
-            
-            // ปุ่ม Logout (ไม่มีพฤติกรรมใน Task 5)
-            const logoutLink = document.getElementById('logout-link');
-            if (logoutLink) {
-                 logoutLink.addEventListener('click', (e) => {
-                    e.preventDefault(); 
-                    alert('Logout button clicked (No behavior for Task 5 yet)');
-                    // Task 6: U10 จะเพิ่ม Logic การ Logout
-                 });
+            // Mock Scenario: ไม่พบ User (ถ้า userId เป็น 000)
+            if (userId === '000') {
+                 displayContainer.innerHTML = '<p style="color: red;">Error: User not found (Mock 404).</p>';
+                 return;
             }
-        });
-    </script> 
+
+            const response = await fetch(MOCK_PROFILE_ENDPOINT); 
+            
+            if (!response.ok) {
+                // หากดึงข้อมูล Mock ไม่ได้
+                throw new Error('Failed to fetch profile data (Mock)');
+            }
+
+            const data = await response.json(); 
+            
+            // Render ข้อมูล JSON สู่ Element ที่ถูกต้อง
+            document.getElementById('full-name').textContent = data.fullName;
+            document.getElementById('username-display').textContent = data.username;
+            document.getElementById('phone-display').textContent = data.phone;
+            document.getElementById('address-display').textContent = data.userAddress;
+
+        } catch (error) {
+            console.error('Profile Fetch Error:', error);
+            // แสดงข้อความ error ถ้าไม่พบ user
+            displayContainer.innerHTML = '<p style="color: red;">Error loading profile data. Please check Mock file or API.</p>';
+        }
+    }
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // ตรวจสอบ Login และ Render Header
+        const loggedIn = updateHeader(); 
+        
+        if (loggedIn) {
+            fetchAndRenderProfile();
+        }
+        
+        // ปุ่ม Logout (ยังไม่มีพฤติกรรมใน Task 5)
+        const logoutLink = document.getElementById('logout-link');
+        if (logoutLink) {
+             logoutLink.addEventListener('click', (e) => {
+                e.preventDefault(); 
+                alert('Logout button clicked (Logic for Task 6:U10 not yet implemented)');
+             });
+        }
+    });
+</script> 
 </body>
 </html>
