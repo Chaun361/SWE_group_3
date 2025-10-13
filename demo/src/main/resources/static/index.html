@@ -1,52 +1,117 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Homepage | WEBSITE NAME</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Homepage | WEBSITE NAME</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css"> 
 </head>
 <body>
 
     <header class="main-header">
         <div class="logo">WEBSITE NAME</div>
-        <nav class="auth-links">
-            <a href="login.html" class="nav-link">Login</a>
-            <a href="register.html" class="nav-link">Register</a>
-        </nav>
+        <nav class="auth-links" id="header-auth-links">
+            </nav>
     </header>
 
     <main class="container">
-        <section class="welcome-section dark-bg">
+        <section class="welcome-section" id="welcome-section">
             <h1>Welcome</h1>
-            <p>Please log in to start shopping.</p>
-        </section>
-
-        <section class="products-grid">
-            <div class="product-card">
-                <div class="product-image"></div>
-                <div class="product-info-grid">
-                    <div class="product-text-details">
-                        <p class="product-name">Product Name</p>
-                        <p class="product-price">0 Baht</p>
-                        <p class="product-stock">in stock: x0</p> 
-                    </div>
-                    <button class="add-to-cart-btn">Add</button> 
-                </div>
-            </div>
             </section>
+
+        <section class="products-grid" id="products-grid">
+            <p style="text-align: center; padding: 20px;">Loading products...</p>
+        </section>
 
     </main>
     
-    <script src="app.js"></script> 
+    <script>
+        // ใช้ Mock Data แทน API Call จริง
+        const MOCK_PRODUCTS = [
+            // Mock data structure based on initial app.js and images
+            { id: 101, name: 'Wireless Headphones', price: 2990, stock: 15, imageUrl: 'mock-headphone.jpg' },
+            { id: 102, name: 'Slim Monitor', price: 7500, stock: 8, imageUrl: 'mock-monitor.jpg' },
+            { id: 103, name: 'Gaming Laptop', price: 35990, stock: 5, imageUrl: 'mock-laptop.jpg' },
+            { id: 104, name: 'Gaming Console', price: 18900, stock: 3, imageUrl: 'mock-console.jpg' },
+            { id: 105, name: 'Webcam', price: 1200, stock: 22, imageUrl: 'mock-webcam.jpg' },
+            { id: 106, name: 'Portable Speaker', price: 4990, stock: 10, imageUrl: 'mock-speaker.jpg' },
+        ];
+
+        // ----------------------------------------------------------------
+        // 1. HEADER & WELCOME SECTION LOGIC (Login Status)
+        // ----------------------------------------------------------------
+
+        function updateHeaderAndWelcome() {
+            const username = sessionStorage.getItem('username'); // ตรวจสอบสถานะ Login
+            const isLogin = sessionStorage.getItem('isLogin') === 'true';
+            const linksContainer = document.getElementById('header-auth-links');
+            const welcomeSection = document.getElementById('welcome-section');
+
+            // --- Update Header Links ---
+            linksContainer.innerHTML = ''; // Clear existing links
+
+            if (isLogin) {
+                // Login แล้ว: แสดง order history, {username}, ตะกร้าสินค้า
+                linksContainer.innerHTML = `
+                    <a href="order-history.html" class="nav-link">Order History</a>
+                    <a href="profile.html" class="nav-link">${username}</a>
+                    <a href="cart.html" class="nav-link cart-icon">Cart</a> 
+                `;
+                // Update Welcome Message
+                welcomeSection.innerHTML = `
+                    <h1>Welcome back, ${username}!</h1>
+                    <p>Start browsing our latest products.</p>
+                `;
+            } else {
+                // ยังไม่ Login: แสดง Login, Register
+                linksContainer.innerHTML = `
+                    <a href="login.html" class="nav-link">Login</a>
+                    <a href="register.html" class="nav-link">Register</a>
+                `;
+                // Update Welcome Message
+                welcomeSection.innerHTML = `
+                    <h1>Welcome</h1>
+                    <p>Please log in to start shopping.</p>
+                `;
+            }
+        }
+
+        // ----------------------------------------------------------------
+        // 2. PRODUCT DISPLAY LOGIC (Mock Data)
+        // ----------------------------------------------------------------
+        function displayProducts() {
+            const gridElement = document.getElementById('products-grid');
+            gridElement.innerHTML = ''; // Clear loading message
+
+            // ใช้ Mock Data ในการแสดงผล
+            MOCK_PRODUCTS.forEach(product => {
+                const cardHtml = `
+                    <div class="product-card" onclick="window.location.href='product-detail.html?id=${product.id}'">
+                        <div class="product-image">
+                            <img src="${product.imageUrl || 'placeholder.png'}" alt="${product.name}" style="width: 100%; height: auto;">
+                        </div>
+                        <div class="product-info-grid">
+                            <div class="product-text-details">
+                                <p class="product-name">${product.name}</p>
+                                <p class="product-price">฿ ${product.price.toLocaleString()}</p>
+                                <p class="product-stock">in stock: x${product.stock || '?'}</p> 
+                            </div>
+                            <button class="add-to-cart-btn" data-product-id="${product.id}">Add</button>
+                        </div>
+                    </div>
+                `;
+                gridElement.innerHTML += cardHtml;
+            });
+        }
+
+        // ----------------------------------------------------------------
+        // 3. INITIALIZATION
+        // ----------------------------------------------------------------
+        document.addEventListener('DOMContentLoaded', () => {
+            updateHeaderAndWelcome();
+            displayProducts(); // แสดงสินค้าทั้งหมด
+            // NOTE: Add to Cart logic should be added here or in a centralized app.js if allowed
+        });
+    </script> 
 </body>
 </html>
