@@ -60,7 +60,7 @@
 5. **Restore ฐานข้อมูล (เฉพาะครั้งแรกเท่านั้น)**
    สำคัญ: รันคำสั่งนี้เฉพาะครั้งแรกที่ setup เท่านั้น หากเคย restore แล้ว ข้อมูลจะ[...]
    ```bash
-   docker exec -it mssql-server /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "MyStrong!Pass123" -C -Q "RESTORE DATABASE [SampleDB] FROM DISK = '/backups/SampleDB.bak' WITH MOVE 'SampleDB' TO '/[...]'
+   docker exec -it mssql-server /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "MyStrong!Pass123" -C -Q "RESTORE DATABASE [SampleDB] FROM DISK = '/backups/SampleDB.bak' WITH MOVE 'SampleDB' TO '/var/opt/mssql/data/SampleDB.mdf', MOVE 'SampleDB_log' TO '/var/opt/mssql/data/SampleDB_log.ldf', REPLACE"
    ```
    - หากเห็นข้อความว่า restore สำเร็จ แสดงว่าพร้อมใช้งานแล้ว!
 
