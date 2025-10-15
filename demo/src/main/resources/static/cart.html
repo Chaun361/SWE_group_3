@@ -12,7 +12,7 @@
     <header class="main-header">
         <div class="logo">WEBSITE NAME</div>
         <nav class="auth-links" id="header-auth-links">
-            </nav>
+        </nav>
     </header>
 
     <main class="container">
@@ -22,7 +22,7 @@
             
             <div class="cart-items" id="cart-items-container">
                 <p style="text-align: center;">Loading cart items...</p>
-                </div>
+            </div>
 
             <div class="cart-summary">
                 <h2>Order Summary</h2>
@@ -46,61 +46,82 @@
     </main>
     
     <script>
-    // API Endpoint ที่จะใช้ Mock JSON
-    const MOCK_CART_ENDPOINT = '/mock/cart.json'; 
-    const CHECKOUT_PAGE = 'checkout.html';
+    // ----------------------------------------------------------------
+    // 0. CONFIGURATION & MOCK DATA
+    // ----------------------------------------------------------------
     const LOGIN_PAGE = 'login.html';
+    const CHECKOUT_PAGE = 'checkout.html';
+    const MOCK_CART_ENDPOINT = 'mock/cart.json'; // ยังคงค่าเดิมไว้ แต่ไม่ได้ใช้ fetch()
+    
+    // Hardcoded Mock Data (ใช้สำหรับ Render โดยตรง, มี Subtotal/Price ครบ)
+    let MOCK_CART_ITEMS = [
+        { id: 501, productId: 103, name: "Gaming Laptop", price: 35990, quantity: 1, subtotal: 35990 },
+        { id: 502, productId: 101, name: "Wireless Headphones", price: 2990, quantity: 2, subtotal: 5980 },
+        { id: 503, productId: 104, name: "Gaming Console", price: 18900, quantity: 1, subtotal: 18900 }
+    ];
 
     // ----------------------------------------------------------------
-    // 1. HEADER LOGIC (Unchanged)
+    // 1. HEADER LOGIC (Task 5)
     // ----------------------------------------------------------------
     function updateHeader() {
-        // ... (โค้ด updateHeader เดิม) ...
         const username = sessionStorage.getItem('username');
         const isLogin = sessionStorage.getItem('isLogin') === 'true';
         const linksContainer = document.getElementById('header-auth-links');
+        const mockCartCount = sessionStorage.getItem('mockCartCount') || '0';
 
-        linksContainer.innerHTML = ''; 
-
-        if (isLogin) {
-            linksContainer.innerHTML = `
-                <a href="index.html" class="nav-link">HOME</a>
-                <a href="order-history.html" class="nav-link">Order History</a>
-                <a href="profile.html" class="nav-link">${username} 👤</a>
-                <a href="cart.html" class="nav-link cart-icon">🛒</a> 
-            `;
-        } else {
-            linksContainer.innerHTML = `
-                <a href="${LOGIN_PAGE}" class="nav-link">Login</a>
-                <a href="register.html" class="nav-link">Register</a>
-            `;
+        if (!isLogin || !username) { 
+            window.location.href = LOGIN_PAGE; 
+            return false; 
         }
+        
+        linksContainer.innerHTML = `
+            <a href="index.html" class="nav-link">HOME</a>
+            <a href="order-history.html" class="nav-link">Order History</a>
+            <a href="profile.html" class="nav-link">${username} 👤</a>
+            <a href="cart.html" class="nav-link cart-icon">🛒 (${mockCartCount})</a> 
+        `;
+        return true;
     }
 
     // ----------------------------------------------------------------
-    // 2. PRODUCT RENDERING AND CALCULATION LOGIC (Unchanged)
+    // 2. RENDERING LOGIC & RECALCULATION
     // ----------------------------------------------------------------
     
-    function renderCartItems(cartItems) {
-        // ... (โค้ด renderCartItems เดิม) ...
-        const container = document.getElementById('cart-items-container');
+    // Helper: คำนวณยอดรวมทั้งหมดและอัปเดต Summary Section
+    function calculateAndRenderSummary() {
+        const summarySubtotal = document.getElementById('summary-subtotal');
+        const summaryTotal = document.getElementById('summary-total');
+        
         let subtotal = 0;
+        const shippingFee = 0.00; 
+        
+        // คำนวณจาก MOCK_CART_ITEMS Global Array ที่ถูกอัปเดตแล้ว
+        MOCK_CART_ITEMS.forEach(item => {
+            subtotal += item.subtotal;
+        });
+
+        const total = subtotal + shippingFee;
+        
+        summarySubtotal.textContent = subtotal.toLocaleString() + ' ฿';
+        summaryTotal.textContent = total.toLocaleString() + ' ฿';
+
+        // จัดการปุ่ม Checkout
+        document.querySelector('.checkout-btn').disabled = (subtotal === 0);
+    }
+    
+    function renderCartItems(cartItems) {
+        const container = document.getElementById('cart-items-container');
         container.innerHTML = '';
+        MOCK_CART_ITEMS = cartItems; // อัปเดต Global Mock Data
 
         if (!cartItems || cartItems.length === 0) {
             container.innerHTML = '<p style="text-align: center; padding: 20px;">Your cart is empty.</p>';
-            // ปิดปุ่ม Checkout
-            document.querySelector('.checkout-btn').disabled = true;
-            document.getElementById('summary-subtotal').textContent = '0 ฿';
-            document.getElementById('summary-total').textContent = '0 ฿';
+            calculateAndRenderSummary();
             return;
         }
 
-        document.querySelector('.checkout-btn').disabled = false;
-
         cartItems.forEach(item => {
-            const itemTotal = item.price * item.quantity;
-            subtotal += itemTotal;
+            const itemTotal = item.price * item.quantity; // คำนวณอีกครั้งเพื่อความชัวร์
             
             const itemHtml = `
                 <div class="cart-item">
@@ -110,24 +131,78 @@
                         <p class="item-price">${item.price.toLocaleString()} ฿ / unit</p>
                     </div>
                     <div class="item-quantity">
-                        <input type="number" value="${item.quantity}" min="1" disabled>
+                        <input 
+                            type="number" 
+                            value="${item.quantity}" 
+                            min="1" 
+                            data-product-id="${item.productId}" 
+                            onchange="updateQuantity(this)"
+                        > 
                     </div>
-                    <div class="item-subtotal">
+                    <div class="item-subtotal" id="subtotal-${item.productId}">
                         ${itemTotal.toLocaleString()} ฿
                     </div>
-                    <button class="item-remove" onclick="alert('Item ${item.id} removed (Mock)')">&times;</button>
+                    <button class="item-remove" onclick="removeItem('${item.productId}')">&times;</button>
                 </div>
             `;
             container.innerHTML += itemHtml;
         });
         
-        document.getElementById('summary-subtotal').textContent = subtotal.toLocaleString() + ' ฿';
-        document.getElementById('summary-total').textContent = subtotal.toLocaleString() + ' ฿';
+        calculateAndRenderSummary();
+    }
+
+    // ----------------------------------------------------------------
+    // 3. CART ACTION LOGIC (Client-side Recalculation)
+    // ----------------------------------------------------------------
+    
+    // NEW LOGIC: คำนวณ Subtotal ใหม่เมื่อจำนวนเปลี่ยน
+    function updateQuantity(inputElement) {
+        const productId = parseInt(inputElement.getAttribute('data-product-id'));
+        const newQuantity = parseInt(inputElement.value);
+        
+        if (newQuantity < 1) {
+            alert("Quantity must be at least 1.");
+            inputElement.value = 1; 
+            return;
+        }
+
+        const itemIndex = MOCK_CART_ITEMS.findIndex(item => item.productId === productId);
+        
+        if (itemIndex > -1) {
+            const item = MOCK_CART_ITEMS[itemIndex];
+            
+            // 1. อัปเดต Quantity และ Subtotal ใน Mock Array
+            item.quantity = newQuantity;
+            item.subtotal = item.price * newQuantity; 
+            
+            // 2. อัปเดต Subtotal ของรายการสินค้านั้นบนหน้าจอ
+            document.getElementById(`subtotal-${productId}`).textContent = item.subtotal.toLocaleString() + ' ฿';
+            
+            // 3. คำนวณยอดรวมทั้งหมดใหม่
+            calculateAndRenderSummary(); 
+
+            alert(`Mock API: Quantity updated locally. Total recalculated.`);
+        }
+    }
+
+    // NEW LOGIC: ลบสินค้า
+    function removeItem(productIdStr) {
+        const productId = parseInt(productIdStr);
+        if (confirm(`Are you sure you want to remove Product ${productId}? (Mock)`)) {
+            
+            // 1. ลบสินค้าออกจาก Mock Array
+            MOCK_CART_ITEMS = MOCK_CART_ITEMS.filter(item => item.productId !== productId);
+            
+            // 2. Rerender ทั้ง Cart และ Summary
+            renderCartItems(MOCK_CART_ITEMS); 
+
+            alert(`Mock API: Item ${productId} removed. Cart updated.`);
+        }
     }
 
 
     // ----------------------------------------------------------------
-    // 3. DATA FETCHING (Mock Logic - Revised for Task 6)
+    // 4. DATA FETCHING (Using Mock Data)
     // ----------------------------------------------------------------
     async function fetchAndRenderCart() {
         const userId = sessionStorage.getItem('userId');
@@ -135,54 +210,29 @@
         const container = document.getElementById('cart-items-container');
 
         if (!isLogin || !userId) {
-            // ป้องกันการเข้าถึงหากไม่ได้ Login
-            alert('Please log in to view your cart.');
             window.location.href = LOGIN_PAGE; 
             return;
         }
 
-        try {
-            // **Mock Logic สำหรับเงื่อนไข 204 และ 404**
-            // ในสถานการณ์จริง API จะจัดการ response status
-            // แต่เนื่องจากใช้ Mock JSON file เราจะจำลองสถานะด้วยเงื่อนไข userId
-            
-            // Scenario 1: ตะกร้าว่าง (Mock 204)
-            if (userId === '999') { 
-                 renderCartItems([]); // ส่ง array ว่างไป render
-                 return;
-            }
-
-            // Scenario 2: ไม่พบตะกร้า (Mock 404)
-            if (userId === '000') {
-                 container.innerHTML = '<p style="color: red; text-align: center; padding: 20px;">Error 404: Cart not found for this user.</p>';
-                 return;
-            }
-
-            // Scenario 3: ตะกร้ามีสินค้า (Mock 200) - ดึงจาก MOCK_CART_ENDPOINT
-            const response = await fetch(MOCK_CART_ENDPOINT); 
-            
-            if (!response.ok) {
-                // หากดึงข้อมูล Mock ไม่ได้ ให้แจ้ง Error
-                throw new Error(`Failed to fetch cart data: ${response.status}`);
-            }
-
-            const cartData = await response.json(); 
-            
-            renderCartItems(cartData); 
-
-        } catch (error) {
-            console.error('Cart Load Error:', error);
-            container.innerHTML = 
-                '<p style="color: red; text-align: center; padding: 20px;">Could not load cart data. Please check Mock file/Server.</p>';
+        // Logic Mock 404/204
+        if (userId === '999') { renderCartItems([]); return; }
+        if (userId === '000') { 
+            container.innerHTML = '<p style="color: red; text-align: center; padding: 20px;">Error 404: Cart not found for this user.</p>';
+            return;
         }
+        
+        // Scenario 3: ตะกร้ามีสินค้า (ใช้ MOCK_DATA_TO_RENDER)
+        renderCartItems(MOCK_CART_ITEMS); 
     }
 
     // ----------------------------------------------------------------
-    // 4. INITIALIZATION
+    // 5. INITIALIZATION
     // ----------------------------------------------------------------
     document.addEventListener('DOMContentLoaded', () => {
-        updateHeader();
-        fetchAndRenderCart();
+        const loggedIn = updateHeader();
+        if (loggedIn) {
+            fetchAndRenderCart();
+        }
     });
 </script>
 </body>
