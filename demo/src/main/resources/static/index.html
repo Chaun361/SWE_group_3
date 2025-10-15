@@ -15,70 +15,94 @@
     </header>
 
     <main class="container">
-        <section class="welcome-section" id="welcome-section">
-            <h1>Welcome</h1>
-            </section>
+    
+    <section class="welcome-section" id="welcome-section">
+        <h1>Welcome</h1>
+        </section>
 
-        <section class="products-grid" id="products-grid">
-            <p style="text-align: center; padding: 20px;">Loading products...</p>
+    <h2 class="products-title">Products</h2> 
+    
+    <section class="products-grid" id="products-grid">
         </section>
 
     </main>
 <script>
-    // API Endpoint และค่าคงที่
-    const ADD_TO_CART_MOCK_ENDPOINT = '/mock/add_to_cart.json'; 
-    const ADD_TO_CART_API = '/api/cart/items'; 
-    const API_PRODUCT_ENDPOINT = '/mock/products.json'; // ใช้ Mock JSON file
-    const QUANTITY = 1; 
+    // ----------------------------------------------------------------
+    // 0. CONFIGURATION & MOCK DATA
+    // ----------------------------------------------------------------
     const LOGIN_PAGE = 'login.html';
+    // แก้ไขเส้นทาง Mock JSON ให้ไม่มี / ข้างหน้า เพื่อให้ Live Server อ่านได้ง่ายขึ้น
+    const API_PRODUCT_ENDPOINT = 'mock/products.json'; 
+    const ADD_TO_CART_MOCK_ENDPOINT = 'mock/add_to_cart.json'; 
+    
+    const QUANTITY = 1; 
 
     // Global variable to mock the cart count (สำหรับการอัปเดต Cart Count ทันที)
     let currentCartCount = 0; 
 
+    // Hardcoded Fallback Data (ใช้ในกรณีที่ Mock JSON โหลดไม่สำเร็จ)
+    // ใช้โครงสร้าง JSON ใหม่: productId, productName, stockQuantity
+    const FALLBACK_PRODUCTS = [
+        { productId: 1, productName: 'Wireless Mouse', price: 450.0, stockQuantity: 30, imageUrl: '1.jpg' },
+        { productId: 2, productName: 'Mechanical Keyboard', price: 1250.0, stockQuantity: 20, imageUrl: '2.jpg' },
+        { productId: 4, productName: 'Gaming Headset', price: 990.0, stockQuantity: 25, imageUrl: '4.jpg' },
+        { productId: 5, productName: 'USB-C Charger 65W', price: 799.0, stockQuantity: 40, imageUrl: '5.jpg' },
+        { productId: 6, productName: '27-inch 4K Monitor', price: 8990.0, stockQuantity: 8, imageUrl: '5.jpg' },
+        { productId: 7, productName: 'Laptop Stand Adjustable', price: 650.0, stockQuantity: 18, imageUrl: '5.jpg' },
+        { productId: 8, productName: 'USB-C Charger 65W', price: 3290.0, stockQuantity: 12, imageUrl: '5.jpg' },
+        { productId: 9, productName: 'Bluetooth Speaker', price: 1150.0, stockQuantity: 22, imageUrl: '5.jpg' },
+    ];
+
     // ----------------------------------------------------------------
-    // 1. HEADER & WELCOME SECTION LOGIC (Task 3/5)
+    // 1. HEADER & WELCOME SECTION LOGIC (Task 3, T2 - Cart Count)
     // ----------------------------------------------------------------
 
     function updateHeaderAndWelcome() {
-        const username = sessionStorage.getItem('username'); // ตรวจสอบสถานะ Login
+        const username = sessionStorage.getItem('username');
         const isLogin = sessionStorage.getItem('isLogin') === 'true';
         const linksContainer = document.getElementById('header-auth-links');
         const welcomeSection = document.getElementById('welcome-section');
-
+        
         linksContainer.innerHTML = ''; 
 
         if (isLogin) {
-            // Login แล้ว: แสดง order history, {username}, ตะกร้าสินค้า (พร้อม Cart Count)
+            // ดึงค่า Cart Count ที่ถูกบันทึกไว้ใน Session (หรือ 0)
+            const mockCartCount = sessionStorage.getItem('mockCartCount') || '0';
+            currentCartCount = parseInt(mockCartCount);
+            
+            // Logged In: ใช้ดีไซน์ Header ล่าสุด (ตามภาพ 3cc95b.png)
             linksContainer.innerHTML = `
-                <a href="order-history.html" class="nav-link">Order History</a>
-                <a href="profile.html" class="nav-link">${username}</a>
-                <a href="cart.html" class="nav-link cart-icon">🛒 (<span id="cart-count">0</span>)</a> 
+                <a href="index.html" class="nav-link">HOME</a>
+                <a href="order-history.html" class="nav-link">order history</a>
+                <a href="profile.html" class="nav-link">${username} 👤</a>
+                <a href="cart.html" class="nav-link cart-icon">🛒 (<span id="cart-count">${mockCartCount}</span>)</a> 
             `;
-            // Update Welcome Message
+            
+            // Update Welcome Message (ตามดีไซน์ล่าสุด)
             welcomeSection.innerHTML = `
-                <h1>Welcome back, ${username}!</h1>
-                <p>Start browsing our latest products.</p>
+                <h1>Welcome</h1>
+                <p>description</p>
             `;
-             // ดึงจำนวนสินค้าในตะกร้าทันทีที่ Header ถูก Render
-            fetchCartCount(); 
+
         } else {
-            // ยังไม่ Login: แสดง Login, Register
+            // Logged Out (Login/Register)
             linksContainer.innerHTML = `
                 <a href="${LOGIN_PAGE}" class="nav-link">Login</a>
                 <a href="register.html" class="nav-link">Register</a>
             `;
-            // Update Welcome Message
+            // Update Welcome Message (ตามดีไซน์ล่าสุด)
             welcomeSection.innerHTML = `
                 <h1>Welcome</h1>
-                <p>Please log in to start shopping.</p>
+                <p>description</p>
             `;
         }
     }
 
+
     // ----------------------------------------------------------------
-    // 2. PRODUCT DISPLAY LOGIC (Task 4 - Revised for new JSON structure)
+    // 2. PRODUCT FETCHING & RENDERING LOGIC (Task 4)
     // ----------------------------------------------------------------
-    
+
     function renderProducts(products) {
         const gridElement = document.getElementById('products-grid');
         gridElement.innerHTML = ''; 
@@ -86,16 +110,15 @@
         products.forEach(product => {
             // ใช้ชื่อฟิลด์ใหม่: productId, productName, stockQuantity
             const cardHtml = `
-        <div class="product-card" onclick="window.location.href='product-detail.html?id=${product.productId}'">
-        <div class="product-image">
-            <img src="images/${product.imageUrl || 'placeholder.png'}" alt="${product.productName}" style="width: 100%; height: auto;">
-        </div>
-        </div>
+                <div class="product-card" onclick="window.location.href='product-detail.html?id=${product.productId}'">
+                    <div class="product-image">
+                        <img src="images/${product.imageUrl || 'placeholder.png'}" alt="${product.productName}">
+                    </div>
                     <div class="product-info-grid">
                         <div class="product-text-details">
-                            <p class="product-name">${product.productName}</p>
-                            <p class="product-price">฿ ${product.price.toLocaleString()}</p>
-                            <p class="product-stock">in stock: x${product.stockQuantity || '?'}</p> 
+                            <p class="product-name">productname</p> 
+                            <p class="product-price">2000 Baht</p>
+                            <p class="product-stock">In stock: x10</p> 
                         </div>
                         <button class="add-to-cart-btn" data-product-id="${product.productId}">Add</button>
                     </div>
@@ -107,101 +130,76 @@
 
     async function fetchAndDisplayProducts() {
         const gridElement = document.getElementById('products-grid');
-        gridElement.innerHTML = '<p style="text-align: center; padding: 20px;">Fetching product data...</p>';
-
-        // Hardcoded Fallback Data (ใช้สำหรับกรณีที่ fetch ไฟล์ Mock ล้มเหลว)
-        const FALLBACK_PRODUCTS = [
-             { "productId": 1, "productName": "Wireless Mouse", "price": 450.0, "stockQuantity": 30, "imageUrl": "mouse.jpg" },
-             { "productId": 2, "productName": "Mechanical Keyboard", "price": 1250.0, "stockQuantity": 20, "imageUrl": "keybord.jpg" },
-             { "productId": 4, "productName": "Gaming Headset", "price": 990.0, "stockQuantity": 25, "imageUrl": "headphone.jpg" },
-             { "productId": 5, "productName": "USB-C Charger 65W", "price": 799.0, "stockQuantity": 40, "imageUrl": "adapter.jpg" },
-             { "productId": 6, "productName": "27-inch 4K Monitor", "price": 8990.0, "stockQuantity": 8, "imageUrl": "monitor.jpg" },
-             { "productId": 7, "productName": "Laptop Stand Adjustable", "price": 650.0, "stockQuantity": 18, "imageUrl": "stand-lap.jpg" },
-             { "productId": 8, "productName": "External SSD 1TB", "price": 3290.0, "stockQuantity": 12, "imageUrl": "intel core.jpg" },
-             { "productId": 9, "productName": "Bluetooth Speaker", "price": 1150.0, "stockQuantity": 22, "imageUrl": "speaker.jpg" },
-        ];
+        // แสดงข้อความ Loading
+        gridElement.innerHTML = '<p style="text-align: center; padding: 20px;">Loading products...</p>';
 
         try {
-            // ลองใช้ fetch จาก Mock JSON file
-            const response = await fetch(API_PRODUCT_ENDPOINT); 
+            // Fetch Mock Data
+            const response = await fetch(API_PRODUCT_ENDPOINT);
             
-            if (!response.ok) {
-                throw new Error(`Failed to fetch products: ${response.status}`);
-            }
+            if (!response.ok) throw new Error('Failed to fetch mock products.');
 
             const products = await response.json(); 
-            renderProducts(products); 
-            
-        } catch (error) {
-            console.error('Error loading products from file. Using hardcoded fallback.', error);
-            
-            // ใช้ Hardcoded Fallback Data
-            gridElement.innerHTML = '<p style="color: orange; padding: 10px;">Could not fetch product file. Displaying fallback data.</p>';
-            renderProducts(FALLBACK_PRODUCTS); 
+            renderProducts(products);
 
+        } catch (error) {
+            console.error('Product Fetch Error (CORS/Pathing issue). Using Fallback:', error);
+            // Fallback Logic: ใช้ข้อมูล Mock ที่กำหนดไว้
+            gridElement.innerHTML = '<p style="color: orange; text-align: center; padding: 10px;">Could not fetch mock data. Displaying fallback products.</p>';
+            renderProducts(FALLBACK_PRODUCTS); 
         }
     }
-
+    
     // ----------------------------------------------------------------
     // 3. CART COUNT LOGIC (Task 2)
     // ----------------------------------------------------------------
     
     // ฟังก์ชันดึงจำนวนสินค้าในตะกร้า (Mock Logic)
     async function fetchCartCount() {
-        const userId = sessionStorage.getItem('userId');
         const countElement = document.getElementById('cart-count');
-        
-        if (!userId || !countElement) return;
+        if (!countElement) return;
 
-        // ใช้ค่าจาก currentCartCount ที่ถูกอัปเดตด้วย Add to Cart
-        const count = currentCartCount; 
-        
-        countElement.textContent = count.toString(); 
+        // ดึงค่าจาก Global Variable ที่อัปเดตผ่าน Add to Cart
+        countElement.textContent = currentCartCount.toString(); 
     }
 
     // ----------------------------------------------------------------
     // 4. ADD TO CART LOGIC (Task 1)
     // ----------------------------------------------------------------
 
-    async function handleAddToCart(e) {
+    async function handleAddToCart(button) { // รับ Element ของปุ่มโดยตรง
         const userId = sessionStorage.getItem('userId');
         const isLogin = sessionStorage.getItem('isLogin') === 'true';
 
-        // 1. ตรวจสอบสถานะ Login
         if (!isLogin || !userId) {
             alert('Please log in to add items to your cart.');
+            window.location.href = LOGIN_PAGE;
             return;
         }
 
-        const button = e.target;
         const productId = button.getAttribute('data-product-id');
-
         if (!productId) return;
 
         const requestBody = {
             userId: userId,
-            productId: parseInt(productId), 
+            productId: parseInt(productId),
             quantity: QUANTITY
         }; 
 
         try {
-            // ใช้ Mock Logic แทน Fetch จริง 
+            // Mock API Call
             const response = await fetch(ADD_TO_CART_MOCK_ENDPOINT);
             const data = await response.json();
             
             // --- Mock Logic: จำลองเงื่อนไข Success/Error ---
-            
-            // Mock Error Scenario (สมมติว่าถ้า productId เป็น 9 จะ Out of Stock)
-            if (productId === '9') { 
-                alert("Product not found / Out of stock"); 
-                return;
-            }
-            
             if (data.success) {
                 alert(`Product added to cart successfully! (Product ID: ${productId})`); 
                 
-                // อัปเดต Cart Count ทันที
+                // Update Mock Cart Count (Task 2)
                 currentCartCount += QUANTITY; 
+                sessionStorage.setItem('mockCartCount', currentCartCount.toString()); 
+                
+                // Update Header Display ทันที
                 fetchCartCount(); 
 
             } else {
@@ -209,7 +207,6 @@
             }
 
         } catch (error) {
-            console.error('Add to Cart Error:', error);
             alert('Server/Mock connection error. Cannot add item to cart.');
         }
     }
@@ -221,20 +218,22 @@
         if (productsGrid) {
             productsGrid.addEventListener('click', (e) => {
                 if (e.target.classList.contains('add-to-cart-btn')) {
+                    // **แก้ไขแล้ว:** ส่ง Element ของปุ่มไป
                     e.stopPropagation(); 
-                    handleAddToCart(e);
+                    handleAddToCart(e.target); 
                 }
             });
         }
     }
-    
+
+
     // ----------------------------------------------------------------
     // 5. INITIALIZATION
     // ----------------------------------------------------------------
+
     document.addEventListener('DOMContentLoaded', () => {
         updateHeaderAndWelcome();
         fetchAndDisplayProducts(); 
-        setupAddToCartHandlers(); 
     });
 </script>
 </body>

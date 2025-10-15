@@ -102,6 +102,7 @@ body {
     display: grid; /* IMPORTANT: Needs display: grid to function */
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
     gap: 30px; 
+    padding: 20px 0;
 }
 
 .product-card {
@@ -162,6 +163,11 @@ body {
 
 .add-to-cart-btn:hover {
     background-color: #333;
+}
+.products-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 20px;
 }
 
 
