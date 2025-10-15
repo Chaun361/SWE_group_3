@@ -256,30 +256,7 @@ body {
     font-weight: 500;
     display: none; 
 }
-/*
-    -------------------------------------------
-    CUSTOM STYLES FOR REGISTER.HTML (Task 7)
-    -------------------------------------------
-*/
-.register-box {
-    max-width: 550px !important; /* ขยายความกว้างของกล่องลงทะเบียน */
-}
 
-/* หากต้องการให้ textarea ใน register form ดูดีขึ้น */
-.form-group textarea {
-    resize: vertical;
-}
-/* เพิ่มสไตล์ที่เกี่ยวข้องกับการแสดงผลฟอร์มและข้อความแจ้งเตือน */
-/* Note: เนื่องจาก styles.css หลักมี .form-group input, เราจึงเพิ่ม textarea ให้สอดคล้อง */
-.form-group textarea {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 16px;
-    font-family: 'Kanit', sans-serif;
-    resize: vertical; 
-}
 /*
     -------------------------------------------
     10. ORDER CONFIRMATION PAGE STYLES (Moved from styles.css)
