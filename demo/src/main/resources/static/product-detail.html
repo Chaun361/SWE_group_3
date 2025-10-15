@@ -43,7 +43,7 @@
             
             // Render Logged-in Header
             linksContainer.innerHTML = `
-                <a href="index.html" class="nav-link">home</a>
+                <a href="index.html" class="nav-link">HOME</a>
                 <a href="order-history.html" class="nav-link">order history</a>
                 <a href="profile.html" class="nav-link">${username} 👤</a>
                 <a href="cart.html" class="nav-link cart-icon">🛒 (<span id="cart-count">${mockCartCount}</span>)</a> 
@@ -95,9 +95,6 @@
             const container = document.getElementById('product-detail-content');
             
             container.innerHTML = `
-                <div class="breadcrumb">
-                    <a href="index.html">Home</a> &gt; <span>${product.productName}</span>
-                </div>
                 <div class="detail-content">
                     <div class="product-image-large">
                         <img src="images/${product.imageUrl || 'placeholder.png'}" alt="${product.productName}">

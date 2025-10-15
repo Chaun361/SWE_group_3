@@ -9,7 +9,7 @@
     max-width: 550px; 
 }
 
-/* ปรับปรุง: สไตล์สำหรับ textarea (Address) */
+/* ปรับปรุง: สไตล์สำหรับ textarea (Address) ให้สามารถปรับขนาดได้ */
 .form-group textarea {
-    resize: vertical; /* อนุญาตให้ผู้ใช้ปรับความสูงได้ */
+    resize: vertical; 
 }

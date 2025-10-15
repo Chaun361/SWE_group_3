@@ -51,9 +51,9 @@
     // ----------------------------------------------------------------
     const LOGIN_PAGE = 'login.html';
     const CHECKOUT_PAGE = 'checkout.html';
-    const MOCK_CART_ENDPOINT = 'mock/cart.json'; // ยังคงค่าเดิมไว้ แต่ไม่ได้ใช้ fetch()
     
-    // Hardcoded Mock Data (ใช้สำหรับ Render โดยตรง, มี Subtotal/Price ครบ)
+    // Hardcoded Mock Data (ใช้สำหรับ Render โดยตรง, มีราคาและ quantity ครบ)
+    // NOTE: เปลี่ยนไปใช้ let เพื่อให้ Logic สามารถแก้ไขข้อมูลใน Array นี้ได้
     let MOCK_CART_ITEMS = [
         { id: 501, productId: 103, name: "Gaming Laptop", price: 35990, quantity: 1, subtotal: 35990 },
         { id: 502, productId: 101, name: "Wireless Headphones", price: 2990, quantity: 2, subtotal: 5980 },
@@ -93,9 +93,9 @@
         const summaryTotal = document.getElementById('summary-total');
         
         let subtotal = 0;
-        const shippingFee = 0.00; 
+        const shippingFee = 0.00; // Mock Shipping Fee (Free)
         
-        // คำนวณจาก MOCK_CART_ITEMS Global Array ที่ถูกอัปเดตแล้ว
+        // คำนวณจาก Global Array ที่ถูกอัปเดตแล้ว
         MOCK_CART_ITEMS.forEach(item => {
             subtotal += item.subtotal;
         });
@@ -121,7 +121,7 @@
         }
 
         cartItems.forEach(item => {
-            const itemTotal = item.price * item.quantity; // คำนวณอีกครั้งเพื่อความชัวร์
+            const itemTotal = item.price * item.quantity;
             
             const itemHtml = `
                 <div class="cart-item">
@@ -155,7 +155,7 @@
     // 3. CART ACTION LOGIC (Client-side Recalculation)
     // ----------------------------------------------------------------
     
-    // NEW LOGIC: คำนวณ Subtotal ใหม่เมื่อจำนวนเปลี่ยน
+    // NEW LOGIC: คำนวณ Subtotal ใหม่เมื่อจำนวนเปลี่ยน (แก้ปัญหา Order Summary ไม่ตอบสนอง)
     function updateQuantity(inputElement) {
         const productId = parseInt(inputElement.getAttribute('data-product-id'));
         const newQuantity = parseInt(inputElement.value);
@@ -196,6 +196,11 @@
             // 2. Rerender ทั้ง Cart และ Summary
             renderCartItems(MOCK_CART_ITEMS); 
 
+            // อัปเดต Cart Count ใน Session Storage (สำหรับ Header)
+            const newCartCount = MOCK_CART_ITEMS.reduce((sum, item) => sum + item.quantity, 0);
+            sessionStorage.setItem('mockCartCount', newCartCount.toString());
+            updateHeader(); // Rerender header เพื่ออัปเดต Cart Count
+
             alert(`Mock API: Item ${productId} removed. Cart updated.`);
         }
     }
@@ -207,7 +212,6 @@
     async function fetchAndRenderCart() {
         const userId = sessionStorage.getItem('userId');
         const isLogin = sessionStorage.getItem('isLogin') === 'true';
-        const container = document.getElementById('cart-items-container');
 
         if (!isLogin || !userId) {
             window.location.href = LOGIN_PAGE; 
@@ -217,7 +221,7 @@
         // Logic Mock 404/204
         if (userId === '999') { renderCartItems([]); return; }
         if (userId === '000') { 
-            container.innerHTML = '<p style="color: red; text-align: center; padding: 20px;">Error 404: Cart not found for this user.</p>';
+            document.getElementById('cart-items-container').innerHTML = '<p style="color: red; text-align: center; padding: 20px;">Error 404: Cart not found for this user.</p>';
             return;
         }
         
