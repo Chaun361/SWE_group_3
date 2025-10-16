@@ -1,0 +1,7 @@
+{
+  "timestamp": "2025-10-16T11:30:00.000+00:00",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Adding 1 exceeds available stock. Max quantity: 10",
+  "path": "/api/cart/add"
+}
