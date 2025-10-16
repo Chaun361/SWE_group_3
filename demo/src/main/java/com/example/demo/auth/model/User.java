@@ -8,18 +8,22 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "UserID")
     private Long userId;
 
-    @Column(nullable = false)
+    @Column(name = "FullName", nullable = false)
     private String fullName;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "Username", nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false)
+    @Column(name = "Password", nullable = false)
     private String password;
 
+    @Column(name = "Phone")
     private String phone;
+
+    @Column(name = "UserAddress")
     private String userAddress;
 
     public User() {}
