@@ -1,6 +1,5 @@
 package com.example.demo.Cart.model;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,72 +12,60 @@ import jakarta.persistence.Table;
 public class CartProductModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    // แก้ไข Naming: Productid -> productId
-    @Column(name = "product_id")
-    private Long productId; 
-    
-    // แก้ไข Naming: ProductName -> name
-    @Column(name = "product_name")
-    private String name; 
-    
-    @Column(name = "description")
-    private String description;
-    
-    @Column(name = "price")
-    private double price;
-    
-    @Column(name = "stock_quantity")
-    private int stockQuantity;
+    private long Productid;
+    private String ProductName;
+    private String Description;
+    private double Price;
+    private int StockQuantity;
 
     public CartProductModel() {
     }
 
-    public CartProductModel(Long productId, String name, String description, double price, int stockQuantity) {
-        this.productId = productId;
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.stockQuantity = stockQuantity;
+    public CartProductModel(long id, String productName, String description, double price, int stockQuantity) {
+        this.Productid = id;
+        ProductName = productName;
+        Description = description;
+        Price = price;
+        StockQuantity = stockQuantity;
     }
 
-    // แก้ไข Getter/Setter ให้เป็น Camel Case
-    public Long getProductId() {
-        return productId;
+    public long getId() {
+        return Productid;
     }
 
-    public void setProductId(Long productId) {
-        this.productId = productId;
+    public void setId(long id) {
+        this.Productid = id;
     }
 
-    public String getName() {
-        return name;
+    public String getProductName() {
+        return ProductName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setProductName(String productName) {
+        ProductName = productName;
     }
 
     public String getDescription() {
-        return description;
+        return Description;
     }
 
     public void setDescription(String description) {
-        this.description = description;
+        Description = description;
     }
 
     public double getPrice() {
-        return price;
+        return Price;
     }
 
     public void setPrice(double price) {
-        this.price = price;
+        Price = price;
     }
 
     public int getStockQuantity() {
-        return stockQuantity;
+        return StockQuantity;
     }
 
     public void setStockQuantity(int stockQuantity) {
-        this.stockQuantity = stockQuantity;
+        StockQuantity = stockQuantity;
     }
 }

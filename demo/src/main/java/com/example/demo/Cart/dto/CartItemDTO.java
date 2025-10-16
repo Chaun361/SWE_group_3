@@ -31,7 +31,7 @@ public class CartItemDTO {
     public static CartItemDTO fromEntity(CartItemsModel item, CartProductModel product) {
         CartItemDTO dto = new CartItemDTO();
         dto.setProductId(item.getProductId());
-        dto.setProductName(product.getName()); // ใช้ getName() ที่ถูกต้อง
+        dto.setProductName(product.getProductName()); 
         dto.setQuantity(item.getQuantity());
         dto.setItemPrice(product.getPrice());
         dto.setItemTotalPrice(item.getQuantity() * product.getPrice());
