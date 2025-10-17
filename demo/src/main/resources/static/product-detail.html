@@ -24,7 +24,20 @@
     <script>
         const LOGIN_PAGE = 'login.html';
         const ADD_TO_CART_MOCK_ENDPOINT = 'mock/add_to_cart.json'; 
-        const API_PRODUCT_ENDPOINT = 'mock/products.json'; // ต้องมีไฟล์นี้อยู่
+        // Endpoint ที่ถูกต้อง: ชี้ไปที่ Backend Server
+        const API_PRODUCT_ENDPOINT = 'http://localhost:8080/api/products'; 
+        
+        // ** NEW: MAP Product ID ไปยังชื่อไฟล์รูปภาพจริง **
+        const IMAGE_MAP = {
+            "1": "1.jpg", 
+            "2": "2.jpg", 
+            "4": "4.jpg", 
+            "5": "5.jpg", 
+            "6": "6.jpg", 
+            "7": "7.jpg", 
+            "8": "8.jpg",
+            "9": "9.jpg"
+        };
         
         // ----------------------------------------------------------------
         // 1. HEADER & LOGIN CHECK
@@ -33,7 +46,6 @@
             const username = sessionStorage.getItem('username');
             const isLogin = sessionStorage.getItem('isLogin') === 'true';
             const linksContainer = document.getElementById('header-auth-links');
-            // ดึงค่า Cart Count ล่าสุดจาก Session Storage
             const mockCartCount = sessionStorage.getItem('mockCartCount') || '0'; 
 
             if (!isLogin || !username) {
@@ -41,7 +53,6 @@
                 return false; 
             }
             
-            // Render Logged-in Header
             linksContainer.innerHTML = `
                 <a href="index.html" class="nav-link">HOME</a>
                 <a href="order-history.html" class="nav-link">order history</a>
@@ -52,7 +63,7 @@
         }
 
         // ----------------------------------------------------------------
-        // 2. RENDER AND FETCH LOGIC
+        // 2. RENDER AND FETCH LOGIC (FINAL FIX)
         // ----------------------------------------------------------------
         function getProductIdFromUrl() {
             const params = new URLSearchParams(window.location.search);
@@ -69,59 +80,73 @@
             }
 
             try {
-                // Mock Fetch: ดึงข้อมูลสินค้าทั้งหมดแล้วหาชิ้นเดียว
                 const response = await fetch(API_PRODUCT_ENDPOINT); 
-                if (!response.ok) throw new Error('Failed to fetch mock products.');
+                if (!response.ok) throw new Error('Failed to fetch product list.');
 
                 const allProducts = await response.json(); 
-                // ค้นหาสินค้าตาม productId
-                const product = allProducts.find(p => p.productId.toString() === productId);
+                
+                // *** FIXED: Logic การค้นหาสินค้า: รองรับทั้งฟิลด์ ID และ productId ***
+                const product = allProducts.find(p => 
+                    (p.id && p.id.toString() === productId) || 
+                    (p.productId && p.productId.toString() === productId)
+                );
 
                 if (!product) {
-                    container.innerHTML = `<p style="color: red; text-align: center; padding: 50px;">Error: Product ID ${productId} not found.</p>`;
+                    container.innerHTML = `<p style="color: red; text-align: center; padding: 50px;">Error: Product ID ${productId} not found on the server.</p>`;
                     return;
                 }
                 
-                // Render Detail
                 renderDetail(product);
 
             } catch (error) {
                 console.error('Detail Load Error:', error);
-                container.innerHTML = `<p style="color: red; text-align: center; padding: 50px;">Error loading details: ${error.message}. Check products.json file path.</p>`;
+                container.innerHTML = `<p style="color: red; text-align: center; padding: 50px;">Error loading details: Check API and Data structure. Error: ${error.message || 'API connection failed.'}</p>`;
             }
         }
         
         function renderDetail(product) {
             const container = document.getElementById('product-detail-content');
             
+            // ใช้ OR Logic เพื่อดึงชื่อฟิลด์ที่ถูกต้อง (รองรับชื่อฟิลด์จาก Backend JSON)
+            const name = product.productName || product.name || 'N/A';
+            const price = product.price || 0;
+            const stock = product.stockQuantity || product.stock || 0;
+            const productId = product.productId || product.id || 'N/A';
+            const description = product.description || product.desc || 'No product description is available from the server.'; // ดึงคำอธิบาย
+            
+            // *** FINAL FIX: ดึงชื่อไฟล์รูปภาพจาก IMAGE_MAP ***
+            const imageUrl = IMAGE_MAP[productId.toString()] || 'placeholder.png'; 
+            
             container.innerHTML = `
                 <div class="detail-content">
                     <div class="product-image-large">
-                        <img src="images/${product.imageUrl || 'placeholder.png'}" alt="${product.productName}">
+                        <img src="images/${imageUrl}" alt="${name}">
                     </div>
                     <div class="product-info-detail">
-                        <h1>${product.productName}</h1>
-                        <p class="product-sku">SKU: PD${product.productId} | Stock: ${product.stockQuantity}</p>
+                        <h1>${name}</h1>
+                        <p class="product-sku">SKU: PD${productId} | Stock: ${stock}</p>
                         
                         <div class="detail-description">
                             <h3>Product Description</h3>
-                            <p>This product is a ${product.productName} with ${product.stockQuantity} units remaining. Key specifications include:</p>
+                            <p>${description}</p>
+                            
+                            <h3>Key Specifications</h3>
                             <ul>
-                                <li>Price: ฿ ${product.price.toLocaleString()}</li>
-                                <li>High Quality Material (Mock Detail)</li>
-                                <li>Easy Installation (Mock Detail)</li>
+                                <li>Price: ฿ ${price.toLocaleString()}</li>
+                                <li>Stock Status: ${stock > 0 ? 'In Stock' : 'Out of Stock'}</li>
+                                <li>ID: ${productId}</li>
                             </ul>
                         </div>
 
                         <div class="detail-actions">
-                            <p class="detail-price">฿ ${product.price.toLocaleString()}</p>
+                            <p class="detail-price">฿ ${price.toLocaleString()}</p>
                             
                             <div class="quantity-selector">
                                 <label for="quantity">Quantity:</label>
-                                <input type="number" id="quantity" value="1" min="1" max="${product.stockQuantity}">
+                                <input type="number" id="quantity" value="1" min="1" max="${stock}">
                             </div>
 
-                            <button class="add-to-cart-btn large" data-product-id="${product.productId}" id="detail-add-btn">
+                            <button class="add-to-cart-btn large" data-product-id="${productId}" id="detail-add-btn">
                                 Add to Cart
                             </button>
                         </div>
@@ -129,12 +154,11 @@
                 </div>
             `;
             
-            // Setup Add to Cart Handler for the new button
             document.getElementById('detail-add-btn').addEventListener('click', handleDetailAddToCart);
         }
 
         // ----------------------------------------------------------------
-        // 3. ADD TO CART LOGIC
+        // 3. ADD TO CART LOGIC (Mock Logic)
         // ----------------------------------------------------------------
         async function handleDetailAddToCart(e) {
             const userId = sessionStorage.getItem('userId');
@@ -151,26 +175,20 @@
 
             if (!productId) return;
 
-            const requestBody = {
-                userId: userId,
-                productId: parseInt(productId),
-                quantity: quantity
-            }; 
-
+            // Mock API Logic
             try {
-                // Mock API Logic
                 const response = await fetch(ADD_TO_CART_MOCK_ENDPOINT);
                 const data = await response.json();
                 
                 if (data.success) {
                     alert(`${quantity} of Product ID ${productId} added to cart successfully!`); 
                     
-                    // Update Mock Cart Count (เชื่อมโยงกับหน้า Cart และ Index)
+                    // Update Mock Cart Count (Task 2 Logic)
                     let currentCount = parseInt(sessionStorage.getItem('mockCartCount') || '0');
                     currentCount += quantity;
                     sessionStorage.setItem('mockCartCount', currentCount.toString()); 
                     
-                    // Update Header Display ทันที
+                    // Update Header Display
                     const countElement = document.getElementById('cart-count');
                     if (countElement) countElement.textContent = currentCount.toString();
                     

@@ -44,21 +44,17 @@
             
         </div>
     </main>
-    
-    <script>
+
+<script>
     // ----------------------------------------------------------------
-    // 0. CONFIGURATION & MOCK DATA
+    // 0. CONFIGURATION
     // ----------------------------------------------------------------
     const LOGIN_PAGE = 'login.html';
     const CHECKOUT_PAGE = 'checkout.html';
     
-    // Hardcoded Mock Data (ใช้สำหรับ Render โดยตรง, มีราคาและ quantity ครบ)
-    // NOTE: เปลี่ยนไปใช้ let เพื่อให้ Logic สามารถแก้ไขข้อมูลใน Array นี้ได้
-    let MOCK_CART_ITEMS = [
-        { id: 501, productId: 103, name: "Gaming Laptop", price: 35990, quantity: 1, subtotal: 35990 },
-        { id: 502, productId: 101, name: "Wireless Headphones", price: 2990, quantity: 2, subtotal: 5980 },
-        { id: 503, productId: 104, name: "Gaming Console", price: 18900, quantity: 1, subtotal: 18900 }
-    ];
+    // ** ลบ Hardcoded MOCK_CART_ITEMS ออก และให้ Cart Logic ใช้ Global Array นี้แทน **
+    let currentCartData = []; 
+
 
     // ----------------------------------------------------------------
     // 1. HEADER LOGIC (Task 5)
@@ -87,16 +83,15 @@
     // 2. RENDERING LOGIC & RECALCULATION
     // ----------------------------------------------------------------
     
-    // Helper: คำนวณยอดรวมทั้งหมดและอัปเดต Summary Section
     function calculateAndRenderSummary() {
         const summarySubtotal = document.getElementById('summary-subtotal');
         const summaryTotal = document.getElementById('summary-total');
         
         let subtotal = 0;
-        const shippingFee = 0.00; // Mock Shipping Fee (Free)
+        const shippingFee = 0.00; 
         
-        // คำนวณจาก Global Array ที่ถูกอัปเดตแล้ว
-        MOCK_CART_ITEMS.forEach(item => {
+        // คำนวณจาก Global Array
+        currentCartData.forEach(item => {
             subtotal += item.subtotal;
         });
 
@@ -105,14 +100,13 @@
         summarySubtotal.textContent = subtotal.toLocaleString() + ' ฿';
         summaryTotal.textContent = total.toLocaleString() + ' ฿';
 
-        // จัดการปุ่ม Checkout
         document.querySelector('.checkout-btn').disabled = (subtotal === 0);
     }
     
     function renderCartItems(cartItems) {
         const container = document.getElementById('cart-items-container');
         container.innerHTML = '';
-        MOCK_CART_ITEMS = cartItems; // อัปเดต Global Mock Data
+        currentCartData = cartItems; // **อัปเดต Global Data Store**
 
         if (!cartItems || cartItems.length === 0) {
             container.innerHTML = '<p style="text-align: center; padding: 20px;">Your cart is empty.</p>';
@@ -155,7 +149,14 @@
     // 3. CART ACTION LOGIC (Client-side Recalculation)
     // ----------------------------------------------------------------
     
-    // NEW LOGIC: คำนวณ Subtotal ใหม่เมื่อจำนวนเปลี่ยน (แก้ปัญหา Order Summary ไม่ตอบสนอง)
+    function saveCartToSession() {
+        // Helper: บันทึก Global Array กลับเข้า Session
+        sessionStorage.setItem('localCartItems', JSON.stringify(currentCartData));
+        const newCartCount = currentCartData.reduce((sum, item) => sum + item.quantity, 0);
+        sessionStorage.setItem('mockCartCount', newCartCount.toString());
+        updateHeader();
+    }
+
     function updateQuantity(inputElement) {
         const productId = parseInt(inputElement.getAttribute('data-product-id'));
         const newQuantity = parseInt(inputElement.value);
@@ -166,40 +167,31 @@
             return;
         }
 
-        const itemIndex = MOCK_CART_ITEMS.findIndex(item => item.productId === productId);
+        const itemIndex = currentCartData.findIndex(item => item.productId === productId);
         
         if (itemIndex > -1) {
-            const item = MOCK_CART_ITEMS[itemIndex];
+            const item = currentCartData[itemIndex];
             
-            // 1. อัปเดต Quantity และ Subtotal ใน Mock Array
             item.quantity = newQuantity;
             item.subtotal = item.price * newQuantity; 
             
-            // 2. อัปเดต Subtotal ของรายการสินค้านั้นบนหน้าจอ
             document.getElementById(`subtotal-${productId}`).textContent = item.subtotal.toLocaleString() + ' ฿';
             
-            // 3. คำนวณยอดรวมทั้งหมดใหม่
             calculateAndRenderSummary(); 
+            saveCartToSession(); // บันทึก Session หลังการอัปเดต
 
             alert(`Mock API: Quantity updated locally. Total recalculated.`);
         }
     }
 
-    // NEW LOGIC: ลบสินค้า
     function removeItem(productIdStr) {
         const productId = parseInt(productIdStr);
         if (confirm(`Are you sure you want to remove Product ${productId}? (Mock)`)) {
             
-            // 1. ลบสินค้าออกจาก Mock Array
-            MOCK_CART_ITEMS = MOCK_CART_ITEMS.filter(item => item.productId !== productId);
+            currentCartData = currentCartData.filter(item => item.productId !== productId);
             
-            // 2. Rerender ทั้ง Cart และ Summary
-            renderCartItems(MOCK_CART_ITEMS); 
-
-            // อัปเดต Cart Count ใน Session Storage (สำหรับ Header)
-            const newCartCount = MOCK_CART_ITEMS.reduce((sum, item) => sum + item.quantity, 0);
-            sessionStorage.setItem('mockCartCount', newCartCount.toString());
-            updateHeader(); // Rerender header เพื่ออัปเดต Cart Count
+            renderCartItems(currentCartData); 
+            saveCartToSession(); // บันทึก Session หลังการลบ
 
             alert(`Mock API: Item ${productId} removed. Cart updated.`);
         }
@@ -207,7 +199,7 @@
 
 
     // ----------------------------------------------------------------
-    // 4. DATA FETCHING (Using Mock Data)
+    // 4. DATA FETCHING (Source of Truth is sessionStorage)
     // ----------------------------------------------------------------
     async function fetchAndRenderCart() {
         const userId = sessionStorage.getItem('userId');
@@ -218,15 +210,18 @@
             return;
         }
 
+        // *** FIXED: Source of Truth คือ localCartItems ใน sessionStorage ***
+        const cartDataJson = sessionStorage.getItem('localCartItems');
+        let cartItems = JSON.parse(cartDataJson || '[]'); 
+
         // Logic Mock 404/204
-        if (userId === '999') { renderCartItems([]); return; }
-        if (userId === '000') { 
+        if (userId === '999') { cartItems = []; } // Mock Empty
+        if (userId === '000') { // Mock Not Found
             document.getElementById('cart-items-container').innerHTML = '<p style="color: red; text-align: center; padding: 20px;">Error 404: Cart not found for this user.</p>';
             return;
         }
         
-        // Scenario 3: ตะกร้ามีสินค้า (ใช้ MOCK_DATA_TO_RENDER)
-        renderCartItems(MOCK_CART_ITEMS); 
+        renderCartItems(cartItems); 
     }
 
     // ----------------------------------------------------------------

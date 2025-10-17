@@ -24,6 +24,7 @@
     
     <section class="products-grid" id="products-grid">
         </section>
+        <div class="product-info-grid">
 
     </main>
 <script>
@@ -31,179 +32,215 @@
     // 0. CONFIGURATION & ENDPOINTS
     // ----------------------------------------------------------------
     const LOGIN_PAGE = 'login.html';
-    // *** ปรับปรุง: ใช้ API Endpoint จริงจาก Spring Boot Server ***
     const API_PRODUCT_ENDPOINT = 'http://localhost:8080/api/products';  
-    
-    // Endpoint ที่ควรเปลี่ยนในภายหลัง (ถ้าทำจริง)
-    const ADD_TO_CART_API = 'http://localhost:8080/api/cart/add'; 
-    const GET_CART_COUNT_API = 'http://localhost:8080/api/cart/count'; 
-
-    // Endpoint Mock สำหรับ Task นี้ (ใช้เพื่อจำลองการเพิ่มสินค้า)
     const ADD_TO_CART_MOCK_ENDPOINT = 'mock/add_to_cart.json'; 
-    const GET_CART_COUNT_MOCK_ENDPOINT = 'mock/cart_count.json';
-
     const QUANTITY = 1; 
 
-    // ----------------------------------------------------------------
-    // 1. DYNAMIC HEADER RENDERING (Login/Cart)
-    // ----------------------------------------------------------------
+    // Global variable to mock the cart count
+    let currentCartCount = 0; 
 
-    // ฟังก์ชันที่สร้างปุ่ม/ลิงก์สำหรับ Header
+    // Hardcoded Fallback Data (ใช้ในการค้นหารายละเอียดสินค้า)
+    const FALLBACK_PRODUCTS = [
+        // **ต้องใช้โครงสร้าง JSON เดียวกันกับที่ renderProducts ใช้**
+        { productId: 1, productName: 'Wireless Mouse', price: 450.0, stockQuantity: 30, imageUrl: '1.jpg' }, 
+        { productId: 2, productName: 'Mechanical Keyboard', price: 1250.0, stockQuantity: 20, imageUrl: '2.jpg' },
+        { productId: 4, productName: 'Gaming Headset', price: 990.0, stockQuantity: 25, imageUrl: '4.jpg' },
+        { productId: 5, productName: 'USB-C Charger 65W', price: 799.0, stockQuantity: 40, imageUrl: '5.jpg' },
+        { productId: 6, productName: '27-inch 4K Monitor', price: 8990.0, stockQuantity: 8, imageUrl: '6.jpg' },
+        { productId: 7, productName: 'Laptop Stand Adjustable', price: 650.0, stockQuantity: 18, imageUrl: '7.jpg' },
+        { productId: 8, productName: 'External SSD 1TB', price: 3290.0, stockQuantity: 12, imageUrl: '8.jpg' },
+        { productId: 9, productName: 'Bluetooth Speaker', price: 1150.0, stockQuantity: 22, imageUrl: '9.jpg' },
+    ];
+    const IMAGE_MAP = {
+    // ใช้ ID ที่ Backend ส่งมา (ซึ่งมาจาก product.id ใน JSON)
+    "1": "1.jpg", 
+    "2": "2.jpg", 
+    "4": "4.jpg", 
+    "5": "5.jpg", // PlayStation 5
+    "6": "6.jpg", // Monitor/iPad Pro
+    "7": "7.jpg", 
+    "8": "8.jpg",
+    "9": "9.jpg"
+    // เพิ่มรายการอื่นๆ ถ้ามี
+};
+
+    // ----------------------------------------------------------------
+    // 1. DYNAMIC HEADER RENDERING (Unchanged)
+    // ----------------------------------------------------------------
     function updateHeaderAndWelcome() {
         const username = sessionStorage.getItem('username');
         const isLogin = sessionStorage.getItem('isLogin') === 'true';
         const linksContainer = document.getElementById('header-auth-links');
         const welcomeSection = document.getElementById('welcome-section');
         
-        linksContainer.innerHTML = ''; // Clear existing links
+        linksContainer.innerHTML = ''; 
 
-        if (isLogin && username) {
-            // Logged-in state
+        if (isLogin) {
+            const mockCartCount = sessionStorage.getItem('mockCartCount') || '0';
+            currentCartCount = parseInt(mockCartCount);
+            
             linksContainer.innerHTML = `
-                <a href="cart.html" class="nav-link cart-link">
-                    Cart (<span id="cart-count">0</span>)
-                </a>
-                <a href="profile.html" class="nav-link profile-link">${username}</a>
+                <a href="index.html" class="nav-link">HOME</a>
+                <a href="order-history.html" class="nav-link">order history</a>
+                <a href="profile.html" class="nav-link">${username} 👤</a>
+                <a href="cart.html" class="nav-link cart-icon">🛒 (<span id="cart-count">${mockCartCount}</span>)</a> 
             `;
-            welcomeSection.innerHTML = `
-                <h1>Welcome, ${username}!</h1>
-                <p>Ready to find something great?</p>
-            `;
-            fetchCartCount();
-
+            welcomeSection.innerHTML = `<h1>Welcome</h1><p>description</p>`;
         } else {
-            // Logged-out state
             linksContainer.innerHTML = `
-                <a href="login.html" class="nav-link">Login</a>
+                <a href="${LOGIN_PAGE}" class="nav-link">Login</a>
                 <a href="register.html" class="nav-link">Register</a>
             `;
-            welcomeSection.innerHTML = `
-                <h1>Welcome</h1>
-                <p>Please log in to start shopping.</p>
-            `;
+            welcomeSection.innerHTML = `<h1>Welcome</h1><p>description</p>`;
         }
     }
 
-    // ฟังก์ชันสำหรับเรียกจำนวนสินค้าในตะกร้า (Mocking the API)
-    async function fetchCartCount() {
-        const cartCountElement = document.getElementById('cart-count');
-        if (!cartCountElement) return;
 
-        // --- Mock Logic ---
-        const isLogin = sessionStorage.getItem('isLogin') === 'true';
-        if (!isLogin) {
-            cartCountElement.textContent = '0';
+    // ----------------------------------------------------------------
+    // 2. PRODUCT FETCHING & RENDERING LOGIC (Unchanged)
+    // ----------------------------------------------------------------
+
+    function renderProducts(products) {
+    const gridElement = document.getElementById('products-grid');
+    gridElement.innerHTML = ''; 
+
+    products.forEach(product => {
+        // ใช้ OR Logic เพื่อดึงชื่อฟิลด์ที่ถูกต้อง
+        const name = product.productName || product.name || 'N/A';
+        const price = product.price || 0;
+        const stock = product.stockQuantity || product.stock || 0;
+        const productId = product.productId || product.id || 'N/A';
+        
+        // *** FIXED: ดึงชื่อไฟล์รูปภาพจาก IMAGE_MAP แทน ***
+        const imageUrl = IMAGE_MAP[productId.toString()] || 'placeholder.png'; 
+
+
+        const cardHtml = `
+            <div class="product-card" onclick="window.location.href='product-detail.html?id=${productId}'">
+                <div class="product-image">
+                    <img src="images/${imageUrl}" alt="${name}">
+                </div>
+                <div class="product-info-grid">
+                    <div class="product-text-details">
+                        <p class="product-name">${name}</p> 
+                        <p class="product-price">฿ ${price.toLocaleString()}</p>
+                        <p class="product-stock">In stock: x${stock}</p> 
+                    </div>
+                    <button class="add-to-cart-btn" data-product-id="${productId}">Add</button>
+                </div>
+            </div>
+        `;
+        gridElement.innerHTML += cardHtml;
+    });
+    
+    setupAddToCartHandlers(); 
+}
+
+    async function fetchAndDisplayProducts() {
+        // ... (Logic fetch และ Fallback เดิม) ...
+        const gridElement = document.getElementById('products-grid');
+        gridElement.innerHTML = '<p style="text-align: center; padding: 20px;">Fetching product data from API...</p>';
+
+        try {
+            const response = await fetch(API_PRODUCT_ENDPOINT);
+            let products = [];
+            
+            if (response.ok) { products = await response.json(); } 
+            else if (response.status === 204) { products = []; } 
+            else { throw new Error(`API Error: ${response.status}`); }
+
+            if (products.length === 0) {
+                gridElement.innerHTML = '<p style="text-align: center; padding: 20px;">No products found on the server.</p>';
+            } else {
+                renderProducts(products); 
+            }
+
+        } catch (error) {
+            console.error('Product Fetch Error:', error);
+            gridElement.innerHTML = `<p style="color: red; text-align: center; padding: 10px;">API Connection Failed. Displaying fallback products. Error: ${error.message || error}</p>`;
+            renderProducts(FALLBACK_PRODUCTS); 
+        }
+    }
+    
+    // ----------------------------------------------------------------
+    // 3. CART STORE & ADD TO CART LOGIC (Task 1, 2)
+    // ----------------------------------------------------------------
+
+    async function fetchCartCount() {
+        const countElement = document.getElementById('cart-count');
+        if (!countElement) return;
+        countElement.textContent = currentCartCount.toString(); 
+    }
+    
+    // *******************************************************
+    // * NEW HELPER: ฟังก์ชันจัดการ Local Cart Store (สำคัญมาก) *
+    // *******************************************************
+    function updateLocalCart(productIdStr, quantity) {
+        const cartKey = 'localCartItems';
+        let cart = JSON.parse(sessionStorage.getItem(cartKey) || '[]'); 
+        const productId = parseInt(productIdStr);
+
+        // 1. ค้นหารายละเอียดสินค้าจาก Fallback List (หรือสินค้าที่ถูก Render)
+        const productDetails = FALLBACK_PRODUCTS.find(p => p.productId === productId);
+        
+        if (!productDetails) {
+            console.error(`Product ID ${productId} not found for local storage!`);
             return;
         }
 
-        // ใช้ mockCartCount ที่เก็บใน SessionStorage เป็นตัวแทน
-        const mockCount = sessionStorage.getItem('mockCartCount');
-        cartCountElement.textContent = mockCount ? mockCount : '0';
-        // --- End Mock Logic ---
+        // 2. ตรวจสอบว่าสินค้ามีอยู่แล้วหรือไม่
+        const itemIndex = cart.findIndex(item => item.productId === productId);
         
-        // ** ถ้าใช้ API จริง (เมื่อทำเสร็จ) จะใช้โค้ดด้านล่างนี้ **
-        /*
-        try {
-            const userToken = '...'; // ต้องมี Token จริง
-            const response = await fetch(GET_CART_COUNT_API, {
-                headers: { 'Authorization': `Bearer ${userToken}` }
+        if (itemIndex > -1) {
+            // มีอยู่แล้ว: เพิ่มจำนวน
+            cart[itemIndex].quantity += quantity;
+            cart[itemIndex].subtotal = cart[itemIndex].price * cart[itemIndex].quantity; 
+        } else {
+            // สินค้าใหม่: เพิ่มรายการใหม่
+            cart.push({
+                productId: productId,
+                name: productDetails.productName,
+                price: productDetails.price,
+                quantity: quantity,
+                subtotal: productDetails.price * quantity
             });
-            const data = await response.json();
-            cartCountElement.textContent = data.count || '0';
-        } catch (error) {
-            console.error('Failed to fetch cart count:', error);
-            cartCountElement.textContent = 'N/A';
         }
-        */
-    }
 
-    // ----------------------------------------------------------------
-    // 2. PRODUCT GRID RENDERING
-    // ----------------------------------------------------------------
-
-    // ฟังก์ชันที่สร้าง HTML ของ Product Card
-    function createProductCard(product) {
-        return `
-            <a href="product-detail.html?id=${product.id}" class="product-card">
-                <div class="product-image" style="background-image: url('${product.imageUrl}');"></div>
-                <div class="product-info-grid">
-                    <div class="product-text-details">
-                        <p class="product-name">${product.name}</p>
-                        <p class="product-price">${product.price.toFixed(2)} ฿</p>
-                        <p class="product-stock">in stock: x${product.stockQuantity}</p>
-                    </div>
-                    <button type="button" class="add-to-cart-btn" data-product-id="${product.id}" ${product.stockQuantity <= 0 ? 'disabled' : ''}>
-                        Add to Cart
-                    </button>
-                </div>
-            </a>
-        `;
-    }
-
-    // ฟังก์ชันเรียกสินค้าจาก API และแสดงผล (ใช้ API จริง)
-    async function fetchAndDisplayProducts() {
-        const productsGrid = document.getElementById('products-grid');
-        productsGrid.innerHTML = '<p style="text-align: center;">Loading products...</p>';
-
-        try {
-            // *** ใช้ API_PRODUCT_ENDPOINT จริง: http://localhost:8080/api/products ***
-            const response = await fetch(API_PRODUCT_ENDPOINT); 
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const products = await response.json();
-
-            productsGrid.innerHTML = ''; // Clear loading message
-
-            if (products && products.length > 0) {
-                products.forEach(product => {
-                    productsGrid.innerHTML += createProductCard(product);
-                });
-                // หลังจากแสดงสินค้าแล้ว ค่อยตั้งค่า Event Listener
-                setupAddToCartHandlers();
-            } else {
-                productsGrid.innerHTML = '<p style="text-align: center;">No products found.</p>';
-            }
-
-        } catch (error) {
-            console.error('Error fetching products:', error);
-            productsGrid.innerHTML = '<p style="color: red; text-align: center;">Failed to load products from API. (Please check your Spring Boot server and MySQL connection).</p>';
-        }
+        // 3. บันทึกกลับไปที่ sessionStorage
+        sessionStorage.setItem(cartKey, JSON.stringify(cart));
     }
 
 
-    // ----------------------------------------------------------------
-    // 3. ADD TO CART LOGIC
-    // ----------------------------------------------------------------
-
-    // ฟังก์ชันหลักในการเพิ่มสินค้าลงตะกร้า (ใช้ Mock URL/Logic)
-    async function handleAddToCart(buttonElement) {
+    async function handleAddToCart(button) { 
+        const userId = sessionStorage.getItem('userId');
         const isLogin = sessionStorage.getItem('isLogin') === 'true';
-        if (!isLogin) {
-            alert('Please log in to add items to the cart.');
+
+        if (!isLogin || !userId) {
+            alert('Please log in to add items to your cart.');
             window.location.href = LOGIN_PAGE;
             return;
         }
 
-        const productId = buttonElement.getAttribute('data-product-id');
-        
-        // Mock API Call: สมมติว่าสำเร็จเสมอ
+        const productId = button.getAttribute('data-product-id');
+        if (!productId) return;
+
+        // ... (โค้ด Mock API Call เดิม) ...
+
         try {
-            // ใช้ Mock Endpoint สำหรับ Add to Cart 
-            const response = await fetch(ADD_TO_CART_MOCK_ENDPOINT); 
+            const response = await fetch(ADD_TO_CART_MOCK_ENDPOINT);
             const data = await response.json();
             
             if (data.success) {
                 alert(`Product added to cart successfully! (Product ID: ${productId})`); 
                 
-                // Update Mock Cart Count 
-                let currentCartCount = parseInt(sessionStorage.getItem('mockCartCount') || '0');
-                currentCartCount += QUANTITY; 
-                sessionStorage.setItem('mockCartCount', currentCartCount.toString()); 
+                // * FIXED: อัปเดต Local Cart Store ด้วยรายละเอียดสินค้า *
+                updateLocalCart(productId, QUANTITY); 
                 
-                // Update Header Display ทันที
+                // Update Mock Cart Count (Logic เดิม)
+                let currentCount = parseInt(sessionStorage.getItem('mockCartCount') || '0');
+                currentCount += QUANTITY; 
+                sessionStorage.setItem('mockCartCount', currentCount.toString()); 
+                
                 fetchCartCount(); 
 
             } else {
@@ -215,19 +252,14 @@
         }
     }
 
-    // Sets up click listeners using Event Delegation 
     function setupAddToCartHandlers() {
         const productsGrid = document.getElementById('products-grid');
 
         if (productsGrid) {
             productsGrid.addEventListener('click', (e) => {
-                // ตรวจสอบว่าคลิกที่ปุ่ม Add to Cart 
                 if (e.target.classList.contains('add-to-cart-btn')) {
-                    // หยุดการทำงานของ <a> tag ที่ครอบอยู่
                     e.stopPropagation(); 
-                    // หยุดการนำทางของ <a> tag ที่ครอบอยู่
-                    e.preventDefault();
-                    // ส่ง Element ของปุ่มไป
+                    e.preventDefault(); 
                     handleAddToCart(e.target); 
                 }
             });
