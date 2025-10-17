@@ -37,7 +37,6 @@ public class CartService {
     @Transactional
     public CartDTO addProductToCart(Long userId, Long productId, int quantity) {
 
-        // 1. ตรวจสอบ Product และ Stock
         ProductModel product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "ID", productId));
 
@@ -45,16 +44,13 @@ public class CartService {
             throw new IllegalArgumentException("Quantity must be greater than zero.");
         }
 
-        // 2. หา Cart ของ User (ถ้าไม่มีก็สร้างใหม่) - อาจปรับแก้ตาม business logic
         CartModel cart = cartRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart", "ID", userId));
 
-        // 3. ค้นหาสินค้าเดิมในตะกร้า
         CartItemsModel existingItem = cartItemsRepository.findByCart_CartIdAndProductId(cart.getCartId(), productId)
                 .orElse(null);
 
         if (existingItem != null) {
-            // มีสินค้าอยู่แล้ว: อัปเดตจำนวน
             int newQuantity = existingItem.getQuantity() + quantity;
             if (product.getStockQuantity() < newQuantity) {
                 throw new StockException("Insufficient stock for product ID " + productId);
@@ -62,7 +58,6 @@ public class CartService {
             existingItem.setQuantity(newQuantity);
             cartItemsRepository.save(existingItem);
         } else {
-            // ไม่มีสินค้าเดิม: สร้างรายการใหม่
             if (product.getStockQuantity() < quantity) {
                 throw new StockException("Insufficient stock for product ID " + productId);
             }
@@ -73,39 +68,32 @@ public class CartService {
             cartItemsRepository.save(newItem);
         }
 
-        // 4. คืนค่า DTO ของตะกร้าล่าสุด
         return mapCartToDTO(cart.getCartId());
     }
 
     /**
-     * ดึงข้อมูลตะกร้าสินค้าของผู้ใช้ พร้อมตรวจสอบว่ามีสินค้าในตะกร้าหรือไม่
+     * ค้นหาตะกร้าที่ใช้งานของผู้ใช้
      * @param userId ID ของผู้ใช้
-     * @return CartDTO ที่มีข้อมูลสินค้าและราคารวม
-     * @throws ResourceNotFoundException หากไม่พบตะกร้าของผู้ใช้นี้
-     * @throws CartEmptyException หากตะกร้าว่างเปล่า
+     * @return CartDTO ที่มีข้อมูลสินค้า
+     * @throws ResourceNotFoundException หากไม่พบตะกร้า
+     * @throws CartEmptyException หากตะกร้าว่างเปล่า (ไม่มีสินค้า)
      */
-    public CartDTO getCartByUserId(Long userId) {
-        // 1. ค้นหาตะกร้าของผู้ใช้
+    public CartDTO findActiveCartByUserId(Long userId) {
         CartModel cart = cartRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart", "ID", userId));
 
-        // 2. ดึงรายการสินค้าทั้งหมดในตะกร้า
         List<CartItemsModel> cartItems = cartItemsRepository.findByCart_CartId(cart.getCartId());
 
-        // 3. ตรวจสอบว่ารายการสินค้าว่างเปล่าหรือไม่
         if (cartItems.isEmpty()) {
-            // ถ้าว่าง ให้โยน CartEmptyException
+            // โยน Exception เมื่อตะกร้าว่างเปล่า
             throw new CartEmptyException("Cart for user ID " + userId + " is empty.");
         }
 
-        // 4. ถ้ามีสินค้า ให้ทำการคำนวณและแปลงเป็น DTO
         return mapCartToDTO(cart.getCartId());
     }
 
-
     /**
      * Helper Method สำหรับแปลงข้อมูลจาก Entity เป็น DTO และคำนวณราคารวม
-     * ถูกเรียกใช้ภายใน Service นี้เท่านั้น
      */
     private CartDTO mapCartToDTO(Long cartId) {
         CartModel cart = cartRepository.findById(cartId)

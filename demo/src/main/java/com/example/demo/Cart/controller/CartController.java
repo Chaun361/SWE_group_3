@@ -12,7 +12,7 @@ import com.example.demo.Cart.dto.CartDTO;
 import com.example.demo.Cart.service.CartService;
 
 @RestController
-@RequestMapping("/api/cart") // แนะนำให้กำหนด base path ไว้ที่นี่
+@RequestMapping("/api/cart")
 public class CartController {
 
     private final CartService cartService;
@@ -23,13 +23,13 @@ public class CartController {
 
     /**
      * Endpoint สำหรับดึงข้อมูลตะกร้าของผู้ใช้
-     * แก้ไขให้เรียกใช้ cartService.getCartByUserId และใช้ ResponseEntity
+     * ถ้าสำเร็จจะคืนค่า 200 OK พร้อมข้อมูล
+     * ถ้าตะกร้าว่างจะคืนค่า 204 No Content
+     * ถ้าไม่พบตะกร้าจะคืนค่า 404 Not Found
      */
     @GetMapping("/{userId}")
     public ResponseEntity<CartDTO> getCartByUserId(@PathVariable Long userId) {
-        // เรียกใช้ service เพื่อดึงข้อมูลจริง
-        CartDTO cart = cartService.getCartByUserId(userId); 
-        // ส่ง status 200 OK กลับไปพร้อมข้อมูลตะกร้า
+        CartDTO cart = cartService.findActiveCartByUserId(userId);
         return ResponseEntity.ok(cart);
     }
     

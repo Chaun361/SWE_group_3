@@ -9,23 +9,28 @@ import org.springframework.web.context.request.WebRequest;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Class นี้จะดักจับ Exception ที่เกิดขึ้นใน Controller ทั้งหมด
- * และแปลงเป็น ResponseEntity ที่มี HTTP Status และ Body ที่เหมาะสม
- */
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
     /**
-     * จัดการ ResourceNotFoundException และ CartEmptyException
-     * ทั้งสองกรณีนี้ควรส่งกลับเป็น HTTP 404 Not Found
+     * จัดการเมื่อตะกร้าว่างเปล่า (CartEmptyException)
+     * โดยจะส่งกลับเป็น HTTP 204 No Content ซึ่งจะไม่มี body
      */
-    @ExceptionHandler({ResourceNotFoundException.class, CartEmptyException.class})
-    public ResponseEntity<Object> handleResourceNotFoundException(RuntimeException ex, WebRequest request) {
+    @ExceptionHandler(CartEmptyException.class)
+    public ResponseEntity<Object> handleCartEmptyException(CartEmptyException ex, WebRequest request) {
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * จัดการ ResourceNotFoundException (เช่น หา cart, user, product ไม่เจอ)
+     * ควรส่งกลับเป็น HTTP 404 Not Found
+     */
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Object> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
         Map<String, Object> body = new HashMap<>();
         body.put("status", HttpStatus.NOT_FOUND.value());
         body.put("error", "Not Found");
-        body.put("message", ex.getMessage()); // นำ message จาก Exception มาแสดง
+        body.put("message", ex.getMessage());
 
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
