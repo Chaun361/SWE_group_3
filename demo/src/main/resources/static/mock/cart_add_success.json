@@ -1,0 +1,21 @@
+{
+  "cartId": 1001,
+  "userId": 1,
+  "items": [
+    {
+      "productId": 200,
+      "productName": "Laptop รุ่น X500",
+      "quantity": 2,
+      "itemPrice": 25000.00,
+      "itemTotalPrice": 50000.00
+    },
+    {
+      "productId": 301,
+      "productName": "Wireless Mouse Z",
+      "quantity": 5,
+      "itemPrice": 500.00,
+      "itemTotalPrice": 2500.00
+    }
+  ],
+  "totalPrice": 52500.00
+}
