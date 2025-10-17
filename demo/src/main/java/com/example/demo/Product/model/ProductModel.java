@@ -6,7 +6,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-
 @Entity
 @Table(name = "products")
 public class ProductModel {
@@ -68,6 +67,5 @@ public class ProductModel {
     public void setStockQuantity(int stockQuantity) {
         StockQuantity = stockQuantity;
     }
-
 
 }
