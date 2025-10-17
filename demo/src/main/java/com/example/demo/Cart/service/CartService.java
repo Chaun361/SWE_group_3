@@ -2,16 +2,13 @@ package com.example.demo.Cart.service;
 
 import com.example.demo.Cart.dto.CartDTO;
 import com.example.demo.Cart.dto.CartItemDTO;
+import com.example.demo.Cart.exception.CartEmptyException;
 import com.example.demo.Cart.exception.ResourceNotFoundException;
 import com.example.demo.Cart.exception.StockException;
 import com.example.demo.Cart.model.CartItemsModel;
 import com.example.demo.Cart.model.CartModel;
-// ลบ import CartProductModel
 import com.example.demo.Cart.repository.CartItemsRepository;
-// ลบ import CartProductRepository
 import com.example.demo.Cart.repository.CartRepository;
-
-// +++ Import ของ Product เข้ามาแทน +++
 import com.example.demo.Product.model.ProductModel;
 import com.example.demo.Product.repository.ProductRepository;
 
@@ -23,41 +20,41 @@ import java.util.stream.Collectors;
 
 @Service
 public class CartService {
+
     private final CartRepository cartRepository;
     private final CartItemsRepository cartItemsRepository;
-    private final ProductRepository productRepository; // <-- เปลี่ยนเป็น ProductRepository
+    private final ProductRepository productRepository;
 
-    // แก้ไข Constructor ให้รับ ProductRepository
     public CartService(CartRepository cartRepository, CartItemsRepository cartItemsRepository, ProductRepository productRepository) {
         this.cartRepository = cartRepository;
         this.cartItemsRepository = cartItemsRepository;
-        this.productRepository = productRepository; // <-- แก้ไขตรงนี้
+        this.productRepository = productRepository;
     }
 
+    /**
+     * เพิ่มสินค้าลงในตะกร้า หรืออัปเดตจำนวนถ้ามีอยู่แล้ว
+     */
     @Transactional
     public CartDTO addProductToCart(Long userId, Long productId, int quantity) {
 
-        // 1. ตรวจสอบ Product และ Stock โดยใช้ productRepository
+        // 1. ตรวจสอบ Product และ Stock
         ProductModel product = productRepository.findById(productId)
-            .orElseThrow(() -> new ResourceNotFoundException("Product", "ID", productId));
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "ID", productId));
 
         if (quantity <= 0) {
             throw new IllegalArgumentException("Quantity must be greater than zero.");
         }
 
-        // หา CartModel ก่อนเพื่อใช้ cartId ต่อไป
+        // 2. หา Cart ของ User (ถ้าไม่มีก็สร้างใหม่) - อาจปรับแก้ตาม business logic
         CartModel cart = cartRepository.findById(userId)
-            .orElseThrow(() -> new ResourceNotFoundException("Cart", "ID", userId));
+                .orElseThrow(() -> new ResourceNotFoundException("Cart", "ID", userId));
 
-        // ดึงรายการสินค้าในตะกร้าแล้วหาว่ามีสินค้านี้อยู่หรือไม่
-        List<CartItemsModel> cartItems = cartItemsRepository.findByCart_CartId(cart.getCartId());
-        CartItemsModel existingItem = cartItems.stream()
-            .filter(i -> productId.equals(i.getProductId()))
-            .findFirst()
-            .orElse(null);
+        // 3. ค้นหาสินค้าเดิมในตะกร้า
+        CartItemsModel existingItem = cartItemsRepository.findByCart_CartIdAndProductId(cart.getCartId(), productId)
+                .orElse(null);
 
         if (existingItem != null) {
-            // คำนวณจำนวนใหม่และตรวจสอบสต็อก
+            // มีสินค้าอยู่แล้ว: อัปเดตจำนวน
             int newQuantity = existingItem.getQuantity() + quantity;
             if (product.getStockQuantity() < newQuantity) {
                 throw new StockException("Insufficient stock for product ID " + productId);
@@ -65,7 +62,7 @@ public class CartService {
             existingItem.setQuantity(newQuantity);
             cartItemsRepository.save(existingItem);
         } else {
-            // ไม่มีสินค้าเดิม: ตรวจสอบสต็อกแล้วสร้างรายการใหม่
+            // ไม่มีสินค้าเดิม: สร้างรายการใหม่
             if (product.getStockQuantity() < quantity) {
                 throw new StockException("Insufficient stock for product ID " + productId);
             }
@@ -76,33 +73,58 @@ public class CartService {
             cartItemsRepository.save(newItem);
         }
 
-        // คืนค่า DTO ของตะกร้า (ฟังก์ชันจะคำนวณราคารวมจากรายการ)
+        // 4. คืนค่า DTO ของตะกร้าล่าสุด
         return mapCartToDTO(cart.getCartId());
     }
 
-    // Helper Method สำหรับคำนวณราคาและแปลงเป็น DTO
+    /**
+     * ดึงข้อมูลตะกร้าสินค้าของผู้ใช้ พร้อมตรวจสอบว่ามีสินค้าในตะกร้าหรือไม่
+     * @param userId ID ของผู้ใช้
+     * @return CartDTO ที่มีข้อมูลสินค้าและราคารวม
+     * @throws ResourceNotFoundException หากไม่พบตะกร้าของผู้ใช้นี้
+     * @throws CartEmptyException หากตะกร้าว่างเปล่า
+     */
+    public CartDTO getCartByUserId(Long userId) {
+        // 1. ค้นหาตะกร้าของผู้ใช้
+        CartModel cart = cartRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart", "ID", userId));
+
+        // 2. ดึงรายการสินค้าทั้งหมดในตะกร้า
+        List<CartItemsModel> cartItems = cartItemsRepository.findByCart_CartId(cart.getCartId());
+
+        // 3. ตรวจสอบว่ารายการสินค้าว่างเปล่าหรือไม่
+        if (cartItems.isEmpty()) {
+            // ถ้าว่าง ให้โยน CartEmptyException
+            throw new CartEmptyException("Cart for user ID " + userId + " is empty.");
+        }
+
+        // 4. ถ้ามีสินค้า ให้ทำการคำนวณและแปลงเป็น DTO
+        return mapCartToDTO(cart.getCartId());
+    }
+
+
+    /**
+     * Helper Method สำหรับแปลงข้อมูลจาก Entity เป็น DTO และคำนวณราคารวม
+     * ถูกเรียกใช้ภายใน Service นี้เท่านั้น
+     */
     private CartDTO mapCartToDTO(Long cartId) {
         CartModel cart = cartRepository.findById(cartId)
-            .orElseThrow(() -> new ResourceNotFoundException("Cart", "ID", cartId));
+                .orElseThrow(() -> new ResourceNotFoundException("Cart", "ID", cartId));
 
         List<CartItemsModel> cartItems = cartItemsRepository.findByCart_CartId(cartId);
 
         List<CartItemDTO> itemDTOs = cartItems.stream()
-            .map(item -> {
-                // แก้ไขตรงนี้ให้ใช้ productRepository และ ProductModel
-                ProductModel product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product", "ID", item.getProductId()));
-                return CartItemDTO.fromEntity(item, product); // <-- ส่ง ProductModel เข้าไปแทน
-            })
-            .collect(Collectors.toList());
+                .map(item -> {
+                    ProductModel product = productRepository.findById(item.getProductId())
+                            .orElseThrow(() -> new ResourceNotFoundException("Product", "ID", item.getProductId()));
+                    return CartItemDTO.fromEntity(item, product);
+                })
+                .collect(Collectors.toList());
 
-        // ... (ส่วนที่เหลือเหมือนเดิม)
         double totalPrice = itemDTOs.stream()
-            .mapToDouble(CartItemDTO::getItemTotalPrice)
-            .sum();
+                .mapToDouble(CartItemDTO::getItemTotalPrice)
+                .sum();
 
         return CartDTO.fromEntity(cart, itemDTOs, totalPrice);
     }
-
-    // ... (method อื่นๆ)
 }
