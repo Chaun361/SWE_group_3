@@ -28,4 +28,20 @@ public class UserService {
                 .map(User::getUserId)
                 .orElse(null);
     }
+    public User registerUser(User user) {
+        if (user.getUsername() == null || user.getUsername().trim().isEmpty() ||
+    user.getPassword() == null || user.getPassword().trim().isEmpty() ||
+    user.getFullName() == null || user.getFullName().trim().isEmpty() ||
+    user.getPhone() == null || user.getPhone().trim().isEmpty() ||
+    user.getUserAddress() == null || user.getUserAddress().trim().isEmpty()) {
+    throw new IllegalArgumentException("All fields are required and cannot be empty.");
+}
+        Optional<User> existingUser = userRepository.findByUsername(user.getUsername());
+
+        if (existingUser.isPresent()) {
+            throw new IllegalArgumentException("Username already exists: " + user.getUsername());
+        }
+
+        return userRepository.save(user);
+    }
 }
