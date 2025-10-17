@@ -58,4 +58,20 @@ public class UserController {
                     .body(Map.of("error", "Invalid user data", "details", e.getMessage()));
         }
     }
+        @GetMapping("/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+        try {
+            User user = userService.getUserById(id);
+            return ResponseEntity.ok(Map.of(
+                "userId", user.getUserId(),
+                "username", user.getUsername(),
+                "fullName", user.getFullName(),
+                "phone", user.getPhone(),
+                "userAddress", user.getUserAddress()
+        ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", e.getMessage()));
+        }
+    }
 }
