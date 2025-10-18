@@ -39,7 +39,7 @@
                     <span id="summary-total">0 ฿</span>
                 </div>
                 
-                <button class="submit-btn checkout-btn" onclick="window.location.href='checkout.html'">Checkout</button>
+                <button class="submit-btn checkout-btn"><a href="checkout.html">Checkout</a></button>
             </div>
             
         </div>
@@ -49,7 +49,7 @@
     // API Endpoints
     const CART_API_ENDPOINT = 'http://localhost:8080/api/cart/';
     const CHECKOUT_PAGE = 'checkout.html';
-    
+    const LOGIN_PAGE = 'login.html';
     // ** ลบ Hardcoded MOCK_CART_ITEMS ออก และให้ Cart Logic ใช้ Global Array นี้แทน **
     let currentCartData = []; 
 
@@ -265,7 +265,7 @@
             alert('Failed to remove item from cart. Please try again.');
         }
     }
-
+    
     // ----------------------------------------------------------------
     // 5. INITIALIZATION
     // ----------------------------------------------------------------

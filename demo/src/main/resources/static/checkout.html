@@ -88,13 +88,12 @@
     
     <script>
     // ----------------------------------------------------------------
-    // 0. CONFIGURATION & MOCK DATA
+    // 0. CONFIGURATION & API ENDPOINTS
     // ----------------------------------------------------------------
     const CHECKOUT_API = '/api/orders/checkout';
     const LOGIN_PAGE = 'login.html';
-    const ORDER_CONFIRMATION_PAGE = 'order-confirmation.html'; 
-    const MOCK_PROFILE_ENDPOINT = 'mock/mock-profile.json'; // แก้ไข: ใช้เส้นทางที่ถูกต้อง
-    const MOCK_CART_ENDPOINT = 'mock/cart.json';             // แก้ไข: ใช้เส้นทางที่ถูกต้อง
+    const USER_API = 'http://localhost:8080/api/users/';
+    const CART_API = 'http://localhost:8080/api/cart/';
 
     // Fallback Data
     const FALLBACK_ADDRESS = {
@@ -185,32 +184,39 @@
     async function fetchAddressAndSummary() {
         const addressBox = document.getElementById('shipping-address-box');
         const itemsSummary = document.getElementById('order-items-summary');
+        const userId = sessionStorage.getItem("userId");
         
-        // 1. Fetch Shipping Address (Mock)
+        if (!userId) {
+            console.error('No userId found in session');
+            window.location.href = LOGIN_PAGE;
+            return;
+        }
+
+        // 1. Fetch User Profile
         try {
-            const profileResponse = await fetch(MOCK_PROFILE_ENDPOINT);
+            const profileResponse = await fetch(USER_API + userId);
             if (!profileResponse.ok) throw new Error('Profile fetch failed');
             
             const profileData = await profileResponse.json();
             renderAddress(profileData); 
         } catch (error) {
             console.error('Error fetching address:', error);
-            addressBox.innerHTML = `<h2>1. Shipping Address</h2><p style="color: red;" class="error-text">Error loading address mock data. Displaying fallback.</p>`;
+            addressBox.innerHTML = `<h2>1. Shipping Address</h2><p style="color: red;" class="error-text">Error loading address. Please try again later.</p>`;
             renderAddress(FALLBACK_ADDRESS); 
         }
         
-        // 2. Fetch Cart Summary (Mock)
+        // 2. Fetch Cart Data
         try {
-            const cartResponse = await fetch(MOCK_CART_ENDPOINT);
+            const cartResponse = await fetch(CART_API + userId);
             if (!cartResponse.ok) throw new Error('Cart fetch failed');
             
             const cartData = await cartResponse.json(); 
-            // Mock Cart Data มักจะเป็น Array of items
-            renderSummary(cartData || FALLBACK_CART_ITEMS); 
+            const cartItems = cartData.items || [];
+            renderSummary(cartItems.length > 0 ? cartItems : FALLBACK_CART_ITEMS); 
 
         } catch (error) {
-            console.error('Error fetching cart summary:', error);
-            itemsSummary.innerHTML = '<p class="error-text" style="color: red;">Error loading cart summary mock data. Displaying fallback.</p>';
+            console.error('Error fetching cart:', error);
+            itemsSummary.innerHTML = '<p class="error-text" style="color: red;">Error loading cart. Please try again later.</p>';
             renderSummary(FALLBACK_CART_ITEMS);
         }
     }
@@ -224,7 +230,6 @@
         e.preventDefault();
         const userId = sessionStorage.getItem('userId');
         
-        // NOTE: ต้องมั่นใจว่าใน HTML ใช้ name="payment"
         const selectedPayment = document.querySelector('input[name="payment"]:checked'); 
         
         if (!userId) { alert('Session expired. Please log in again.'); return; }
@@ -237,17 +242,35 @@
         placeOrderBtn.disabled = true;
 
         try {
-            await new Promise(resolve => setTimeout(resolve, 1500)); 
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Randomly choose between success and error responses for demo purposes
+            const mockEndpoint = Math.random() > 0.3 ? 
+                'mock/checkout-success.json' : 'mock/checkout-error.json';
             
-            alert('Order placed successfully! Redirecting...');
+            const response = await fetch(mockEndpoint);
+            if (!response.ok) throw new Error('Failed to fetch mock data');
             
-            sessionStorage.removeItem('mockCartCount');
+            const result = await response.json();
             
-            window.location.href = ORDER_CONFIRMATION_PAGE; 
+            if (result.success) {
+                // Clear cart count from session
+                sessionStorage.removeItem('mockCartCount');
+                
+                // Show success message with order ID
+                alert(`Order placed successfully!\nOrder ID: ${result.orderId}\nTotal: ฿${result.orderTotal.toFixed(2)}`);
+                
+                // Redirect to order confirmation or history page
+                window.location.href = 'order-history.html';
+            } else {
+                // Show error message
+                alert(`Checkout failed: ${result.message}\n${result.details || ''}`);
+            }
 
         } catch (error) {
             console.error('Checkout Error:', error);
-            alert('Failed to place order due to a server error.');
+            alert('Failed to process order. Please try again later.');
             
         } finally {
             placeOrderBtn.textContent = 'Place Order';
