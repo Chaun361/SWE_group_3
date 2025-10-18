@@ -195,7 +195,8 @@ body {
     font-weight: 500;
     border-radius: 4px;
     width: 100%;
-    margin-top: 10px; 
+    margin-top: 10px;
+    cursor: pointer; /* Add pointer cursor on hover */
 }
 
 .add-to-cart-btn:hover {
