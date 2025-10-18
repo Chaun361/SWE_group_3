@@ -56,6 +56,7 @@ public class OrderService {
         OrderModel newOrder = new OrderModel();
         newOrder.setUserID(userId);
         newOrder.setOrderDate(LocalDateTime.now());
+        newOrder.setStatus("Pending");
         
         // บันทึก Order หลักก่อนเพื่อเอา Order ID มาใช้
         OrderModel savedOrder = orderRepository.save(newOrder);

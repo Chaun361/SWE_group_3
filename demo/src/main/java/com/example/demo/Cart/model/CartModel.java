@@ -13,18 +13,18 @@ import java.util.List;
 
 
 @Entity
-@Table(name = "cart")
+@Table(name = "Cart")
 public class CartModel {
     
     @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "cart_id") 
+    @Column(name = "CartId") 
     private Long cartId; 
     
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "UserID", nullable = false)
     private Long userId; 
     
-    @Column(name = "is_active", nullable = false) 
+    @Column(name = "IsActive", nullable = false) 
     private boolean isActive = true;
 
     // ความสัมพันธ์ One-to-Many

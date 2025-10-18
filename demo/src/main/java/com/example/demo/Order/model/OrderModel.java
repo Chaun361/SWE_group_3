@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "orders") // กำหนดชื่อตารางในฐานข้อมูล
+@Table(name = "Orders") // กำหนดชื่อตารางในฐานข้อมูล
 public class OrderModel {
 
     @Id
