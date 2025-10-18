@@ -16,7 +16,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
         String username = request.get("username");
@@ -32,7 +31,8 @@ public class UserController {
                     .body(Map.of("message", "Invalid username or password"));
         }
     }
-         @PostMapping("/register")
+
+    @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
         try {
             User newUser = userService.registerUser(user);
@@ -41,37 +41,36 @@ public class UserController {
                             "message", "User registered successfully",
                             "userId", newUser.getUserId(),
                             "username", newUser.getUsername(),
-                            "fullName", newUser.getFullName()
-                    ));
+                            "fullName", newUser.getFullName()));
         } catch (IllegalArgumentException e) {
             // ถ้าusernameซ้ำกับข้อมูลไม่ครบ
-                if (e.getMessage().contains("exists")) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("error", e.getMessage()));
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
-        }
+            if (e.getMessage().contains("exists")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(Map.of("error", e.getMessage()));
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", e.getMessage()));
+            }
         } catch (Exception e) {
             // ถ้า body ผิดหรือข้อมูลไม่ครบ
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "Invalid user data", "details", e.getMessage()));
         }
     }
-        @GetMapping("/{id}")
+
+    @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         try {
             User user = userService.getUserById(id);
             return ResponseEntity.ok(Map.of(
-                "userId", user.getUserId(),
-                "username", user.getUsername(),
-                "fullName", user.getFullName(),
-                "phone", user.getPhone(),
-                "userAddress", user.getUserAddress()
-        ));
+                    "userId", user.getUserId(),
+                    "username", user.getUsername(),
+                    "fullName", user.getFullName(),
+                    "phone", user.getPhone(),
+                    "userAddress", user.getUserAddress()));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("error", e.getMessage()));
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 }

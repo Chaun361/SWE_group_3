@@ -20,6 +20,7 @@ public class UserService {
             User user = userOpt.get();
             return user.getPassword().equals(password);
         }
+        System.out.println("User not found");
         return false;
     }
 
@@ -28,14 +29,15 @@ public class UserService {
                 .map(User::getUserId)
                 .orElse(null);
     }
+
     public User registerUser(User user) {
         if (user.getUsername() == null || user.getUsername().trim().isEmpty() ||
-    user.getPassword() == null || user.getPassword().trim().isEmpty() ||
-    user.getFullName() == null || user.getFullName().trim().isEmpty() ||
-    user.getPhone() == null || user.getPhone().trim().isEmpty() ||
-    user.getUserAddress() == null || user.getUserAddress().trim().isEmpty()) {
-    throw new IllegalArgumentException("All fields are required and cannot be empty.");
-}
+                user.getPassword() == null || user.getPassword().trim().isEmpty() ||
+                user.getFullName() == null || user.getFullName().trim().isEmpty() ||
+                user.getPhone() == null || user.getPhone().trim().isEmpty() ||
+                user.getUserAddress() == null || user.getUserAddress().trim().isEmpty()) {
+            throw new IllegalArgumentException("All fields are required and cannot be empty.");
+        }
         Optional<User> existingUser = userRepository.findByUsername(user.getUsername());
 
         if (existingUser.isPresent()) {
@@ -44,6 +46,7 @@ public class UserService {
 
         return userRepository.save(user);
     }
+
     public User getUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));

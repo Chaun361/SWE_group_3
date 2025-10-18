@@ -47,14 +47,12 @@
     
     <script>
         const LOGIN_PAGE = 'login.html';
-        const MOCK_PROFILE_ENDPOINT = 'mock/mock-profile.json'; // แก้ไขเส้นทาง Mock JSON
-        const USER_API = '/api/users/'; 
-
         // ----------------------------------------------------------------
         // 1. HEADER & LOGIN CHECK (Task 5)
         // ----------------------------------------------------------------
         function updateHeader() {
             const username = sessionStorage.getItem('username');
+            const userId = sessionStorage.getItem('userId');
             const isLogin = sessionStorage.getItem('isLogin') === 'true';
             const linksContainer = document.getElementById('header-auth-links');
 
@@ -79,32 +77,31 @@
         // ----------------------------------------------------------------
         
         async function fetchAndRenderProfile() {
-            const userId = sessionStorage.getItem('userId');
-            const displayContainer = document.getElementById('profile-info-display');
-
-            if (!userId) {
-                displayContainer.innerHTML = '<p style="color: red;">Error: User ID not found in session.</p>';
-                return;
-            }
-
             try {
-                // **Mock Fetch Logic** (แก้ปัญหาการโหลด Mock JSON)
-                
-                // Mock Scenario: ไม่พบ User (ถ้า userId เป็น 000)
-                if (userId === '000') {
-                    throw new Error('User not found (Mock 404).');
-                }
+                // Hardcoded user ID for testing
+                const userId = sessionStorage.getItem('userId');
+                const response = await fetch(`http://localhost:8080/api/users/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-                // ใช้ MOCK_PROFILE_ENDPOINT ที่แก้ไขเส้นทางแล้ว
-                const response = await fetch(MOCK_PROFILE_ENDPOINT); 
-                
                 if (!response.ok) {
-                    throw new Error(`Failed to fetch profile data (Mock): ${response.status}`);
+                    throw new Error(`Failed to fetch profile data: ${response.status}`);
                 }
 
-                const data = await response.json(); 
-                
-                // Render ข้อมูล JSON สู่ Element ที่ถูกต้อง
+                const data = await response.json();
+                // Expected response format:
+                // {
+                //     "phone": "12346",
+                //     "username": "johndoe",
+                //     "fullName": "John Doe",
+                //     "userId": 1,
+                //     "userAddress": "473/47 Thammasat rangsit Pathumthani 10220 Thailand"
+                // }
+
+                // Render profile data
                 document.getElementById('full-name').textContent = data.fullName;
                 document.getElementById('username-display').textContent = data.username;
                 document.getElementById('phone-display').textContent = data.phone;
@@ -112,8 +109,8 @@
 
             } catch (error) {
                 console.error('Profile Fetch Error:', error);
-                // แสดงข้อความ error ที่เห็นในภาพ
-                displayContainer.innerHTML = '<p style="color: red;">Error loading profile data. Please check Mock file or API.</p>';
+                const displayContainer = document.getElementById('profile-info-display');
+                displayContainer.innerHTML = '<p style="color: red;">Error loading profile data. Please try again later.</p>';
             }
         }
         

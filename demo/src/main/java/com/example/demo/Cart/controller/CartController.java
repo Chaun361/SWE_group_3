@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.example.demo.Cart.dto.CartDTO;
 import com.example.demo.Cart.service.CartService;
 
-
 @RestController
 public class CartController {
 
@@ -22,17 +21,20 @@ public class CartController {
 
     @GetMapping("/api/cart/{userId}")
     public CartDTO getActiveCartByUserId(@PathVariable Long userId) {
-        // The CartService method findActiveCartByUserId(Long) is not defined on CartService.
-        // Return a safe default to avoid compile errors; replace with a service call once the method is added.
+        // The CartService method findActiveCartByUserId(Long) is not defined on
+        // CartService.
+        // Return a safe default to avoid compile errors; replace with a service call
+        // once the method is added.
         return new CartDTO();
     }
-    
+
     @PostMapping("/api/cart/add")
     public CartDTO addProductToCart(
-        @RequestParam Long userId,
-        @RequestParam Long productId,
-        @RequestParam int quantity
-    ) {
+            @RequestParam Long userId,
+            @RequestParam Long productId,
+            @RequestParam int quantity) {
+        System.out.println("Received request to add product to cart: userId=" + userId + ", productId=" + productId
+                + ", quantity=" + quantity);
         return cartService.addProductToCart(userId, productId, quantity);
     }
 

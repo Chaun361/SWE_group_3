@@ -10,7 +10,7 @@ services:
       - SA_PASSWORD=MyStrong!Pass123
       - MSSQL_PID=Developer
     ports:
-      - "1434:1433"
+      - "1433:1433"
     volumes:
       - mssql-data:/var/opt/mssql
       - ./backups:/backups
