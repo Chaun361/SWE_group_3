@@ -12,7 +12,7 @@
     <header class="main-header">
         <div class="logo">WEBSITE NAME</div>
         <nav class="auth-links" id="header-auth-links">
-            </nav>
+        </nav>
     </header>
 
     <main class="container">
@@ -22,7 +22,7 @@
             
             <div class="cart-items" id="cart-items-container">
                 <p style="text-align: center;">Loading cart items...</p>
-                </div>
+            </div>
 
             <div class="cart-summary">
                 <h2>Order Summary</h2>
@@ -49,41 +49,62 @@
     // API Endpoints
     const CART_API_ENDPOINT = 'http://localhost:8080/api/cart/';
     const CHECKOUT_PAGE = 'checkout.html';
-    const LOGIN_PAGE = 'login.html';
+    
+    // ** ลบ Hardcoded MOCK_CART_ITEMS ออก และให้ Cart Logic ใช้ Global Array นี้แทน **
+    let currentCartData = []; 
+
 
     // ----------------------------------------------------------------
-    // 1. HEADER LOGIC (Unchanged)
+    // 1. HEADER LOGIC (Task 5)
     // ----------------------------------------------------------------
     function updateHeader() {
-        // ... (โค้ด updateHeader เดิม) ...
         const username = sessionStorage.getItem('username');
         const isLogin = sessionStorage.getItem('isLogin') === 'true';
         const linksContainer = document.getElementById('header-auth-links');
+        const mockCartCount = sessionStorage.getItem('mockCartCount') || '0';
 
-        linksContainer.innerHTML = ''; 
-
-        if (isLogin) {
-            linksContainer.innerHTML = `
-                <a href="order-history.html" class="nav-link">Order History</a>
-                <a href="profile.html" class="nav-link">${username}</a>
-                <a href="cart.html" class="nav-link cart-icon">🛒</a> 
-            `;
-        } else {
-            linksContainer.innerHTML = `
-                <a href="${LOGIN_PAGE}" class="nav-link">Login</a>
-                <a href="register.html" class="nav-link">Register</a>
-            `;
+        if (!isLogin || !username) { 
+            window.location.href = LOGIN_PAGE; 
+            return false; 
         }
+        
+        linksContainer.innerHTML = `
+            <a href="index.html" class="nav-link">HOME</a>
+            <a href="order-history.html" class="nav-link">Order History</a>
+            <a href="profile.html" class="nav-link">${username} 👤</a>
+            <a href="cart.html" class="nav-link cart-icon">🛒 (${mockCartCount})</a> 
+        `;
+        return true;
     }
 
     // ----------------------------------------------------------------
-    // 2. PRODUCT RENDERING AND CALCULATION LOGIC (Unchanged)
+    // 2. RENDERING LOGIC & RECALCULATION
     // ----------------------------------------------------------------
+    
+    function calculateAndRenderSummary() {
+        const summarySubtotal = document.getElementById('summary-subtotal');
+        const summaryTotal = document.getElementById('summary-total');
+        
+        let subtotal = 0;
+        const shippingFee = 0.00; 
+        
+        // คำนวณจาก Global Array
+        currentCartData.forEach(item => {
+            subtotal += item.subtotal;
+        });
+
+        const total = subtotal + shippingFee;
+        
+        summarySubtotal.textContent = subtotal.toLocaleString() + ' ฿';
+        summaryTotal.textContent = total.toLocaleString() + ' ฿';
+
+        document.querySelector('.checkout-btn').disabled = (subtotal === 0);
+    }
     
     function renderCartItems(cartItems) {
         const container = document.getElementById('cart-items-container');
-        let subtotal = 0;
         container.innerHTML = '';
+        currentCartData = cartItems; // **อัปเดต Global Data Store**
 
         if (!cartItems || cartItems.length === 0) {
             container.innerHTML = '<p style="text-align: center; padding: 20px;">Your cart is empty.</p>';
@@ -92,8 +113,6 @@
             document.getElementById('summary-total').textContent = '0 ฿';
             return;
         }
-
-        document.querySelector('.checkout-btn').disabled = false;
 
         cartItems.forEach(item => {
             const itemTotal = item.product.price * item.quantity;
@@ -107,9 +126,15 @@
                         <p class="item-price">${item.product.price.toLocaleString()} ฿ / unit</p>
                     </div>
                     <div class="item-quantity">
-                        <input type="number" value="${item.quantity}" min="1" disabled>
+                        <input 
+                            type="number" 
+                            value="${item.quantity}" 
+                            min="1" 
+                            data-product-id="${item.productId}" 
+                            onchange="updateQuantity(this)"
+                        > 
                     </div>
-                    <div class="item-subtotal">
+                    <div class="item-subtotal" id="subtotal-${item.productId}">
                         ${itemTotal.toLocaleString()} ฿
                     </div>
                     <button class="item-remove" onclick="removeFromCart(${item.product.id})">&times;</button>
@@ -118,18 +143,68 @@
             container.innerHTML += itemHtml;
         });
         
-        document.getElementById('summary-subtotal').textContent = subtotal.toLocaleString() + ' ฿';
-        document.getElementById('summary-total').textContent = subtotal.toLocaleString() + ' ฿';
+        calculateAndRenderSummary();
+    }
+
+    // ----------------------------------------------------------------
+    // 3. CART ACTION LOGIC (Client-side Recalculation)
+    // ----------------------------------------------------------------
+    
+    function saveCartToSession() {
+        // Helper: บันทึก Global Array กลับเข้า Session
+        sessionStorage.setItem('localCartItems', JSON.stringify(currentCartData));
+        const newCartCount = currentCartData.reduce((sum, item) => sum + item.quantity, 0);
+        sessionStorage.setItem('mockCartCount', newCartCount.toString());
+        updateHeader();
+    }
+
+    function updateQuantity(inputElement) {
+        const productId = parseInt(inputElement.getAttribute('data-product-id'));
+        const newQuantity = parseInt(inputElement.value);
+        
+        if (newQuantity < 1) {
+            alert("Quantity must be at least 1.");
+            inputElement.value = 1; 
+            return;
+        }
+
+        const itemIndex = currentCartData.findIndex(item => item.productId === productId);
+        
+        if (itemIndex > -1) {
+            const item = currentCartData[itemIndex];
+            
+            item.quantity = newQuantity;
+            item.subtotal = item.price * newQuantity; 
+            
+            document.getElementById(`subtotal-${productId}`).textContent = item.subtotal.toLocaleString() + ' ฿';
+            
+            calculateAndRenderSummary(); 
+            saveCartToSession(); // บันทึก Session หลังการอัปเดต
+
+            alert(`Mock API: Quantity updated locally. Total recalculated.`);
+        }
+    }
+
+    function removeItem(productIdStr) {
+        const productId = parseInt(productIdStr);
+        if (confirm(`Are you sure you want to remove Product ${productId}? (Mock)`)) {
+            
+            currentCartData = currentCartData.filter(item => item.productId !== productId);
+            
+            renderCartItems(currentCartData); 
+            saveCartToSession(); // บันทึก Session หลังการลบ
+
+            alert(`Mock API: Item ${productId} removed. Cart updated.`);
+        }
     }
 
 
     // ----------------------------------------------------------------
-    // 3. DATA FETCHING (Mock Logic - Revised for Task 6)
+    // 4. DATA FETCHING (Source of Truth is sessionStorage)
     // ----------------------------------------------------------------
     async function fetchAndRenderCart() {
         const userId = sessionStorage.getItem('userId');
         const isLogin = sessionStorage.getItem('isLogin') === 'true';
-        const container = document.getElementById('cart-items-container');
 
         if (!isLogin || !userId) {
             alert('Please log in to view your cart.');
@@ -195,8 +270,10 @@
     // 5. INITIALIZATION
     // ----------------------------------------------------------------
     document.addEventListener('DOMContentLoaded', () => {
-        updateHeader();
-        fetchAndRenderCart();
+        const loggedIn = updateHeader();
+        if (loggedIn) {
+            fetchAndRenderCart();
+        }
     });
 </script>
 </body>

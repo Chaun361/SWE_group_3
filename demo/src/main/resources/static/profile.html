@@ -65,9 +65,10 @@
             
             // Render Logged-in Header
             linksContainer.innerHTML = `
+                <a href="index.html" class="nav-link">HOME</a>
                 <a href="order-history.html" class="nav-link">Order History</a>
-                <a href="profile.html" class="nav-link">${username}</a>
-                <a href="cart.html" class="nav-link cart-icon">🛒 Cart</a> 
+                <a href="profile.html" class="nav-link">${username} 👤</a>
+                <a href="cart.html" class="nav-link cart-icon">🛒</a> 
             `;
             return true;
         }

@@ -1,0 +1,15 @@
+/*
+    -------------------------------------------
+    CUSTOM STYLES FOR REGISTER.HTML (Task 7)
+    -------------------------------------------
+*/
+
+/* Override: ขยายความกว้างของกล่อง Register ให้กว้างขึ้นเพื่อรองรับ input ที่มากขึ้น */
+.register-box {
+    max-width: 550px; 
+}
+
+/* ปรับปรุง: สไตล์สำหรับ textarea (Address) ให้สามารถปรับขนาดได้ */
+.form-group textarea {
+    resize: vertical; 
+}
