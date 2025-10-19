@@ -10,28 +10,28 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
 
-
 @Entity
-@Table(name = "cart_items")
+@Table(name = "CartItems")
 public class CartItemsModel {
-    
-    @Id 
+
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "cart_item_id")
-    private Long cartItemId; 
+    @Column(name = "CartItemID")
+    private Long cartItemId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cart_id", nullable = false)
-    private CartModel cart; 
-    
+    @JoinColumn(name = "CartID", nullable = false)
+    private CartModel cart;
+
     // เก็บ Product ID เท่านั้น
-    @Column(name = "product_id", nullable = false) 
-    private Long productId; 
-    
-    @Column(name = "quantity", nullable = false)
-    private int quantity; 
-    
-    public CartItemsModel() {}
+    @Column(name = "ProductID", nullable = false)
+    private Long productId;
+
+    @Column(name = "Quantity", nullable = false)
+    private int quantity;
+
+    public CartItemsModel() {
+    }
 
     public Long getCartItemId() {
         return cartItemId;

@@ -50,9 +50,7 @@
     const CART_API_ENDPOINT = 'http://localhost:8080/api/cart/';
     const CHECKOUT_PAGE = 'checkout.html';
     const LOGIN_PAGE = 'login.html';
-    // ** ลบ Hardcoded MOCK_CART_ITEMS ออก และให้ Cart Logic ใช้ Global Array นี้แทน **
     let currentCartData = []; 
-
 
     // ----------------------------------------------------------------
     // 1. HEADER LOGIC (Task 5)
@@ -88,9 +86,9 @@
         let subtotal = 0;
         const shippingFee = 0.00; 
         
-        // คำนวณจาก Global Array
+        // Calculate from Global Array
         currentCartData.forEach(item => {
-            subtotal += item.subtotal;
+            subtotal += item.itemTotalPrice;
         });
 
         const total = subtotal + shippingFee;
@@ -104,7 +102,7 @@
     function renderCartItems(cartItems) {
         const container = document.getElementById('cart-items-container');
         container.innerHTML = '';
-        currentCartData = cartItems; // **อัปเดต Global Data Store**
+        currentCartData = cartItems; // Update Global Data Store
 
         if (!cartItems || cartItems.length === 0) {
             container.innerHTML = '<p style="text-align: center; padding: 20px;">Your cart is empty.</p>';
@@ -115,15 +113,12 @@
         }
 
         cartItems.forEach(item => {
-            const itemTotal = item.product.price * item.quantity;
-            subtotal += itemTotal;
-            
             const itemHtml = `
                 <div class="cart-item">
                     <div class="item-img"></div>
                     <div class="item-details">
-                        <p class="item-name">${item.product.name}</p>
-                        <p class="item-price">${item.product.price.toLocaleString()} ฿ / unit</p>
+                        <p class="item-name">${item.productName}</p>
+                        <p class="item-price">${item.itemPrice.toLocaleString()} ฿ / unit</p>
                     </div>
                     <div class="item-quantity">
                         <input 
@@ -135,9 +130,9 @@
                         > 
                     </div>
                     <div class="item-subtotal" id="subtotal-${item.productId}">
-                        ${itemTotal.toLocaleString()} ฿
+                        ${item.itemTotalPrice.toLocaleString()} ฿
                     </div>
-                    <button class="item-remove" onclick="removeFromCart(${item.product.id})">&times;</button>
+                    <button class="item-remove" onclick="removeFromCart(${item.productId})">&times;</button>
                 </div>
             `;
             container.innerHTML += itemHtml;
@@ -151,7 +146,7 @@
     // ----------------------------------------------------------------
     
     function saveCartToSession() {
-        // Helper: บันทึก Global Array กลับเข้า Session
+        // Helper: Save Global Array back to Session
         sessionStorage.setItem('localCartItems', JSON.stringify(currentCartData));
         const newCartCount = currentCartData.reduce((sum, item) => sum + item.quantity, 0);
         sessionStorage.setItem('mockCartCount', newCartCount.toString());
@@ -174,30 +169,16 @@
             const item = currentCartData[itemIndex];
             
             item.quantity = newQuantity;
-            item.subtotal = item.price * newQuantity; 
+            item.itemTotalPrice = item.itemPrice * newQuantity; 
             
-            document.getElementById(`subtotal-${productId}`).textContent = item.subtotal.toLocaleString() + ' ฿';
+            document.getElementById(`subtotal-${productId}`).textContent = item.itemTotalPrice.toLocaleString() + ' ฿';
             
             calculateAndRenderSummary(); 
-            saveCartToSession(); // บันทึก Session หลังการอัปเดต
+            saveCartToSession(); // Save Session after update
 
             alert(`Mock API: Quantity updated locally. Total recalculated.`);
         }
     }
-
-    function removeItem(productIdStr) {
-        const productId = parseInt(productIdStr);
-        if (confirm(`Are you sure you want to remove Product ${productId}? (Mock)`)) {
-            
-            currentCartData = currentCartData.filter(item => item.productId !== productId);
-            
-            renderCartItems(currentCartData); 
-            saveCartToSession(); // บันทึก Session หลังการลบ
-
-            alert(`Mock API: Item ${productId} removed. Cart updated.`);
-        }
-    }
-
 
     // ----------------------------------------------------------------
     // 4. DATA FETCHING (Source of Truth is sessionStorage)
@@ -234,13 +215,14 @@
 
         } catch (error) {
             console.error('Cart Load Error:', error);
+            const container = document.getElementById('cart-items-container');
             container.innerHTML = 
                 '<p style="color: red; text-align: center; padding: 20px;">Could not load cart data. Please check Mock file/Server.</p>';
         }
     }
 
     // ----------------------------------------------------------------
-    // 4. CART ITEM REMOVAL
+    // 5. CART ITEM REMOVAL
     // ----------------------------------------------------------------
     async function removeFromCart(productId) {
         const userId = sessionStorage.getItem('userId');
@@ -267,7 +249,7 @@
     }
     
     // ----------------------------------------------------------------
-    // 5. INITIALIZATION
+    // 6. INITIALIZATION
     // ----------------------------------------------------------------
     document.addEventListener('DOMContentLoaded', () => {
         const loggedIn = updateHeader();

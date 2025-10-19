@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "order_items") // กำหนดชื่อตาราง
+@Table(name = "OrderItems") // กำหนดชื่อตาราง
 public class OrderItemModel {
 
     @Id

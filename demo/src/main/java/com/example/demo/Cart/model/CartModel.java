@@ -11,26 +11,25 @@ import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @Entity
 @Table(name = "Cart")
 public class CartModel {
-    
-    @Id 
+
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "CartId") 
-    private Long cartId; 
-    
+    @Column(name = "CartId")
+    private Long cartId;
+
     @Column(name = "UserID", nullable = false)
-    private Long userId; 
-    
-    @Column(name = "IsActive", nullable = false) 
+    private Long userId;
+
+    @Column(name = "IsActive", nullable = false, columnDefinition = "BIT(1) default 1")
     private boolean isActive = true;
 
     // ความสัมพันธ์ One-to-Many
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CartItemsModel> cartItems = new ArrayList<>(); 
-    
+    private List<CartItemsModel> cartItems = new ArrayList<>();
+
     public CartModel() {
     }
 
@@ -53,11 +52,11 @@ public class CartModel {
     public boolean isActive() {
         return isActive;
     }
-    
+
     public void setActive(boolean isActive) {
         this.isActive = isActive;
     }
-    
+
     public List<CartItemsModel> getCartItems() {
         return cartItems;
     }
@@ -65,13 +64,13 @@ public class CartModel {
     public void setCartItems(List<CartItemsModel> cartItems) {
         this.cartItems = cartItems;
     }
-    
+
     // เมธอดช่วย (Best Practice)
     public void addItem(CartItemsModel item) {
         this.cartItems.add(item);
         item.setCart(this);
     }
-    
+
     public void removeItem(CartItemsModel item) {
         this.cartItems.remove(item);
         item.setCart(null);

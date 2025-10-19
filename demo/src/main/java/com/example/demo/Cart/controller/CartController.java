@@ -25,7 +25,7 @@ public class CartController {
         // CartService.
         // Return a safe default to avoid compile errors; replace with a service call
         // once the method is added.
-        return new CartDTO();
+        return cartService.getActiveCartByUserId(userId);
     }
 
     @PostMapping("/api/cart/add")

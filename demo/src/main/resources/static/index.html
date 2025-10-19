@@ -30,7 +30,7 @@
 <script>
     // API Endpoint และค่าคงที่
     const ADD_TO_CART_MOCK_ENDPOINT = '/mock/add_to_cart.json'; 
-    const ADD_TO_CART_API = '/api/cart/items'; 
+    const ADD_TO_CART_API = 'http://localhost:8080/api/cart/add'; // Updated API endpoint
     const API_PRODUCT_ENDPOINT = 'http://localhost:8080/api/products'; 
     const QUANTITY = 1; 
     const LOGIN_PAGE = 'login.html';
@@ -152,7 +152,7 @@
     }
     
     // ----------------------------------------------------------------
-    // 3. CART STORE & ADD TO CART LOGIC (Task 1, 2)
+    // 3. CART STORE & ADD TO CART LOGIC (MODIFIED)
     // ----------------------------------------------------------------
 
     async function fetchCartCount() {
@@ -213,31 +213,49 @@
         const productId = button.getAttribute('data-product-id');
         if (!productId) return;
 
-        // ... (โค้ด Mock API Call เดิม) ...
-
+        // MODIFIED: Use the actual API endpoint with POST method
         try {
-            const response = await fetch(ADD_TO_CART_MOCK_ENDPOINT);
-            const data = await response.json();
+            // Create the URL with query parameters
+            const url = `${ADD_TO_CART_API}?userId=${userId}&productId=${productId}&quantity=${QUANTITY}`;
             
-            if (data.success) {
-                alert(`Product added to cart successfully! (Product ID: ${productId})`); 
+            // Make the POST request
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            
+            // Check if the request was successful
+            if (response.ok) {
+                const data = await response.json();
                 
-                // * FIXED: อัปเดต Local Cart Store ด้วยรายละเอียดสินค้า *
-                updateLocalCart(productId, QUANTITY); 
-                
-                // Update Mock Cart Count (Logic เดิม)
-                let currentCount = parseInt(sessionStorage.getItem('mockCartCount') || '0');
-                currentCount += QUANTITY; 
-                sessionStorage.setItem('mockCartCount', currentCount.toString()); 
-                
-                fetchCartCount(); 
-
+                // Check if the API response indicates success
+                if (data && data.items) {
+                    alert(`Product added to cart successfully! (Product ID: ${productId})`); 
+                    
+                    // * FIXED: อัปเดต Local Cart Store ด้วยรายละเอียดสินค้า *
+                    updateLocalCart(productId, QUANTITY); 
+                    
+                    // Update Cart Count based on API response
+                    // Calculate total items in cart from the API response
+                    const totalItems = data.items.reduce((total, item) => total + item.quantity, 0);
+                    sessionStorage.setItem('mockCartCount', totalItems.toString()); 
+                    
+                    fetchCartCount(); 
+                } else {
+                    alert("Failed to add item to cart. Please try again.");
+                }
             } else {
-                alert(data.message || "An unknown error occurred during add to cart."); 
+                // Handle HTTP error status
+                const errorText = await response.text();
+                console.error('API Error:', response.status, errorText);
+                alert(`Failed to add item to cart. Server returned ${response.status}.`);
             }
 
         } catch (error) {
-            alert('Server/Mock connection error. Cannot add item to cart.');
+            console.error('Add to Cart Error:', error);
+            alert('Server connection error. Cannot add item to cart.');
         }
     }
 
