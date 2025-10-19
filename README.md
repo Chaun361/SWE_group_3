@@ -37,7 +37,7 @@
    docker-compose build
    ```
    
-5. **เปิดใช้งาน container แอพฯโดยจะรัน mssql และแอพ ใน container**
+5. **เปิดใช้งาน container แอพฯโดยจะรัน mssql + springboot ใน container**
 
    ```bash
    docker-compose up -d
