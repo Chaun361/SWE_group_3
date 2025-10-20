@@ -59,3 +59,5 @@
   ```bash
    docker builder prune -af
    ```
+
+Figma: https://www.figma.com/design/MaKrNKpUG15iTaNADvWosh/prototype?node-id=0-1&t=y67YSCU86o9XK5BS-1
