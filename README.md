@@ -60,4 +60,6 @@
    docker builder prune -af
    ```
 
+Trello Requirement: https://trello.com/invite/b/68dcee39d2a4a3535b73894e/ATTI8c4a29c3f66c6f267036194209e0a6be15731767/group3sec100001
 Figma: https://www.figma.com/design/MaKrNKpUG15iTaNADvWosh/prototype?node-id=0-1&t=y67YSCU86o9XK5BS-1
+
