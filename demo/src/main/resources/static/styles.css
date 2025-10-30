@@ -15,7 +15,7 @@
 
 body {
     font-family: 'Kanit', sans-serif;
-    background-color: #FAFAFA; /* Light, almost white background */
+    background-color: #FAFAFA;
     color: #333;
     line-height: 1.6;
 }
@@ -58,7 +58,8 @@ body {
     background-color: #333;
     border-radius: 4px;
 }
-/* Section 6: Logged-in Header Styles */
+
+/* Logged-in Header Styles (Cart Count/Icon) */
 .auth-links.logged-in .nav-link {
     font-weight: 400;
 }
@@ -98,8 +99,14 @@ body {
     3. PRODUCTS GRID LAYOUT (Homepage Shared)
     -------------------------------------------
 */
+.products-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
 .products-grid {
-    display: grid; /* IMPORTANT: Needs display: grid to function */
+    display: grid; 
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
     gap: 30px; 
 }
@@ -113,6 +120,10 @@ body {
     text-align: center;
     transition: transform 0.3s, box-shadow 0.3s;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); 
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .product-card:hover {
@@ -122,7 +133,6 @@ body {
 
 .product-image {
     height: 180px;
-    background-color: #f0f0f0; 
     margin-bottom: 10px;
     display: flex;
     justify-content: center;
@@ -130,10 +140,23 @@ body {
     color: #666;
     font-size: 14px;
 }
-/* Ensure product image rendering is styled here if applicable */
+.product-image img {
+    max-width: 100%; 
+    max-height: 100%;
+    object-fit: contain; 
+}
 
-.product-info {
-    padding: 10px 0;
+.product-image-large {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.product-image-large img {
+    max-height: 100%; 
+    max-width: 100%;
+    object-fit: contain; 
+    display: block;
 }
 
 .product-name {
@@ -149,6 +172,20 @@ body {
     margin-bottom: 15px;
 }
 
+.product-info-grid {
+    display: flex;
+    flex-direction: column;
+    margin-top: auto; 
+    padding: 10px 0;
+    width: 100%; 
+}
+
+.product-text-details {
+    flex-grow: 0; 
+    text-align: left;
+    padding: 0 5px; 
+}
+
 .add-to-cart-btn {
     background-color: #000;
     color: #fff;
@@ -158,6 +195,8 @@ body {
     font-weight: 500;
     border-radius: 4px;
     width: 100%;
+    margin-top: 10px;
+    cursor: pointer; /* Add pointer cursor on hover */
 }
 
 .add-to-cart-btn:hover {
@@ -183,6 +222,7 @@ body {
     padding: 40px;
     border-radius: 12px; 
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); 
+    /* Max-width ถูกกำหนดใน register.css สำหรับ register-box */
     max-width: 450px; 
     width: 100%; 
 }
@@ -206,13 +246,14 @@ body {
     margin-bottom: 5px;
 }
 
-.form-group input, .form-group textarea { /* Added textarea for register form */
+/* สไตล์ Input/Textarea พื้นฐาน */
+.form-group input, .form-group textarea { 
     width: 100%;
     padding: 12px; 
     border: 1px solid #ccc; 
     border-radius: 6px;
     font-size: 16px;
-    font-family: 'Kanit', sans-serif; /* Ensure textarea uses Kanit */
+    font-family: 'Kanit', sans-serif; 
 }
 
 /* Reusing the black button style */
@@ -220,7 +261,7 @@ body {
     padding: 14px 0;
     font-size: 17px;
     font-weight: 600;
-    background-color: #000; /* Re-added color as it was missing */
+    background-color: #000;
     color: #fff;
     border: none;
     border-radius: 4px;
@@ -243,141 +284,10 @@ body {
     font-weight: 500;
     text-decoration: none;
 }
-#login-message, #register-message { /* Combined message styles */
+#login-message, #register-message { 
     text-align: center;
     color: red;
     margin-bottom: 15px;
     font-weight: 500;
     display: none; 
-}
-/*
-    -------------------------------------------
-    CUSTOM STYLES FOR REGISTER.HTML (Task 7)
-    -------------------------------------------
-*/
-.register-box {
-    max-width: 550px !important; /* ขยายความกว้างของกล่องลงทะเบียน */
-}
-
-/* หากต้องการให้ textarea ใน register form ดูดีขึ้น */
-.form-group textarea {
-    resize: vertical;
-}
-/* เพิ่มสไตล์ที่เกี่ยวข้องกับการแสดงผลฟอร์มและข้อความแจ้งเตือน */
-/* Note: เนื่องจาก styles.css หลักมี .form-group input, เราจึงเพิ่ม textarea ให้สอดคล้อง */
-.form-group textarea {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 16px;
-    font-family: 'Kanit', sans-serif;
-    resize: vertical; 
-}
-/*
-    -------------------------------------------
-    10. ORDER CONFIRMATION PAGE STYLES (Moved from styles.css)
-    -------------------------------------------
-*/
-.confirmation-page-layout {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 120px); 
-    padding: 20px;
-}
-
-.confirmation-box {
-    background-color: #fff;
-    border-radius: 12px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    padding: 40px;
-    max-width: 600px;
-    width: 100%;
-    text-align: center;
-}
-
-.confirmation-title {
-    font-size: 32px;
-    font-weight: 700;
-    color: #000;
-    margin-bottom: 15px;
-}
-
-.confirmation-message {
-    font-size: 17px;
-    color: #555;
-    margin-bottom: 30px;
-}
-
-.order-details-summary {
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    padding: 25px;
-    margin-bottom: 30px;
-    text-align: left;
-    border: 1px solid #eee;
-}
-
-.detail-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px dashed #eee;
-}
-.detail-item:last-child {
-    border-bottom: none;
-}
-
-.detail-label {
-    font-weight: 600;
-    color: #333;
-}
-
-.detail-value {
-    color: #555;
-}
-
-.next-steps-message {
-    font-size: 15px;
-    color: #777;
-    margin-bottom: 35px;
-    line-height: 1.5;
-}
-
-.confirmation-actions {
-    display: flex;
-    flex-direction: column; 
-    gap: 15px;
-    width: 80%; 
-    margin: 0 auto; 
-}
-
-/* Base button styles (can reuse .submit-btn but included here for full context) */
-.btn {
-    display: block; 
-    padding: 14px 25px;
-    text-decoration: none;
-    font-size: 16px;
-    font-weight: 600;
-    border-radius: 6px;
-    transition: background-color 0.3s ease;
-}
-
-.primary-btn {
-    background-color: #000;
-    color: #fff;
-    border: 1px solid #000;
-}
-.primary-btn:hover {
-    background-color: #333;
-}
-
-.secondary-btn {
-    background-color: #fff;
-    color: #000;
-    border: 1px solid #ccc;
-}
-.secondary-btn:hover {
-    background-color: #f0f0f0;
 }

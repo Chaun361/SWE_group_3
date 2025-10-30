@@ -46,38 +46,53 @@
     // MOCK DATA
     const MOCK_USERNAME = 'test@example.com'; 
     const MOCK_PASSWORD = 'password';
-    const LOGIN_SUCCESS_PAGE = 'after-login.html'; // Redirect ไปหน้าหลัง Login (ตาม app.js เดิม)
+    const LOGIN_SUCCESS_PAGE = 'index.html'; // Redirect ไปหน้าหลัง Login (ตาม app.js เดิม)
 
     document.addEventListener('DOMContentLoaded', () => {
         const loginForm = document.getElementById('login-form');
         const loginMessage = document.getElementById('login-message'); 
 
         if (loginForm) {
-            loginForm.addEventListener('submit', (e) => { // ไม่ต้องใช้ async ใน Mock
-                e.preventDefault(); 
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
                 if (loginMessage) loginMessage.style.display = 'none';
 
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
 
-                // 1. Mock Logic: ตรวจสอบ Username/Password
-                if (username === MOCK_USERNAME && password === MOCK_PASSWORD) {
-                    
-                    // 2. เมื่อสำเร็จ: บันทึกข้อมูลใน sessionStorage (ตาม Task)
-                    sessionStorage.setItem('username', username);
-                    sessionStorage.setItem('isLogin', 'true');
-                    sessionStorage.setItem('userId', '1001'); // Mock User ID
-                    
-                    setTimeout(() => {
-                        // 3. นำทางไปหน้าสำเร็จ (index.html หรือ after-login.html)
-                        window.location.href = LOGIN_SUCCESS_PAGE; 
-                    }, 500);
-                    
-                } else {
-                    
-                    // 4. เมื่อไม่สำเร็จ (Mock 401): แสดงข้อความแจ้งเตือน (ตาม Task)
+                try {
+                    const response = await fetch('http://localhost:8080/api/users/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: username,
+                            password: password
+                        })
+                    });
+
+                    if (response.ok) {
+                        const userData = await response.json();
+                        
+                        // Store user data in sessionStorage
+                        sessionStorage.setItem('username', username);
+                        sessionStorage.setItem('isLogin', 'true');
+                        sessionStorage.setItem('userId', userData.userId); // Assuming the API returns user ID
+                        
+                        // Redirect to index page
+                        window.location.href = 'index.html';
+                    } else {
+                        // Handle login failure
+                        if (loginMessage) {
+                            loginMessage.textContent = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
+                            loginMessage.style.display = 'block';
+                        }
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
                     if (loginMessage) {
-                        loginMessage.textContent = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'; // ข้อความตาม Task
+                        loginMessage.textContent = 'เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง';
                         loginMessage.style.display = 'block';
                     }
                 }

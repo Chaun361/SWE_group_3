@@ -36,7 +36,7 @@
             <div class="payment-icons">
                 <img src="images/mastercard.png" alt="MasterCard" class="card-icon">
             </div>
-            <p class="small-text">Secure payment via gateway</p>
+            <p class="small-text">MasterCard payment</p>
         </div>
         
         <div class="payment-option">
@@ -45,7 +45,7 @@
             <div class="payment-icons">
                 <img src="images/visa.png" alt="Visa" class="card-icon">
             </div>
-            <p class="small-text">Secure payment via gateway</p>
+            <p class="small-text">VISA payment</p>
         </div>
 
         <div class="payment-option">
@@ -54,7 +54,7 @@
             <div class="payment-icons">
                 <img src="images/promptpay.png" alt="QR Payment" class="card-icon qr-icon">
             </div>
-            <p class="small-text">Pay upon receipt of goods</p>
+            <p class="small-text">QR payment</p>
         </div>
         
     </div>
@@ -87,131 +87,213 @@
     </main>
     
     <script>
-        // API Endpoint และค่าคงที่
-        const CHECKOUT_API = '/api/orders/checkout'; // API Path ตาม Task
-        const MOCK_PROFILE_ENDPOINT = '/mock/profile.json'; // ดึงข้อมูลที่อยู่
-        const MOCK_CART_ENDPOINT = '/mock/cart.json'; // ดึงรายการสินค้า
-        const SUCCESS_REDIRECT = 'cart.html'; // เมื่อสำเร็จให้ redirect ไป cart.html (ตาม Task)
-        const LOGIN_PAGE = 'login.html';
+    // ----------------------------------------------------------------
+    // 0. CONFIGURATION & API ENDPOINTS
+    // ----------------------------------------------------------------
+    const CHECKOUT_API = '/api/orders/checkout';
+    const LOGIN_PAGE = 'login.html';
+    const USER_API = 'http://localhost:8080/api/users/';
+    const CART_API = 'http://localhost:8080/api/cart/';
 
-        // ----------------------------------------------------------------
-        // 1. DATA RENDERING & HEADER LOGIC (reuse existing logic)
-        // ----------------------------------------------------------------
-        function updateHeader() {
-            // (ใช้ Logic จาก cart.html หรือ index.html มาวางที่นี่)
-            const username = sessionStorage.getItem('username');
-            const isLogin = sessionStorage.getItem('isLogin') === 'true';
-            const linksContainer = document.getElementById('header-auth-links');
+    // Fallback Data
+    const FALLBACK_ADDRESS = {
+        fullName: 'Mock User (Fallback)',
+        phone: '081-XXX-XXXX',
+        userAddress: 'Fallback Address: Please check mock/mock-profile.json'
+    };
+    
+    const FALLBACK_CART_ITEMS = [
+        { name: 'Product A (Fallback)', price: 2000, quantity: 1, subtotal: 2000 },
+        { name: 'Product B (Fallback)', price: 1500, quantity: 2, subtotal: 3000 }
+    ];
 
-            linksContainer.innerHTML = ''; 
+    // ----------------------------------------------------------------
+    // 1. HEADER & LOGOUT LOGIC (Unchanged)
+    // ----------------------------------------------------------------
 
-            if (isLogin) {
-                linksContainer.innerHTML = `
-                    <a href="order-history.html" class="nav-link">Order History</a>
-                    <a href="profile.html" class="nav-link">${username}</a>
-                    <a href="cart.html" class="nav-link cart-icon">🛒</a> 
-                `;
-            } else {
-                window.location.href = LOGIN_PAGE; // บังคับ Login หากเข้ามาหน้า Checkout โดยตรง
-            }
+    function updateHeader() {
+        const username = sessionStorage.getItem('username');
+        const isLogin = sessionStorage.getItem('isLogin') === 'true';
+        const linksContainer = document.getElementById('header-auth-links');
+        
+        if (!isLogin || !username) { 
+             window.location.href = LOGIN_PAGE; 
+             return false; 
+        }
+
+        const mockCartCount = sessionStorage.getItem('mockCartCount') || '0';
+        linksContainer.innerHTML = `
+            <a href="index.html" class="nav-link">HOME</a>
+            <a href="order-history.html" class="nav-link">order history</a>
+            <a href="profile.html" class="nav-link">${username} 👤</a>
+            <a href="cart.html" class="nav-link cart-icon">🛒 (${mockCartCount})</a> 
+        `;
+        return true;
+    }
+
+    // ----------------------------------------------------------------
+    // 2. RENDERING LOGIC (Address & Summary) - Unchanged
+    // ----------------------------------------------------------------
+
+    function renderAddress(data) {
+        const addressBox = document.getElementById('shipping-address-box');
+        
+        // REVISED HTML: ใช้ฟิลด์จาก mock-profile.json โดยตรง
+        addressBox.innerHTML = `
+            <h2>1. Shipping Address</h2>
+            <p class="address-name">${data.fullName}</p>
+            <p>${data.userAddress}</p>
+            <p>Phone: ${data.phone}</p>
+        `;
+    }
+
+    function renderSummary(items) {
+        const itemsSummary = document.getElementById('order-items-summary');
+        const summarySubtotal = document.getElementById('summary-subtotal');
+        const summaryTotal = document.getElementById('summary-total');
+        const shippingFeeElement = document.getElementById('summary-shipping');
+        
+        itemsSummary.innerHTML = '';
+        
+        let subtotal = 0;
+        const shippingFee = 0.00; 
+
+        items.forEach(item => {
+            const itemSubtotal = item.price * item.quantity;
+            subtotal += itemSubtotal;
+            
+            itemsSummary.innerHTML += `
+                <div class="summary-item">
+                    <span>${item.name} x${item.quantity}</span>
+                    <span>฿ ${itemSubtotal.toFixed(2)}</span>
+                </div>
+            `;
+        });
+        
+        const total = subtotal + shippingFee;
+        
+        summarySubtotal.textContent = `฿ ${subtotal.toFixed(2)}`;
+        shippingFeeElement.textContent = `฿ ${shippingFee.toFixed(2)}`;
+        summaryTotal.textContent = `฿ ${total.toFixed(2)}`;
+    }
+    
+    // ----------------------------------------------------------------
+    // 3. FETCH DATA (Address & Summary) - FIXED TRY/CATCH
+    // ----------------------------------------------------------------
+
+    async function fetchAddressAndSummary() {
+        const addressBox = document.getElementById('shipping-address-box');
+        const itemsSummary = document.getElementById('order-items-summary');
+        const userId = sessionStorage.getItem("userId");
+        
+        if (!userId) {
+            console.error('No userId found in session');
+            window.location.href = LOGIN_PAGE;
+            return;
+        }
+
+        // 1. Fetch User Profile
+        try {
+            const profileResponse = await fetch(USER_API + userId);
+            if (!profileResponse.ok) throw new Error('Profile fetch failed');
+            
+            const profileData = await profileResponse.json();
+            renderAddress(profileData); 
+        } catch (error) {
+            console.error('Error fetching address:', error);
+            addressBox.innerHTML = `<h2>1. Shipping Address</h2><p style="color: red;" class="error-text">Error loading address. Please try again later.</p>`;
+            renderAddress(FALLBACK_ADDRESS); 
         }
         
-        async function fetchAddressAndSummary() {
-            const userId = sessionStorage.getItem('userId');
-            const addressBox = document.getElementById('shipping-address-box');
-            const itemsSummary = document.getElementById('order-items-summary');
+        // 2. Fetch Cart Data
+        try {
+            const cartResponse = await fetch(CART_API + userId);
+            if (!cartResponse.ok) throw new Error('Cart fetch failed');
             
-            // Fetch Address (Mock)
-            try {
-                const profileResponse = await fetch(MOCK_PROFILE_ENDPOINT);
-                const profileData = await profileResponse.json();
-                
-                addressBox.innerHTML = `
-                    <h2>1. Shipping Address</h2>
-                    <p><strong>${profileData.fullName}</strong> (${profileData.phone})</p>
-                    <p>${profileData.userAddress}</p>
-                    <p style="margin-top: 10px;">(Address Mocked from /mock/profile.json)</p>
-                `;
-            } catch (e) {
-                addressBox.innerHTML = `<h2>1. Shipping Address</h2><p style="color:red;">Error loading address mock data.</p>`;
-            }
+            const cartData = await cartResponse.json(); 
+            const cartItems = cartData.items || [];
+            renderSummary(cartItems.length > 0 ? cartItems : FALLBACK_CART_ITEMS); 
 
-            // Fetch Cart Summary (Mock)
-            try {
-                const cartResponse = await fetch(MOCK_CART_ENDPOINT);
-                const cartItems = await cartResponse.json();
-                
-                let subtotal = 0;
-                itemsSummary.innerHTML = '<ul>';
-                cartItems.forEach(item => {
-                    const itemTotal = item.price * item.quantity;
-                    subtotal += itemTotal;
-                    itemsSummary.innerHTML += `<li>${item.name} x ${item.quantity} (${itemTotal.toLocaleString()} ฿)</li>`;
-                });
-                itemsSummary.innerHTML += '</ul>';
-
-                document.getElementById('summary-subtotal').textContent = subtotal.toLocaleString() + ' ฿';
-                document.getElementById('summary-total').textContent = subtotal.toLocaleString() + ' ฿';
-                
-            } catch (e) {
-                 itemsSummary.innerHTML = '<p style="color:red;">Error loading cart summary mock data.</p>';
-            }
+        } catch (error) {
+            console.error('Error fetching cart:', error);
+            itemsSummary.innerHTML = '<p class="error-text" style="color: red;">Error loading cart. Please try again later.</p>';
+            renderSummary(FALLBACK_CART_ITEMS);
         }
+    }
 
-        // ----------------------------------------------------------------
-        // 2. CHECKOUT LOGIC (POST API)
-        // ----------------------------------------------------------------
 
-        async function handleCheckout(e) {
-            e.preventDefault();
-            const userId = sessionStorage.getItem('userId');
+    // ----------------------------------------------------------------
+    // 4. CHECKOUT LOGIC
+    // ----------------------------------------------------------------
+
+    async function handlePlaceOrder(e) {
+        e.preventDefault();
+        const userId = sessionStorage.getItem('userId');
+        
+        const selectedPayment = document.querySelector('input[name="payment"]:checked'); 
+        
+        if (!userId) { alert('Session expired. Please log in again.'); return; }
+        if (!selectedPayment) { alert('Please select a payment method.'); return; }
+
+        const placeOrderBtn = document.querySelector('.final-checkout'); 
+        
+        // Display Loading/Processing status
+        placeOrderBtn.textContent = 'Processing...';
+        placeOrderBtn.disabled = true;
+
+        try {
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Randomly choose between success and error responses for demo purposes
+            const mockEndpoint = Math.random() > 0.3 ? 
+                'mock/checkout-success.json' : 'mock/checkout-error.json';
             
-            // Mock Body: ส่ง userId ไปเท่านั้น
-            const requestBody = { userId: userId };
+            const response = await fetch(mockEndpoint);
+            if (!response.ok) throw new Error('Failed to fetch mock data');
             
-            // --- Mock Logic: จำลองการสั่งซื้อ ---
+            const result = await response.json();
             
-            // Scenario 1: Mock Error 400/404/409
-            if (userId === '000') {
-                 // Mock 400 Bad Request
-                 alert('Order failed: Your cart is no longer valid (Mock 400).');
-                 return;
+            if (result.success) {
+                // Clear cart count from session
+                sessionStorage.removeItem('mockCartCount');
+                
+                // Show success message with order ID
+                alert(`Order placed successfully!\nOrder ID: ${result.orderId}\nTotal: ฿${result.orderTotal.toFixed(2)}`);
+                
+                // Redirect to order confirmation or history page
+                window.location.href = 'order-history.html';
+            } else {
+                // Show error message
+                alert(`Checkout failed: ${result.message}\n${result.details || ''}`);
             }
 
-            // Mock Success
-            try {
-                 // Simulate API POST
-                 console.log(`Mock POST to ${CHECKOUT_API} with body:`, requestBody);
-                 
-                 setTimeout(() => {
-                    // Success: แสดง alert และ redirect
-                    alert("Order placed successfully!");
-                    window.location.href = SUCCESS_REDIRECT; 
-                 }, 1000);
-
-            } catch (error) {
-                // Network error (in real scenario)
-                alert("An unexpected error occurred. Please try again."); 
-            }
+        } catch (error) {
+            console.error('Checkout Error:', error);
+            alert('Failed to process order. Please try again later.');
+            
+        } finally {
+            placeOrderBtn.textContent = 'Place Order';
+            placeOrderBtn.disabled = false;
         }
+    }
 
-        // ----------------------------------------------------------------
-        // 3. INITIALIZATION
-        // ----------------------------------------------------------------
-        document.addEventListener('DOMContentLoaded', () => {
-            if (sessionStorage.getItem('isLogin') !== 'true') {
-                 window.location.href = LOGIN_PAGE; // บังคับ Login
-                 return;
-            }
-            
-            updateHeader();
+    // ----------------------------------------------------------------
+    // 5. INITIALIZATION
+    // ----------------------------------------------------------------
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const loggedIn = updateHeader(); 
+        if (loggedIn) {
             fetchAddressAndSummary();
-
-            const checkoutForm = document.getElementById('checkout-form');
-            if (checkoutForm) {
-                checkoutForm.addEventListener('submit', handleCheckout);
-            }
-        });
-    </script> 
+        }
+        
+        // Add Event Listener ให้กับ Place Order Button
+        const placeOrderBtn = document.querySelector('.final-checkout');
+        if (placeOrderBtn) {
+            placeOrderBtn.addEventListener('click', handlePlaceOrder);
+        }
+    });
+</script> 
 </body>
 </html>

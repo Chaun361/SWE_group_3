@@ -1,0 +1,7 @@
+{
+    "success": true,
+    "message": "Order placed successfully",
+    "orderId": "ORD-123456",
+    "orderTotal": 5000.00,
+    "timestamp": "2025-10-18T10:30:00Z"
+}

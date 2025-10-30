@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Product Detail | WEBSITE NAME</title>
+    <link rel="stylesheet" href="styles.css"> 
+    <link rel="stylesheet" href="product-detail.css"> 
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="logo">WEBSITE NAME</div>
+        <nav class="auth-links" id="header-auth-links">
+            </nav>
+    </header>
+
+    <main class="container">
+        <div id="product-detail-content">
+            <p style="text-align: center; padding: 50px;">Loading product details...</p>
+        </div>
+    </main>
+    
+    <script>
+        const LOGIN_PAGE = 'login.html';
+        const ADD_TO_CART_MOCK_ENDPOINT = 'mock/add_to_cart.json'; 
+        // Endpoint ที่ถูกต้อง: ชี้ไปที่ Backend Server
+        const API_PRODUCT_ENDPOINT = 'http://localhost:8080/api/products'; 
+        
+        // ** NEW: MAP Product ID ไปยังชื่อไฟล์รูปภาพจริง **
+        const IMAGE_MAP = {
+            "1": "1.jpg", 
+            "2": "2.jpg", 
+            "4": "4.jpg", 
+            "5": "5.jpg", 
+            "6": "6.jpg", 
+            "7": "7.jpg", 
+            "8": "8.jpg",
+            "9": "9.jpg"
+        };
+        
+        // ----------------------------------------------------------------
+        // 1. HEADER & LOGIN CHECK
+        // ----------------------------------------------------------------
+        function updateHeader() {
+            const username = sessionStorage.getItem('username');
+            const isLogin = sessionStorage.getItem('isLogin') === 'true';
+            const linksContainer = document.getElementById('header-auth-links');
+            const mockCartCount = sessionStorage.getItem('mockCartCount') || '0'; 
+
+            if (!isLogin || !username) {
+                linksContainer.innerHTML = `<a href="${LOGIN_PAGE}" class="nav-link">Login</a><a href="register.html" class="nav-link">Register</a>`;
+                return false; 
+            }
+            
+            linksContainer.innerHTML = `
+                <a href="index.html" class="nav-link">HOME</a>
+                <a href="order-history.html" class="nav-link">order history</a>
+                <a href="profile.html" class="nav-link">${username} 👤</a>
+                <a href="cart.html" class="nav-link cart-icon">🛒 (<span id="cart-count">${mockCartCount}</span>)</a> 
+            `;
+            return true;
+        }
+
+        // ----------------------------------------------------------------
+        // 2. RENDER AND FETCH LOGIC (FINAL FIX)
+        // ----------------------------------------------------------------
+        function getProductIdFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id'); // ดึง ID จาก URL เช่น ?id=1
+        }
+        
+        async function fetchAndRenderProductDetail() {
+            const productId = getProductIdFromUrl();
+            const container = document.getElementById('product-detail-content');
+            
+            if (!productId) {
+                container.innerHTML = '<p style="color: red; text-align: center; padding: 50px;">Error: Product ID not specified.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(API_PRODUCT_ENDPOINT); 
+                if (!response.ok) throw new Error('Failed to fetch product list.');
+
+                const allProducts = await response.json(); 
+                
+                // *** FIXED: Logic การค้นหาสินค้า: รองรับทั้งฟิลด์ ID และ productId ***
+                const product = allProducts.find(p => 
+                    (p.id && p.id.toString() === productId) || 
+                    (p.productId && p.productId.toString() === productId)
+                );
+
+                if (!product) {
+                    container.innerHTML = `<p style="color: red; text-align: center; padding: 50px;">Error: Product ID ${productId} not found on the server.</p>`;
+                    return;
+                }
+                
+                renderDetail(product);
+
+            } catch (error) {
+                console.error('Detail Load Error:', error);
+                container.innerHTML = `<p style="color: red; text-align: center; padding: 50px;">Error loading details: Check API and Data structure. Error: ${error.message || 'API connection failed.'}</p>`;
+            }
+        }
+        
+        function renderDetail(product) {
+            const container = document.getElementById('product-detail-content');
+            
+            // ใช้ OR Logic เพื่อดึงชื่อฟิลด์ที่ถูกต้อง (รองรับชื่อฟิลด์จาก Backend JSON)
+            const name = product.productName || product.name || 'N/A';
+            const price = product.price || 0;
+            const stock = product.stockQuantity || product.stock || 0;
+            const productId = product.productId || product.id || 'N/A';
+            const description = product.description || product.desc || 'No product description is available from the server.'; // ดึงคำอธิบาย
+            
+            // *** FINAL FIX: ดึงชื่อไฟล์รูปภาพจาก IMAGE_MAP ***
+            const imageUrl = IMAGE_MAP[productId.toString()] || 'placeholder.png'; 
+            
+            container.innerHTML = `
+                <div class="detail-content">
+                    <div class="product-image-large">
+                        <img src="images/${imageUrl}" alt="${name}">
+                    </div>
+                    <div class="product-info-detail">
+                        <h1>${name}</h1>
+                        <p class="product-sku">SKU: PD${productId} | Stock: ${stock}</p>
+                        
+                        <div class="detail-description">
+                            <h3>Product Description</h3>
+                            <p>${description}</p>
+                            
+                            <h3>Key Specifications</h3>
+                            <ul>
+                                <li>Price: ฿ ${price.toLocaleString()}</li>
+                                <li>Stock Status: ${stock > 0 ? 'In Stock' : 'Out of Stock'}</li>
+                                <li>ID: ${productId}</li>
+                            </ul>
+                        </div>
+
+                        <div class="detail-actions">
+                            <p class="detail-price">฿ ${price.toLocaleString()}</p>
+                            
+                            <div class="quantity-selector">
+                                <label for="quantity">Quantity:</label>
+                                <input type="number" id="quantity" value="1" min="1" max="${stock}">
+                            </div>
+
+                            <button class="add-to-cart-btn large" data-product-id="${productId}" id="detail-add-btn">
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('detail-add-btn').addEventListener('click', handleDetailAddToCart);
+        }
+
+        // ----------------------------------------------------------------
+        // 3. ADD TO CART LOGIC (Mock Logic)
+        // ----------------------------------------------------------------
+        async function handleDetailAddToCart(e) {
+            const userId = sessionStorage.getItem('userId');
+            const isLogin = sessionStorage.getItem('isLogin') === 'true';
+
+            if (!isLogin || !userId) {
+                alert('Please log in to add items to your cart.');
+                return;
+            }
+
+            const productId = e.target.getAttribute('data-product-id');
+            const quantityInput = document.getElementById('quantity');
+            const quantity = parseInt(quantityInput.value) || 1;
+
+            if (!productId) return;
+
+            // Mock API Logic
+            try {
+                const response = await fetch(ADD_TO_CART_MOCK_ENDPOINT);
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`${quantity} of Product ID ${productId} added to cart successfully!`); 
+                    
+                    // Update Mock Cart Count (Task 2 Logic)
+                    let currentCount = parseInt(sessionStorage.getItem('mockCartCount') || '0');
+                    currentCount += quantity;
+                    sessionStorage.setItem('mockCartCount', currentCount.toString()); 
+                    
+                    // Update Header Display
+                    const countElement = document.getElementById('cart-count');
+                    if (countElement) countElement.textContent = currentCount.toString();
+                    
+                } else {
+                    alert(data.message || "An error occurred. Out of stock?"); 
+                }
+
+            } catch (error) {
+                alert('Server/Mock connection error. Cannot add item to cart.');
+            }
+        }
+        
+        // ----------------------------------------------------------------
+        // 4. INITIALIZATION
+        // ----------------------------------------------------------------
+        document.addEventListener('DOMContentLoaded', () => {
+            updateHeader();
+            fetchAndRenderProductDetail(); 
+        });
+    </script> 
+</body>
+</html>

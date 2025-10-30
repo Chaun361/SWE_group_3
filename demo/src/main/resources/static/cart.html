@@ -12,7 +12,7 @@
     <header class="main-header">
         <div class="logo">WEBSITE NAME</div>
         <nav class="auth-links" id="header-auth-links">
-            </nav>
+        </nav>
     </header>
 
     <main class="container">
@@ -22,7 +22,7 @@
             
             <div class="cart-items" id="cart-items-container">
                 <p style="text-align: center;">Loading cart items...</p>
-                </div>
+            </div>
 
             <div class="cart-summary">
                 <h2>Order Summary</h2>
@@ -39,149 +39,223 @@
                     <span id="summary-total">0 ฿</span>
                 </div>
                 
-                <button class="submit-btn checkout-btn" onclick="window.location.href='checkout.html'">Checkout</button>
+                <button class="submit-btn checkout-btn"><a href="checkout.html">Checkout</a></button>
             </div>
             
         </div>
     </main>
     
     <script>
-    // API Endpoint ที่จะใช้ Mock JSON
-    const MOCK_CART_ENDPOINT = '/mock/cart.json'; 
+    // API Endpoints
+    const CART_API_ENDPOINT = 'http://localhost:8080/api/cart/';
     const CHECKOUT_PAGE = 'checkout.html';
     const LOGIN_PAGE = 'login.html';
+    let currentCartData = []; 
 
     // ----------------------------------------------------------------
-    // 1. HEADER LOGIC (Unchanged)
+    // 1. HEADER LOGIC (Task 5)
     // ----------------------------------------------------------------
     function updateHeader() {
-        // ... (โค้ด updateHeader เดิม) ...
         const username = sessionStorage.getItem('username');
         const isLogin = sessionStorage.getItem('isLogin') === 'true';
         const linksContainer = document.getElementById('header-auth-links');
+        const mockCartCount = sessionStorage.getItem('mockCartCount') || '0';
 
-        linksContainer.innerHTML = ''; 
-
-        if (isLogin) {
-            linksContainer.innerHTML = `
-                <a href="order-history.html" class="nav-link">Order History</a>
-                <a href="profile.html" class="nav-link">${username}</a>
-                <a href="cart.html" class="nav-link cart-icon">🛒</a> 
-            `;
-        } else {
-            linksContainer.innerHTML = `
-                <a href="${LOGIN_PAGE}" class="nav-link">Login</a>
-                <a href="register.html" class="nav-link">Register</a>
-            `;
+        if (!isLogin || !username) { 
+            window.location.href = LOGIN_PAGE; 
+            return false; 
         }
+        
+        linksContainer.innerHTML = `
+            <a href="index.html" class="nav-link">HOME</a>
+            <a href="order-history.html" class="nav-link">Order History</a>
+            <a href="profile.html" class="nav-link">${username} 👤</a>
+            <a href="cart.html" class="nav-link cart-icon">🛒 (${mockCartCount})</a> 
+        `;
+        return true;
     }
 
     // ----------------------------------------------------------------
-    // 2. PRODUCT RENDERING AND CALCULATION LOGIC (Unchanged)
+    // 2. RENDERING LOGIC & RECALCULATION
     // ----------------------------------------------------------------
     
-    function renderCartItems(cartItems) {
-        // ... (โค้ด renderCartItems เดิม) ...
-        const container = document.getElementById('cart-items-container');
+    function calculateAndRenderSummary() {
+        const summarySubtotal = document.getElementById('summary-subtotal');
+        const summaryTotal = document.getElementById('summary-total');
+        
         let subtotal = 0;
+        const shippingFee = 0.00; 
+        
+        // Calculate from Global Array
+        currentCartData.forEach(item => {
+            subtotal += item.itemTotalPrice;
+        });
+
+        const total = subtotal + shippingFee;
+        
+        summarySubtotal.textContent = subtotal.toLocaleString() + ' ฿';
+        summaryTotal.textContent = total.toLocaleString() + ' ฿';
+
+        document.querySelector('.checkout-btn').disabled = (subtotal === 0);
+    }
+    
+    function renderCartItems(cartItems) {
+        const container = document.getElementById('cart-items-container');
         container.innerHTML = '';
+        currentCartData = cartItems; // Update Global Data Store
 
         if (!cartItems || cartItems.length === 0) {
             container.innerHTML = '<p style="text-align: center; padding: 20px;">Your cart is empty.</p>';
-            // ปิดปุ่ม Checkout
             document.querySelector('.checkout-btn').disabled = true;
             document.getElementById('summary-subtotal').textContent = '0 ฿';
             document.getElementById('summary-total').textContent = '0 ฿';
             return;
         }
 
-        document.querySelector('.checkout-btn').disabled = false;
-
         cartItems.forEach(item => {
-            const itemTotal = item.price * item.quantity;
-            subtotal += itemTotal;
-            
             const itemHtml = `
                 <div class="cart-item">
                     <div class="item-img"></div>
                     <div class="item-details">
-                        <p class="item-name">${item.name}</p>
-                        <p class="item-price">${item.price.toLocaleString()} ฿ / unit</p>
+                        <p class="item-name">${item.productName}</p>
+                        <p class="item-price">${item.itemPrice.toLocaleString()} ฿ / unit</p>
                     </div>
                     <div class="item-quantity">
-                        <input type="number" value="${item.quantity}" min="1" disabled>
+                        <input 
+                            type="number" 
+                            value="${item.quantity}" 
+                            min="1" 
+                            data-product-id="${item.productId}" 
+                            onchange="updateQuantity(this)"
+                        > 
                     </div>
-                    <div class="item-subtotal">
-                        ${itemTotal.toLocaleString()} ฿
+                    <div class="item-subtotal" id="subtotal-${item.productId}">
+                        ${item.itemTotalPrice.toLocaleString()} ฿
                     </div>
-                    <button class="item-remove" onclick="alert('Item ${item.id} removed (Mock)')">&times;</button>
+                    <button class="item-remove" onclick="removeFromCart(${item.productId})">&times;</button>
                 </div>
             `;
             container.innerHTML += itemHtml;
         });
         
-        document.getElementById('summary-subtotal').textContent = subtotal.toLocaleString() + ' ฿';
-        document.getElementById('summary-total').textContent = subtotal.toLocaleString() + ' ฿';
+        calculateAndRenderSummary();
     }
 
+    // ----------------------------------------------------------------
+    // 3. CART ACTION LOGIC (Client-side Recalculation)
+    // ----------------------------------------------------------------
+    
+    function saveCartToSession() {
+        // Helper: Save Global Array back to Session
+        sessionStorage.setItem('localCartItems', JSON.stringify(currentCartData));
+        const newCartCount = currentCartData.reduce((sum, item) => sum + item.quantity, 0);
+        sessionStorage.setItem('mockCartCount', newCartCount.toString());
+        updateHeader();
+    }
+
+    function updateQuantity(inputElement) {
+        const productId = parseInt(inputElement.getAttribute('data-product-id'));
+        const newQuantity = parseInt(inputElement.value);
+        
+        if (newQuantity < 1) {
+            alert("Quantity must be at least 1.");
+            inputElement.value = 1; 
+            return;
+        }
+
+        const itemIndex = currentCartData.findIndex(item => item.productId === productId);
+        
+        if (itemIndex > -1) {
+            const item = currentCartData[itemIndex];
+            
+            item.quantity = newQuantity;
+            item.itemTotalPrice = item.itemPrice * newQuantity; 
+            
+            document.getElementById(`subtotal-${productId}`).textContent = item.itemTotalPrice.toLocaleString() + ' ฿';
+            
+            calculateAndRenderSummary(); 
+            saveCartToSession(); // Save Session after update
+
+            alert(`Mock API: Quantity updated locally. Total recalculated.`);
+        }
+    }
 
     // ----------------------------------------------------------------
-    // 3. DATA FETCHING (Mock Logic - Revised for Task 6)
+    // 4. DATA FETCHING (Source of Truth is sessionStorage)
     // ----------------------------------------------------------------
     async function fetchAndRenderCart() {
         const userId = sessionStorage.getItem('userId');
         const isLogin = sessionStorage.getItem('isLogin') === 'true';
-        const container = document.getElementById('cart-items-container');
 
         if (!isLogin || !userId) {
-            // ป้องกันการเข้าถึงหากไม่ได้ Login
             alert('Please log in to view your cart.');
             window.location.href = LOGIN_PAGE; 
             return;
         }
 
         try {
-            // **Mock Logic สำหรับเงื่อนไข 204 และ 404**
-            // ในสถานการณ์จริง API จะจัดการ response status
-            // แต่เนื่องจากใช้ Mock JSON file เราจะจำลองสถานะด้วยเงื่อนไข userId
-            
-            // Scenario 1: ตะกร้าว่าง (Mock 204)
-            if (userId === '999') { 
-                 renderCartItems([]); // ส่ง array ว่างไป render
-                 return;
-            }
+            const response = await fetch(CART_API_ENDPOINT + userId);
 
-            // Scenario 2: ไม่พบตะกร้า (Mock 404)
-            if (userId === '000') {
-                 container.innerHTML = '<p style="color: red; text-align: center; padding: 20px;">Error 404: Cart not found for this user.</p>';
-                 return;
-            }
-
-            // Scenario 3: ตะกร้ามีสินค้า (Mock 200) - ดึงจาก MOCK_CART_ENDPOINT
-            const response = await fetch(MOCK_CART_ENDPOINT); 
-            
             if (!response.ok) {
-                // หากดึงข้อมูล Mock ไม่ได้ ให้แจ้ง Error
+                if (response.status === 404) {
+                    container.innerHTML = '<p style="color: red; text-align: center; padding: 20px;">Cart not found.</p>';
+                    return;
+                }
                 throw new Error(`Failed to fetch cart data: ${response.status}`);
             }
 
-            const cartData = await response.json(); 
+            const cartData = await response.json();
             
-            renderCartItems(cartData); 
+            if (!cartData || !cartData.items) {
+                renderCartItems([]); // Empty cart
+                return;
+            }
+            
+            renderCartItems(cartData.items); 
 
         } catch (error) {
             console.error('Cart Load Error:', error);
+            const container = document.getElementById('cart-items-container');
             container.innerHTML = 
                 '<p style="color: red; text-align: center; padding: 20px;">Could not load cart data. Please check Mock file/Server.</p>';
         }
     }
 
     // ----------------------------------------------------------------
-    // 4. INITIALIZATION
+    // 5. CART ITEM REMOVAL
+    // ----------------------------------------------------------------
+    async function removeFromCart(productId) {
+        const userId = sessionStorage.getItem('userId');
+        if (!userId) {
+            alert('Please log in to remove items.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${CART_API_ENDPOINT}${userId}/items/${productId}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to remove item from cart');
+            }
+
+            // Refresh cart after successful removal
+            fetchAndRenderCart();
+        } catch (error) {
+            console.error('Error removing item:', error);
+            alert('Failed to remove item from cart. Please try again.');
+        }
+    }
+    
+    // ----------------------------------------------------------------
+    // 6. INITIALIZATION
     // ----------------------------------------------------------------
     document.addEventListener('DOMContentLoaded', () => {
-        updateHeader();
-        fetchAndRenderCart();
+        const loggedIn = updateHeader();
+        if (loggedIn) {
+            fetchAndRenderCart();
+        }
     });
 </script>
 </body>

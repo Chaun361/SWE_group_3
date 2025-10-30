@@ -1,0 +1,6 @@
+{
+    "success": false,
+    "message": "Unable to process order",
+    "errorCode": "CHECKOUT_ERROR",
+    "details": "Payment processing failed or insufficient inventory"
+}
