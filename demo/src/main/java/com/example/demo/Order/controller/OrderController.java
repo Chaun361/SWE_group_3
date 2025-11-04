@@ -2,7 +2,7 @@ package com.example.demo.Order.controller;
 
 import com.example.demo.Cart.exception.ResourceNotFoundException;
 import com.example.demo.Cart.exception.StockException;
-import com.example.demo.Order.DTO.ErrorResponse;
+import com.example.demo.Order.exception.ErrorResponse;
 import com.example.demo.Order.model.OrderModel;
 import com.example.demo.Order.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
