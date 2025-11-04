@@ -1,11 +1,12 @@
 package com.example.demo.auth.service;
 
-import com.example.demo.auth.model.User;
-import com.example.demo.auth.repository.UserRepository;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import com.example.demo.auth.model.User;
+import com.example.demo.auth.repository.UserRepository;
 
 @Service
 public class UserService {
