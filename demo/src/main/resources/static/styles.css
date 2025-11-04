@@ -43,13 +43,28 @@ body {
 .logo {
     font-size: 20px;
     font-weight: 600; 
+    margin-left: 120px;
+}
+.index {
+    font-size: 16px;
+    font-weight: bold;
+    color: #555;
+    text-decoration: none;
+    margin-right: 550px; 
+    padding: 0; 
 }
 
+.index:hover {
+    background-color: #333; 
+    color: #000;            
+    padding: 8px 15px;      
+    border-radius: 8px;     
+}
 .auth-links a {
     color: #fff;
     text-decoration: none;
     font-size: 16px;
-    margin-left: 20px;
+    margin-left: 80px;
     padding: 5px 10px;
     transition: background-color 0.3s;
 }
@@ -66,7 +81,7 @@ body {
     font-weight: 400;
 }
 .cart-icon {
-    margin-right: 10px;
+    margin-right: 120px;
 }
 
 
