@@ -1,24 +1,22 @@
 package com.example.demo.Cart.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
 import com.example.demo.Cart.dto.CartDTO;
 import com.example.demo.Cart.dto.CartItemDTO;
 import com.example.demo.Cart.exception.ResourceNotFoundException;
 import com.example.demo.Cart.exception.StockException;
 import com.example.demo.Cart.model.CartItemsModel;
 import com.example.demo.Cart.model.CartModel;
-// ลบ import CartProductModel
 import com.example.demo.Cart.repository.CartItemsRepository;
-// ลบ import CartProductRepository
 import com.example.demo.Cart.repository.CartRepository;
-
-// +++ Import ของ Product เข้ามาแทน +++
 import com.example.demo.Product.model.ProductModel;
 import com.example.demo.Product.repository.ProductRepository;
 
-import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CartService {
