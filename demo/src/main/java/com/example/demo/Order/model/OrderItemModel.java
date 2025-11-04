@@ -65,11 +65,11 @@ public class OrderItemModel {
         Quantity = quantity;
     }
 
-    public double getPricePerUnit() { // <-- แก้ Type และชื่อเมธอด
+    public double getUnitPrice() { // <-- แก้ Type และชื่อเมธอด
         return PricePerUnit;
     }
 
-    public void setPricePerUnit(double pricePerUnit) { // <-- แก้ Type และชื่อเมธอด
+    public void setUnitPrice(double pricePerUnit) { // <-- แก้ Type และชื่อเมธอด
         PricePerUnit = pricePerUnit;
     }
 }
