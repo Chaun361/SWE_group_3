@@ -107,4 +107,9 @@ public class OrderService {
 
         return savedOrder;
     }
+    
+    public List<OrderModel> getOrdersByUserId(Long userId) {
+        return orderRepository.findByUserID(userId);
+    }
+
 }
