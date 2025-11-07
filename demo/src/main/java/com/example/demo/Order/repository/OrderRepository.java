@@ -9,5 +9,5 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<OrderModel, Long> {
 
     // 🧩 ดึงรายการออเดอร์ทั้งหมดของลูกค้าตาม userId
-    List<OrderModel> findByUserID(Long userId);
+    List<OrderModel> findByUserId(Long userId);
 }
