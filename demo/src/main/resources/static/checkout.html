@@ -174,7 +174,9 @@
         const total = subtotal + shippingFee;
         
         summarySubtotal.textContent = `${subtotal.toFixed(2)} Baht`;
-        shippingFeeElement.textContent = `${shippingFee.toFixed(2)} Baht`;
+        // ใช้ Ternary Operator ตรวจสอบ: ถ้า shippingFee เป็น 0 ให้แสดง 'Free'
+        // ถ้าไม่ใช่ 0 ให้แสดงค่าจัดส่ง
+        shippingFeeElement.textContent = (shippingFee === 0) ? 'Free' : `${shippingFee.toFixed(2)} Baht`;
         summaryTotal.textContent = `${total.toFixed(2)} Baht`;
     }
     

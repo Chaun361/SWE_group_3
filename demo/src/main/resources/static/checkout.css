@@ -18,11 +18,12 @@
 
 .cart-summary {
     flex: 1; /* ส่วนสรุปกว้าง 1 ส่วน */
-    background-color: #f9f9f9;
+    background-color: #fff;
     padding: 30px;
     border-radius: 8px;
     position: sticky; /* ทำให้เลื่อนตามหน้าจอ */
     top: 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* เพิ่มเงา */
 }
 
 /* Box Style for address and payment sections */
