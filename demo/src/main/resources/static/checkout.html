@@ -22,7 +22,7 @@
             
             <div class="checkout-forms">
                 <div class="checkout-box" id="shipping-address-box">
-                    <h2>1. Shipping Address</h2>
+                    <h2>Shipping Address</h2>
                     <p>Loading address...</p>
                 </div>
 
@@ -67,7 +67,7 @@
                 
                 <div class="summary-line">
                     <span>Subtotal</span>
-                    <span id="summary-subtotal">0 ฿</span>
+                    <span id="summary-subtotal">0 Baht</span>
                 </div>
 
                 <div class="summary-line">
@@ -76,8 +76,8 @@
                 </div>
 
                 <div class="summary-line total">
-                    <span>Total Payable</span>
-                    <span id="summary-total">0 ฿</span>
+                    <span>Total</span>
+                    <span id="summary-total">0 Baht</span>
                 </div>
                 
                 <button type="submit" class="submit-btn final-checkout">Place Order</button>
@@ -103,8 +103,9 @@
     };
     
     const FALLBACK_CART_ITEMS = [
-        { name: 'Product A (Fallback)', price: 2000, quantity: 1, subtotal: 2000 },
-        { name: 'Product B (Fallback)', price: 1500, quantity: 2, subtotal: 3000 }
+        { name: 'ProductA', price: 1500, quantity: 2, subtotal: 3000 },
+        { name: 'ProductB', price: 1500, quantity: 1, subtotal: 1500 },
+        { name: 'ProductC', price: 1500, quantity: 1, subtotal: 1500 }
     ];
 
     // ----------------------------------------------------------------
@@ -165,16 +166,16 @@
             itemsSummary.innerHTML += `
                 <div class="summary-item">
                     <span>${item.name} x${item.quantity}</span>
-                    <span>฿ ${itemSubtotal.toFixed(2)}</span>
+                    <span>${itemSubtotal.toFixed(2)} Baht</span>
                 </div>
             `;
         });
         
         const total = subtotal + shippingFee;
         
-        summarySubtotal.textContent = `฿ ${subtotal.toFixed(2)}`;
-        shippingFeeElement.textContent = `฿ ${shippingFee.toFixed(2)}`;
-        summaryTotal.textContent = `฿ ${total.toFixed(2)}`;
+        summarySubtotal.textContent = `${subtotal.toFixed(2)} Baht`;
+        shippingFeeElement.textContent = `${shippingFee.toFixed(2)} Baht`;
+        summaryTotal.textContent = `${total.toFixed(2)} Baht`;
     }
     
     // ----------------------------------------------------------------
