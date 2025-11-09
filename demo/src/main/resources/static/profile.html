@@ -13,7 +13,7 @@
         <div class="logo">WEBSITE NAME</div>
         <a href="index.html" class="index">home</a>
         <nav class="auth-links" id="header-auth-links">
-            </nav>
+        </nav>
     </header>
 
     <main class="container">
@@ -21,7 +21,6 @@
 
         <div class="profile-main-single">
             <div id="profile-container">
-                <h2>Account Information</h2>
                 <div class="profile-info-display" id="profile-info-display">
                     <p><strong>Username:</strong> <span id="username-display">Loading...</span></p>
                     <p><strong>Full Name:</strong> <span id="full-name-display">Loading...</span></p>
@@ -53,11 +52,10 @@
                 window.location.href = LOGIN_PAGE;
                 return false; 
             }
-            
-            linksContainer.innerHTML = `
-                <a href="order-history.html" class="nav-link">Order History</a>
+             linksContainer.innerHTML = `
+                <a href="order-history.html" class="nav-link">order history</a>
                 <a href="profile.html" class="nav-link">${username} 👤</a>
-                <a href="cart.html" class="nav-link cart-icon">🛒 (${mockCartCount})</a> 
+                <a href="cart.html" class="nav-link cart-icon">🛒 (<span id="cart-count">${mockCartCount}</span>)</a> 
             `;
             return true;
         }

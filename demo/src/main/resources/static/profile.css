@@ -3,26 +3,23 @@
     PROFILE STYLES (Single View - Matching profile.html.png)
     -------------------------------------------
 */
-.container {
-    padding-top: 20px; /* Adjust as needed */
-    padding-bottom: 50px; /* Adjust as needed */
-}
 
 .page-title {
     font-size: 28px;
     font-weight: bold;
     color: #333;
-    margin-bottom: 25px;
+    margin-top: 40px;
     text-align: left;
+    margin-left: 150px;
 }
 
 .profile-main-single {
     background-color: #fff;
     padding: 70px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     max-width: 1200px; /* Constrain width as in the image */
-    margin: 0; /* Align left */
+    margin-left: 150px; /* Align left */
 }
 
 #profile-container h2 {
@@ -61,39 +58,3 @@
     background-color: #c82333;
 }
 
-/* Remove or override any conflicting styles from styles.css if present */
-/* For example, if styles.css has a grid for .container, you might need to override it */
-.container {
-    display: block !important; /* Ensure it's not a grid or flex if not intended */
-    max-width: 1200px; /* Example max-width for the main content area */
-    margin-left: auto;
-    margin-right: auto;
-    padding: 20px;
-}
-
-.main-header {
-    /* Keep your existing header styles */
-    background-color: #fff;
-    border-bottom: 1px solid #eee;
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.main-header .logo {
-    font-size: 24px;
-    font-weight: bold;
-    color: #333;
-}
-
-.main-header .auth-links a {
-    text-decoration: none;
-    color: #555;
-    margin-left: 20px;
-    font-weight: 500;
-}
-
-.main-header .auth-links a:hover {
-    color: #000;
-}
