@@ -76,7 +76,9 @@ body {
     padding: 5px 10px;
     transition: background-color 0.3s;
 }
-
+.auth-links{
+    margin-right: 30px;
+}
 .auth-links a:hover {
     background-color: #f0f0f0;
     border-radius: 4px;
@@ -262,12 +264,6 @@ body {
 .add-to-cart-btn:hover {
     background-color: #333;
 }
-
-/*
-    -------------------------------------------
-    4. LOGIN & REGISTER STYLES (Form Box - Shared)
-    -------------------------------------------
-*/
 .login-page, .register-page {
     display: flex;
     justify-content: center;
@@ -279,10 +275,10 @@ body {
 
 .login-box, .register-box {
     background-color: #fff;
-    padding: 40px;
-    border-radius: 12px; 
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); 
-    max-width: 450px; 
+    padding: 50px 60px;
+    border-radius: 8px; 
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
+    max-width: 500px; 
     width: 100%; 
 }
 
@@ -295,41 +291,59 @@ body {
 
 .form-group {
     text-align: left;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 .form-group label {
     display: block;
     font-size: 14px;
-    font-weight: 500;
-    margin-bottom: 5px;
+    font-weight: 400;
+    margin-bottom: 8px;
+    color: #000;
 }
 
 .form-group input, .form-group textarea { 
     width: 100%;
-    padding: 12px; 
-    border: 1px solid #ccc; 
-    border-radius: 6px;
-    font-size: 16px;
-    font-family: 'Kanit', sans-serif; 
+    padding: 12px 15px; 
+    border: 1px solid #d0d0d0; 
+    border-radius: 4px;
+    font-size: 15px;
+    font-family: 'Kanit', sans-serif;
+    background-color: #f5f5f5;
 }
 
-.submit-btn {
+.form-group input:focus, .form-group textarea:focus {
+    outline: none;
+    border-color: #999;
+    background-color: #fff;
+}
+
+.button-group {
+    display: flex;
+    margin-top: 30px;
+}
+
+.register-btn {
     padding: 14px 0;
-    font-size: 17px;
-    font-weight: 600;
-    background-color: #000;
-    color: #fff;
+    font-size: 16px;
+    font-weight: 500;
+    background-color: #e0e0e0;
+    color: #000;
     border: none;
     border-radius: 4px;
-    width: 100%;
+    flex: 1;
     cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
 }
 
-.submit-btn:hover {
-    background-color: #333;
+.register-btn:hover {
+    background-color: #d0d0d0;
 }
-
 .register-link {
     margin-top: 20px;
     font-size: 14px;
