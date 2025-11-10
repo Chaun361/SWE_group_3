@@ -87,8 +87,7 @@
             welcomeSection.innerHTML = `<h1>Welcome</h1><p>description</p>`;
         } else {
             linksContainer.innerHTML = `
-                <a href="${LOGIN_PAGE}" class="nav-link">Login</a>
-                <a href="register.html" class="nav-link">Register</a>
+                <a href="${LOGIN_PAGE}" class="nav-link">login 👤</a>
             `;
             welcomeSection.innerHTML = `<h1>Welcome</h1><p>description</p>`;
         }
@@ -155,7 +154,7 @@
     // 3. CART STORE & ADD TO CART LOGIC (MODIFIED)
     // ----------------------------------------------------------------
 
-    async function fetchCartCount() {
+   function fetchCartCount() {
         const countElement = document.getElementById('cart-count');
         if (!countElement) return;
         countElement.textContent = currentCartCount.toString(); 
@@ -241,6 +240,7 @@
                     // Calculate total items in cart from the API response
                     const totalItems = data.items.reduce((total, item) => total + item.quantity, 0);
                     sessionStorage.setItem('mockCartCount', totalItems.toString()); 
+                    currentCartCount = totalItems;
                     
                     fetchCartCount(); 
                 } else {
