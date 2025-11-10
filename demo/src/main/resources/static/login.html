@@ -5,14 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | WEBSITE NAME</title>
      <link rel="stylesheet" href="styles.css">
+     <link rel="stylesheet" href="login.css">
 </head>
 <body>
 
     <header class="main-header">
         <div class="logo">WEBSITE NAME</div>
+        <a href="index.html" class="index">home</a>
         <nav class="auth-links">
-            <a href="login.html" class="nav-link">Login</a>
-            <a href="register.html" class="nav-link">Register</a>
+            <a href="login.html" class="nav-link">login 👤</a>
         </nav>
     </header>
 
@@ -24,7 +25,7 @@
             
             <form id="login-form">
                 <div class="form-group">
-                    <label for="username">Username (Email)</label>
+                    <label for="username">Username</label>
                     <input type="text" id="username" name="username" required autocomplete="email">
                 </div>
                 <div class="form-group">
@@ -32,12 +33,9 @@
                     <input type="password" id="password" name="password" required autocomplete="current-password">
                 </div>
                 
-                <button type="submit" class="submit-btn">เข้าสู่ระบบ</button>
+                <button type="button" id="register-btn" class="build-btn">Register</button>
+                <button type="submit" class="submit-btn">Login</button>
             </form>
-
-            <p class="register-link">
-                Don't have an account? <a href="register.html">Register here</a>
-            </p>
         </div>
     </main>
     
@@ -47,11 +45,19 @@
     const MOCK_USERNAME = 'test@example.com'; 
     const MOCK_PASSWORD = 'password';
     const LOGIN_SUCCESS_PAGE = 'index.html'; // Redirect ไปหน้าหลัง Login (ตาม app.js เดิม)
+    const REGISTER_PAGE = 'register.html';
 
     document.addEventListener('DOMContentLoaded', () => {
         const loginForm = document.getElementById('login-form');
         const loginMessage = document.getElementById('login-message'); 
+        const registerBtn = document.getElementById('register-btn');
 
+       if (registerBtn) {
+        registerBtn.addEventListener('click', (e) => {
+            e.preventDefault(); 
+            window.location.href = REGISTER_PAGE; // สั่งให้เปลี่ยนหน้า
+        });
+    }
         if (loginForm) {
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
