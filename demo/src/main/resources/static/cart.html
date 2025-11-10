@@ -53,7 +53,7 @@
     let currentCartData = []; 
 
     // ----------------------------------------------------------------
-    // 1. HEADER LOGIC (Task 5)
+    // 1. HEADER LOGIC (Unchanged)
     // ----------------------------------------------------------------
     function updateHeader() {
         const username = sessionStorage.getItem('username');
@@ -86,7 +86,6 @@
         let subtotal = 0;
         const shippingFee = 0.00; 
         
-        // Calculate from Global Array
         currentCartData.forEach(item => {
             subtotal += item.itemTotalPrice;
         });
@@ -99,6 +98,9 @@
         document.querySelector('.checkout-btn').disabled = (subtotal === 0);
     }
     
+    /**
+     * (REVISED) อัปเดต HTML ให้ตรงกับดีไซน์ใหม่
+     */
     function renderCartItems(cartItems) {
         const container = document.getElementById('cart-items-container');
         container.innerHTML = '';
@@ -113,26 +115,46 @@
         }
 
         cartItems.forEach(item => {
+            
+            // (FIXED) นี่คือ HTML ใหม่ที่ตรงกับดีไซน์
             const itemHtml = `
-                <div class="cart-item">
-                    <div class="item-img"></div>
+                <div class="cart-item-row"> 
+                    
+                    <div class="item-img">
+                        <img src="${item.productImage || 'images/placeholder.png'}" alt="${item.productName}">
+                    </div>
+                    
                     <div class="item-details">
                         <p class="item-name">${item.productName}</p>
-                        <p class="item-price">${item.itemPrice.toLocaleString()} ฿ / unit</p>
+                        <p class="item-price">${item.itemPrice.toLocaleString()} ฿</p>
+                        
+                        <div class="item-quantity-controls">
+                            <button 
+                                class="quantity-btn minus-btn" 
+                                onclick="handleUpdateQuantity(${item.productId}, -1)"
+                                ${item.quantity <= 1 ? 'disabled' : ''}
+                            >-</button>
+                            
+                            <input 
+                                type="text" 
+                                class="quantity-input" 
+                                value="${item.quantity}" 
+                                readonly 
+                            >
+                            
+                            <button 
+                                class="quantity-btn plus-btn" 
+                                onclick="handleUpdateQuantity(${item.productId}, 1)"
+                            >+</button>
+                        </div>
+                        
+                        <a 
+                            href="#" 
+                            class="item-remove-link" 
+                            onclick="event.preventDefault(); handleRemoveItem(${item.productId}, ${item.quantity})"
+                        >Remove</a>
                     </div>
-                    <div class="item-quantity">
-                        <input 
-                            type="number" 
-                            value="${item.quantity}" 
-                            min="1" 
-                            data-product-id="${item.productId}" 
-                            onchange="updateQuantity(this)"
-                        > 
-                    </div>
-                    <div class="item-subtotal" id="subtotal-${item.productId}">
-                        ${item.itemTotalPrice.toLocaleString()} ฿
-                    </div>
-                    <button class="item-remove" onclick="removeFromCart(${item.productId})">&times;</button>
+
                 </div>
             `;
             container.innerHTML += itemHtml;
@@ -142,46 +164,87 @@
     }
 
     // ----------------------------------------------------------------
-    // 3. CART ACTION LOGIC (Client-side Recalculation)
+    // 3. (REVISED) CART ACTION LOGIC (เชื่อมต่อ Backend)
     // ----------------------------------------------------------------
-    
-    function saveCartToSession() {
-        // Helper: Save Global Array back to Session
-        sessionStorage.setItem('localCartItems', JSON.stringify(currentCartData));
-        const newCartCount = currentCartData.reduce((sum, item) => sum + item.quantity, 0);
-        sessionStorage.setItem('mockCartCount', newCartCount.toString());
-        updateHeader();
+
+    function showLoading() {
+        const container = document.getElementById('cart-items-container');
+        container.innerHTML = '<p style="text-align: center; padding: 20px;">Updating cart...</p>';
     }
 
-    function updateQuantity(inputElement) {
-        const productId = parseInt(inputElement.getAttribute('data-product-id'));
-        const newQuantity = parseInt(inputElement.value);
-        
-        if (newQuantity < 1) {
-            alert("Quantity must be at least 1.");
-            inputElement.value = 1; 
+    /**
+     * (NEW) ฟังก์ชันหลักสำหรับเรียก API (add หรือ remove)
+     */
+    async function updateCartAPI(action, productId, quantity) {
+        const userId = sessionStorage.getItem('userId');
+        if (!userId) {
+            alert('Session expired. Please log in.');
+            window.location.href = LOGIN_PAGE;
             return;
         }
 
-        const itemIndex = currentCartData.findIndex(item => item.productId === productId);
-        
-        if (itemIndex > -1) {
-            const item = currentCartData[itemIndex];
-            
-            item.quantity = newQuantity;
-            item.itemTotalPrice = item.itemPrice * newQuantity; 
-            
-            document.getElementById(`subtotal-${productId}`).textContent = item.itemTotalPrice.toLocaleString() + ' ฿';
-            
-            calculateAndRenderSummary(); 
-            saveCartToSession(); // Save Session after update
+        showLoading();
+        const API_URL = `${CART_API_ENDPOINT}${action}?userId=${userId}&productId=${productId}&quantity=${quantity}`;
 
-            alert(`Mock API: Quantity updated locally. Total recalculated.`);
+        try {
+            // เรียก API ด้วย Method POST ตาม Task
+            const response = await fetch(API_URL, {
+                method: 'POST'
+            });
+
+            if (!response.ok) {
+                // (FIXED) อ่าน Error message จาก response
+                const errorText = await response.text(); 
+                let errorMessage = `Failed to update cart: ${response.status}`;
+                
+                // พยายาม parse JSON ถ้าทำได้
+                try {
+                    const errorData = JSON.parse(errorText);
+                    errorMessage = errorData.message || errorMessage;
+                } catch (e) {
+                     // ถ้า Error ไม่ใช่ JSON
+                    if (response.status === 405) { // 405 = Method Not Allowed
+                         errorMessage = `Method 'POST' is not supported by the server. Please check Backend.`;
+                    }
+                }
+                
+                throw new Error(errorMessage);
+            }
+
+            await fetchAndRenderCart(); // โหลดตะกร้าใหม่ทั้งหมด
+
+        } catch (error) {
+            console.error(`Error updating cart (${action}):`, error);
+            alert(`Error: ${error.message}\nPlease try again.`);
+            await fetchAndRenderCart(); // ถ้า Error ก็โหลดใหม่
         }
     }
 
+    /**
+     * (NEW) จัดการการกดปุ่ม + หรือ -
+     */
+    function handleUpdateQuantity(productId, quantityChange) {
+        if (quantityChange > 0) {
+            updateCartAPI('add', productId, 1);
+        } else {
+            updateCartAPI('remove', productId, 1);
+        }
+    }
+
+    /**
+     * (NEW) จัดการการกดปุ่ม 'Remove' (X)
+     */
+    function handleRemoveItem(productId, totalQuantity) {
+        if (confirm(`Are you sure you want to remove all ${totalQuantity} of this item(s) from your cart?`)) {
+            // เรียก API 'remove' พร้อมจำนวน "ทั้งหมด"
+            updateCartAPI('remove', productId, totalQuantity);
+        }
+    }
+
+    // (DELETED) - ลบฟังก์ชัน 'saveCartToSession' และ 'updateQuantity' ของเก่าทิ้ง
+
     // ----------------------------------------------------------------
-    // 4. DATA FETCHING (Source of Truth is sessionStorage)
+    // 4. DATA FETCHING (Source of Truth is Backend)
     // ----------------------------------------------------------------
     async function fetchAndRenderCart() {
         const userId = sessionStorage.getItem('userId');
@@ -194,11 +257,11 @@
         }
 
         try {
-            const response = await fetch(CART_API_ENDPOINT + userId);
+            const response = await fetch(CART_API_ENDPOINT + userId); 
 
             if (!response.ok) {
                 if (response.status === 404) {
-                    container.innerHTML = '<p style="color: red; text-align: center; padding: 20px;">Cart not found.</p>';
+                    renderCartItems([]); 
                     return;
                 }
                 throw new Error(`Failed to fetch cart data: ${response.status}`);
@@ -206,48 +269,27 @@
 
             const cartData = await response.json();
             
-            if (!cartData || !cartData.items) {
-                renderCartItems([]); // Empty cart
-                return;
+            if (!cartData || !cartData.items || cartData.items.length === 0) {
+                renderCartItems([]);
+            } else {
+                renderCartItems(cartData.items);
             }
             
-            renderCartItems(cartData.items); 
+            // (FIXED) อัปเดตจำนวนสินค้าบน Header หลังโหลด
+            const newCartCount = (cartData.items || []).reduce((sum, item) => sum + item.quantity, 0);
+            sessionStorage.setItem('mockCartCount', newCartCount.toString());
+            updateHeader(); 
 
         } catch (error) {
             console.error('Cart Load Error:', error);
             const container = document.getElementById('cart-items-container');
             container.innerHTML = 
-                '<p style="color: red; text-align: center; padding: 20px;">Could not load cart data. Please check Mock file/Server.</p>';
+                '<p style="color: red; text-align: center; padding: 20px;">Could not load cart data. Please try again.</p>';
         }
     }
 
-    // ----------------------------------------------------------------
-    // 5. CART ITEM REMOVAL
-    // ----------------------------------------------------------------
-    async function removeFromCart(productId) {
-        const userId = sessionStorage.getItem('userId');
-        if (!userId) {
-            alert('Please log in to remove items.');
-            return;
-        }
+    // (DELETED) - ลบ Section 5 'removeFromCart' (แบบ DELETE) ของเก่าทิ้ง
 
-        try {
-            const response = await fetch(`${CART_API_ENDPOINT}${userId}/items/${productId}`, {
-                method: 'DELETE'
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to remove item from cart');
-            }
-
-            // Refresh cart after successful removal
-            fetchAndRenderCart();
-        } catch (error) {
-            console.error('Error removing item:', error);
-            alert('Failed to remove item from cart. Please try again.');
-        }
-    }
-    
     // ----------------------------------------------------------------
     // 6. INITIALIZATION
     // ----------------------------------------------------------------
@@ -257,6 +299,6 @@
             fetchAndRenderCart();
         }
     });
-</script>
+    </script>
 </body>
 </html>
