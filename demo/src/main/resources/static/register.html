@@ -62,18 +62,18 @@
         const { username, password, phone, fullName, userAddress } = data;  // Changed 'address' to 'userAddress'
         
         if (!username || !password || !phone || !fullName || !userAddress) {
-            alert("Registration Error: All fields are required.");
+            alert("Registration Error: Username นี้ถูกใช้ไปแล้ว");
             return false;
         }
 
         const phoneRegex = /^\d{10}$/;
         if (!phoneRegex.test(phone)) {
-            alert("Registration Error: Phone number must be exactly 10 digits.");
+            alert("Registration Error: เบอร์โทรศัพท์มือถือต้องครบ 10 หลัก");
             return false;
         }
 
         if (password.length < 6) {
-            alert("Registration Error: Password must be at least 6 characters long.");
+            alert("Registration Error: รหัสผ่านต้องไม่น้อยกว่า 6 ตัวอักษร");
             return false;
         }
 
