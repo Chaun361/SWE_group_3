@@ -9,10 +9,21 @@
     display: flex;
     gap: 30px;
     align-items: flex-start;
+    margin-top: 30px; /* เพิ่มระยะห่างจาก Title */
 }
 
 .checkout-forms {
-    flex: 2; 
+    flex: 2; /* ส่วนฟอร์มกว้าง 2 ส่วน */
+}
+
+.cart-summary {
+    flex: 1; /* ส่วนสรุปกว้าง 1 ส่วน */
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    position: sticky; /* ทำให้เลื่อนตามหน้าจอ */
+    top: 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* เพิ่มเงา */
 }
 
 /* Box Style for address and payment sections */
@@ -27,66 +38,136 @@
 .checkout-box h2 {
     font-size: 20px;
     font-weight: 600;
+    margin-top: 0; /* ลบ margin ด้านบนของ H2 */
     margin-bottom: 25px;
     padding-bottom: 10px;
     border-bottom: 1px solid #eee;
 }
 
+/* Shipping Address Box styles */
+.address-name {
+    font-weight: 600;
+}
+#shipping-address-box p {
+    margin: 5px 0;
+    line-height: 1.5;
+}
+
 /* -------------------------------------------
-   Payment Method Styling (Fixes Vertical Alignment)
+   Payment Method Styling (FIXED)
    ------------------------------------------- */
 .payment-option {
     border: 1px solid #ddd;
-    padding: 15px;
+    padding: 15px 20px; /* เพิ่ม padding แนวนอน */
     border-radius: 6px;
-    margin-bottom: 15px; /* เพิ่มระยะห่างระหว่างตัวเลือก */
+    margin-bottom: 15px;
     cursor: pointer;
-    position: relative; /* สำคัญ: เพื่อให้ปุ่มวิทยุ (radio) จัดวางแบบ absolute ได้ */
-    overflow: hidden; /* ป้องกันไม่ให้ float หรือ content ล้น */
+    position: relative; /* สำคัญ: เพื่อให้ปุ่ม radio ลอยได้ */
+    overflow: hidden;
 }
 
 .payment-option.selected {
     border-color: #000;
     background-color: #f9f9f9;
+    border-width: 2px; /* ทำให้เส้นขอบชัดขึ้นเมื่อถูกเลือก */
+    padding: 14px 19px; /* ปรับ padding เพื่อให้ขนาดรวมเท่าเดิม */
 }
 
-/* 1. จัด Layout ของ Label/Icon/Title ให้อยู่ตรงกลางแนวตั้ง */
+/* 1. จัด Layout ของ Label (ที่หุ้มไอคอนและข้อความ) */
 .payment-option label.payment-label {
-    display: flex; /* **ใช้ Flexbox จัดเรียงไอคอนและข้อความ** */
-    align-items: center; /* **จัดองค์ประกอบย่อย (ไอคอน/ชื่อ) ให้อยู่ตรงกลางแนวตั้ง** */
-    gap: 10px; /* ระยะห่างระหว่างไอคอนกับข้อความ */
+    display: flex;          /* **ใช้ Flexbox จัดเรียงไอคอนและข้อความ** */
+    align-items: center;    /* **จัดให้อยู่ตรงกลางแนวตั้ง** */
+    gap: 15px;              /* ระยะห่างระหว่างไอคอนกับข้อความ */
     font-weight: 500;
-    margin-left: 0;
-    width: 90%; /* จำกัดความกว้างไม่ให้ทับปุ่มวิทยุ */
+    font-size: 16px;
     cursor: pointer;
+    /* เว้นที่ฝั่งขวาไว้ให้ปุ่ม radio */
+    padding-right: 30px; 
 }
 
-/* 2. จัดตำแหน่ง Radio Button (ให้ลอยอยู่ตรงกลางขวา) */
-.payment-option input[type="radio"] {
-    position: absolute; 
-    top: 50%;
-    right: 15px;
-    transform: translateY(-50%); /* **จัดให้อยู่ตรงกลางแนวตั้งของกล่อง** */
-    margin: 0;
-}
-
-/* 3. จัดสไตล์ Icon */
+/* 2. จัดสไตล์ Icon */
 .card-icon {
     width: 40px; 
     height: auto;
     border: 1px solid #eee; 
     border-radius: 3px;
+    flex-shrink: 0; /* ป้องกันไอคอนหดตัว */
 }
 
-/* 4. ปรับ Small Text */
-.small-text {
-    font-size: 12px;
-    color: #888;
-    margin-top: 5px;
-    margin-left: 50px; /* ดันข้อความอธิบายให้พ้นไอคอน */
+.qr-icon {
+    width: 40px;
+    height: 40px;
+    object-fit: contain; /* ป้องกันภาพ QR บี้ */
+}
+
+/* 3. จัดตำแหน่ง Radio Button (ให้ลอยอยู่ตรงกลางขวา) */
+.payment-option input[type="radio"] {
+    position: absolute !important;  /* <--- เพิ่ม !important ที่นี่ครับ */
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    margin: 0;
+    pointer-events: none;
+}
+
+/* -------------------------------------------
+   Order Summary Styling
+   ------------------------------------------- */
+.cart-summary h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+#order-items-summary {
+    margin-bottom: 20px;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.summary-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+.summary-line.total {
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
 }
 
 /* Final Checkout Button (Reuse submit-btn from styles.css) */
 .final-checkout {
     width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    /* (สมมติว่าคุณมี .submit-btn ใน styles.css) */
+    background-color: #000;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.final-checkout:hover {
+    background-color: #333;
+}
+
+.final-checkout:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
 }

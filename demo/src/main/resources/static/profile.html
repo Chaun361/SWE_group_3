@@ -11,81 +11,71 @@
 
     <header class="main-header">
         <div class="logo">WEBSITE NAME</div>
+        <a href="index.html" class="index">home</a>
         <nav class="auth-links" id="header-auth-links">
-            </nav>
+        </nav>
     </header>
 
     <main class="container">
         <h1 class="page-title">My Account</h1>
 
-        <div class="profile-content-grid">
-
-            <div class="profile-sidebar">
-                <nav>
-                    <a href="profile.html" class="sidebar-link active">Profile</a>
-                    <div class="logout-btn-container">
-                        <a href="#" id="logout-link" class="sidebar-link logout-link">Logout</a>
-                    </div>
-                </nav>
+        <div class="profile-main-single">
+            <div id="profile-container">
+                <div class="profile-info-display" id="profile-info-display">
+                    <p><strong>Username:</strong> <span id="username-display">Loading...</span></p>
+                    <p><strong>Full Name:</strong> <span id="full-name-display">Loading...</span></p>
+                    <p><strong>Phone Number:</strong> <span id="phone-display">Loading...</span></p>
+                    <p><strong>Shipping Address:</strong> <span id="address-display">Loading...</span></p>
+                </div>
+                <button id="logout-button" class="logout-btn">Logout</button>
             </div>
-
-            <div class="profile-main">
-                <div id="profile-container">
-                    <h2>Profile Information</h2>
-                    <div class="profile-info-display" id="profile-info-display">
-                        <p><strong>Full Name:</strong> <span id="full-name">Loading...</span></p>
-                        <p><strong>Username:</strong> <span id="username-display">Loading...</span></p>
-                        <p><strong>Phone:</strong> <span id="phone-display">Loading...</span></p>
-                        <p><strong>Address:</strong> <span id="address-display">Loading...</span></p>
-                    </div>
-
-                    </div>
-            </div>
-
         </div>
     </main>
     
     <script>
         const LOGIN_PAGE = 'login.html';
+        const API_BASE = 'http://localhost:8080/api'; 
+        const USER_API = `${API_BASE}/users`;
+
         // ----------------------------------------------------------------
-        // 1. HEADER & LOGIN CHECK (Task 5)
+        // 1. HEADER & LOGIN CHECK
         // ----------------------------------------------------------------
         function updateHeader() {
             const username = sessionStorage.getItem('username');
-            const userId = sessionStorage.getItem('userId');
             const isLogin = sessionStorage.getItem('isLogin') === 'true';
             const linksContainer = document.getElementById('header-auth-links');
+            const mockCartCount = sessionStorage.getItem('mockCartCount') || '0';
 
             linksContainer.innerHTML = ''; 
 
             if (!isLogin || !username) {
-                window.location.href = LOGIN_PAGE; // บังคับให้ Login
+                window.location.href = LOGIN_PAGE;
                 return false; 
             }
-            
-            // Render Logged-in Header
-            linksContainer.innerHTML = `
-                <a href="index.html" class="nav-link">HOME</a>
-                <a href="order-history.html" class="nav-link">Order History</a>
+             linksContainer.innerHTML = `
+                <a href="order-history.html" class="nav-link">order history</a>
                 <a href="profile.html" class="nav-link">${username} 👤</a>
-                <a href="cart.html" class="nav-link cart-icon">🛒</a> 
+                <a href="cart.html" class="nav-link cart-icon">🛒 (<span id="cart-count">${mockCartCount}</span>)</a> 
             `;
             return true;
         }
 
         // ----------------------------------------------------------------
-        // 2. FETCH AND RENDER PROFILE DATA (Task 6)
+        // 2. FETCH & RENDER PROFILE DATA (GET /api/users/{userId})
         // ----------------------------------------------------------------
         
         async function fetchAndRenderProfile() {
             try {
-                // Hardcoded user ID for testing
                 const userId = sessionStorage.getItem('userId');
-                const response = await fetch(`http://localhost:8080/api/users/${userId}`, {
+                if (!userId) {
+                    console.error('User ID not found in session storage.');
+                    window.location.href = LOGIN_PAGE; // Redirect if no user ID
+                    return;
+                }
+
+                const response = await fetch(`${USER_API}/${userId}`, {
                     method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    headers: { 'Content-Type': 'application/json' }
                 });
 
                 if (!response.ok) {
@@ -93,20 +83,12 @@
                 }
 
                 const data = await response.json();
-                // Expected response format:
-                // {
-                //     "phone": "12346",
-                //     "username": "johndoe",
-                //     "fullName": "John Doe",
-                //     "userId": 1,
-                //     "userAddress": "473/47 Thammasat rangsit Pathumthani 10220 Thailand"
-                // }
 
                 // Render profile data
-                document.getElementById('full-name').textContent = data.fullName;
-                document.getElementById('username-display').textContent = data.username;
-                document.getElementById('phone-display').textContent = data.phone;
-                document.getElementById('address-display').textContent = data.userAddress;
+                document.getElementById('full-name-display').textContent = data.fullName || 'N/A';
+                document.getElementById('username-display').textContent = data.username || 'N/A';
+                document.getElementById('phone-display').textContent = data.phone || 'N/A';
+                document.getElementById('address-display').textContent = data.userAddress || 'N/A';
 
             } catch (error) {
                 console.error('Profile Fetch Error:', error);
@@ -115,30 +97,25 @@
             }
         }
         
-       // 3. LOGOUT LOGIC (Task 6:U10 Implementation)
-// ----------------------------------------------------------------
-function setupLogout() {
-     const logoutLink = document.getElementById('logout-link');
-     if (logoutLink) {
-         logoutLink.addEventListener('click', (e) => {
-            e.preventDefault(); 
-            
-            // 1. ล้าง Session Storage ทั้งหมด
-            sessionStorage.clear(); 
-            
-            // 2. แจ้งเตือน (Optional)
-            alert('Logout successful! Redirecting to Homepage...');
-            
-            // 3. นำทางกลับไปยัง Homepage (index.html)
-            window.location.href = 'index.html';
-         });
-    }
-}
+        // ----------------------------------------------------------------
+        // 3. LOGOUT LOGIC
+        // ----------------------------------------------------------------
+        function setupLogout() {
+            const logoutButton = document.getElementById('logout-button');
+            if (logoutButton) {
+                logoutButton.addEventListener('click', (e) => {
+                    e.preventDefault(); 
+                    sessionStorage.clear(); 
+                    alert('Logout successful! Redirecting to Homepage...');
+                    window.location.href = 'index.html';
+                });
+            }
+        }
         
-
-
+        // ----------------------------------------------------------------
+        // Initialize on DOMContentLoaded
+        // ----------------------------------------------------------------
         document.addEventListener('DOMContentLoaded', () => {
-            // ตรวจสอบ Login และ Render Header
             const loggedIn = updateHeader(); 
             
             if (loggedIn) {

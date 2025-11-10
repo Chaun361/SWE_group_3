@@ -22,43 +22,41 @@
             
             <div class="checkout-forms">
                 <div class="checkout-box" id="shipping-address-box">
-                    <h2>1. Shipping Address</h2>
+                    <h2>Shipping Address</h2>
                     <p>Loading address...</p>
-                    </div>
+                </div>
 
                 <div class="checkout-box">
-    <h2>2. Payment Method</h2>
-    <div class="form-group">
-        
-        <div class="payment-option selected">
-            <input type="radio" name="payment" value="mastercard" id="mc" checked>
-            <label for="mc"></label>
-            <div class="payment-icons">
-                <img src="images/mastercard.png" alt="MasterCard" class="card-icon">
-            </div>
-            <p class="small-text">MasterCard payment</p>
-        </div>
-        
-        <div class="payment-option">
-            <input type="radio" name="payment" value="visa" id="visa">
-            <label for="visa"></label>
-            <div class="payment-icons">
-                <img src="images/visa.png" alt="Visa" class="card-icon">
-            </div>
-            <p class="small-text">VISA payment</p>
-        </div>
+                    <h2>Payment Method</h2>
+                    
+                    <div class="form-group">
+                
+                        <div class="payment-option selected">
+                            <input type="radio" name="payment" value="mastercard" id="mc" checked>
+                            <label for="mc" class="payment-label">
+                                <img src="images/mastercard.png" alt="MasterCard" class="card-icon">
+                                <span>MasterCard</span>
+                            </label>
+                        </div>
+                    
+                        <div class="payment-option">
+                            <input type="radio" name="payment" value="visa" id="visa">
+                            <label for="visa" class="payment-label">
+                                <img src="images/visa.png" alt="Visa" class="card-icon">
+                                <span>VISA</span>
+                            </label>
+                        </div>
 
-        <div class="payment-option">
-            <input type="radio" name="payment" value="qr_payment" id="qr">
-            <label for="qr"></label>
-            <div class="payment-icons">
-                <img src="images/promptpay.png" alt="QR Payment" class="card-icon qr-icon">
-            </div>
-            <p class="small-text">QR payment</p>
-        </div>
-        
-    </div>
-</div>
+                        <div class="payment-option">
+                            <input type="radio" name="payment" value="qr_payment" id="qr">
+                            <label for="qr" class="payment-label">
+                                <img src="images/promptpay.png" alt="QR Payment" class="card-icon qr-icon">
+                                <span>Prompt Pay</span>
+                            </label>
+                        </div>
+                
+                    </div>
+                </div>
             </div>
 
             <div class="cart-summary">
@@ -69,15 +67,17 @@
                 
                 <div class="summary-line">
                     <span>Subtotal</span>
-                    <span id="summary-subtotal">0 ฿</span>
+                    <span id="summary-subtotal">0 Baht</span>
                 </div>
+
                 <div class="summary-line">
                     <span>Shipping</span>
                     <span id="summary-shipping">Free</span>
                 </div>
+
                 <div class="summary-line total">
-                    <span>Total Payable</span>
-                    <span id="summary-total">0 ฿</span>
+                    <span>Total</span>
+                    <span id="summary-total">0 Baht</span>
                 </div>
                 
                 <button type="submit" class="submit-btn final-checkout">Place Order</button>
@@ -103,8 +103,9 @@
     };
     
     const FALLBACK_CART_ITEMS = [
-        { name: 'Product A (Fallback)', price: 2000, quantity: 1, subtotal: 2000 },
-        { name: 'Product B (Fallback)', price: 1500, quantity: 2, subtotal: 3000 }
+        { name: 'ProductA', price: 1500, quantity: 2, subtotal: 3000 },
+        { name: 'ProductB', price: 1500, quantity: 1, subtotal: 1500 },
+        { name: 'ProductC', price: 1500, quantity: 1, subtotal: 1500 }
     ];
 
     // ----------------------------------------------------------------
@@ -140,7 +141,7 @@
         
         // REVISED HTML: ใช้ฟิลด์จาก mock-profile.json โดยตรง
         addressBox.innerHTML = `
-            <h2>1. Shipping Address</h2>
+            <h2>Shipping Address</h2>
             <p class="address-name">${data.fullName}</p>
             <p>${data.userAddress}</p>
             <p>Phone: ${data.phone}</p>
@@ -165,16 +166,18 @@
             itemsSummary.innerHTML += `
                 <div class="summary-item">
                     <span>${item.name} x${item.quantity}</span>
-                    <span>฿ ${itemSubtotal.toFixed(2)}</span>
+                    <span>${itemSubtotal.toFixed(2)} Baht</span>
                 </div>
             `;
         });
         
         const total = subtotal + shippingFee;
         
-        summarySubtotal.textContent = `฿ ${subtotal.toFixed(2)}`;
-        shippingFeeElement.textContent = `฿ ${shippingFee.toFixed(2)}`;
-        summaryTotal.textContent = `฿ ${total.toFixed(2)}`;
+        summarySubtotal.textContent = `${subtotal.toFixed(2)} Baht`;
+        // ใช้ Ternary Operator ตรวจสอบ: ถ้า shippingFee เป็น 0 ให้แสดง 'Free'
+        // ถ้าไม่ใช่ 0 ให้แสดงค่าจัดส่ง
+        shippingFeeElement.textContent = (shippingFee === 0) ? 'Free' : `${shippingFee.toFixed(2)} Baht`;
+        summaryTotal.textContent = `${total.toFixed(2)} Baht`;
     }
     
     // ----------------------------------------------------------------
@@ -201,7 +204,7 @@
             renderAddress(profileData); 
         } catch (error) {
             console.error('Error fetching address:', error);
-            addressBox.innerHTML = `<h2>1. Shipping Address</h2><p style="color: red;" class="error-text">Error loading address. Please try again later.</p>`;
+            addressBox.innerHTML = `<h2>Shipping Address</h2><p style="color: red;" class="error-text">Error loading address. Please try again later.</p>`;
             renderAddress(FALLBACK_ADDRESS); 
         }
         
@@ -286,6 +289,7 @@
         const loggedIn = updateHeader(); 
         if (loggedIn) {
             fetchAddressAndSummary();
+            setupPaymentOptionSelection();
         }
         
         // Add Event Listener ให้กับ Place Order Button
