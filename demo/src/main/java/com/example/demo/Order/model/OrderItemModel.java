@@ -24,7 +24,7 @@ public class OrderItemModel {
     @Column(name = "Quantity")
     private int Quantity; // <-- แก้เป็น int
 
-    @Column(name = "PricePerUnit") // <-- เปลี่ยนชื่อคอลัมน์เพื่อความชัดเจน
+    @Column(name = "UnitPrice") // <-- เปลี่ยนชื่อคอลัมน์เพื่อความชัดเจน
     private double PricePerUnit; // <-- แก้เป็น double
 
     // Constructor ที่จำเป็นสำหรับ JPA
