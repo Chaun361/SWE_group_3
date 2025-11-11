@@ -119,7 +119,7 @@
         const shippingFee = 0.00;
         
         currentCartData.forEach(item => {
-            subtotal += item.itemTotalPrice;
+            subtotal += item.subtotal;
         });
 
         const total = subtotal + shippingFee;
@@ -148,11 +148,11 @@
         itemDiv.className = 'cart-item';
         itemDiv.innerHTML = `
             <div class="item-img">
-                <img src="${IMAGE_BASE_URL + item.image}" alt="${item.productName}">
+                <img src="${IMAGE_BASE_URL + (item.image || 'placeholder.png')}" alt="${item.name}">
             </div>
             <div class="item-details">
-                <p class="item-name">${item.productName}</p>
-                <p class="item-price">${item.itemPrice.toFixed(2)} Baht</p>
+                <p class="item-name">${item.name}</p>
+                <p class="item-price">${item.price.toFixed(2)} Baht</p>
             </div>
             <div class="item-actions">
                 <div class="quantity-controls">
@@ -167,7 +167,7 @@
     });
     
     calculateAndRenderSummary();
-}
+    }
 
     // ----------------------------------------------------------------
     // CART ACTION LOGIC
