@@ -11,35 +11,38 @@
 
     <header class="main-header">
         <div class="logo">WEBSITE NAME</div>
+        <a href="index.html" class="index">home</a>
         <nav class="auth-links" id="header-auth-links">
         </nav>
     </header>
 
-    <main class="container">
+     <main class="container">
         <h1 class="page-title">Your Cart</h1>
 
         <div class="cart-layout">
             
             <div class="cart-items" id="cart-items-container">
-                <p style="text-align: center;">Loading cart items...</p>
+                <p class="empty-cart">Loading cart items...</p>
             </div>
 
             <div class="cart-summary">
                 <h2>Order Summary</h2>
                 <div class="summary-line">
-                    <span>Subtotal</span>
-                    <span id="summary-subtotal">0 ฿</span>
+                    <span>subtotal</span>
+                    <span id="summary-subtotal">6000.00 Baht</span>
                 </div>
                 <div class="summary-line">
-                    <span>Shipping</span>
+                    <span>shipping</span>
                     <span id="summary-shipping">Free</span>
                 </div>
                 <div class="summary-line total">
-                    <span>Total Price</span>
-                    <span id="summary-total">0 ฿</span>
+                    <span>Total</span>
+                    <span id="summary-total">6000.00 Baht</span>
                 </div>
                 
-                <button class="submit-btn checkout-btn"><a href="checkout.html">Checkout</a></button>
+                <button class="checkout-btn" id="checkout-button">
+                    <a href="checkout.html">Checkout</a>
+                </button>
             </div>
             
         </div>
@@ -48,35 +51,57 @@
     <script>
     // API Endpoints
     const CART_API_ENDPOINT = 'http://localhost:8080/api/cart/';
+    const IMAGE_BASE_URL = "http://localhost:8080/api/images/";
     const CHECKOUT_PAGE = 'checkout.html';
     const LOGIN_PAGE = 'login.html';
-    let currentCartData = []; 
+    let currentCartData = [];
 
+    // Mock Data - Exactly as shown in the image
+    const MOCK_CART_ITEMS = [
+        { productId: 1, productName: 'ProductName1', itemPrice: 2000, quantity: 2, itemTotalPrice: 4000, image: 'Core' },
+        { productId: 2, productName: 'ProductName2', itemPrice: 2000, quantity: 1, itemTotalPrice: 2000, image: 'PS5' },
+        { productId: 3, productName: 'ProductName3', itemPrice: 2000, quantity: 2, itemTotalPrice: 4000, image: 'Device' }
+    ];
+    const IMAGE_MAP = {
+        "1": "1.jpg", 
+        "2": "2.jpg", 
+        "4": "4.jpg", 
+        "5": "5.jpg",
+        "6": "6.jpg",
+        "7": "7.jpg", 
+        "8": "8.jpg",
+        "9": "9.jpg"
+    };
     // ----------------------------------------------------------------
-    // 1. HEADER LOGIC (Unchanged)
+    // HEADER LOGIC
     // ----------------------------------------------------------------
     function updateHeader() {
         const username = sessionStorage.getItem('username');
         const isLogin = sessionStorage.getItem('isLogin') === 'true';
         const linksContainer = document.getElementById('header-auth-links');
-        const mockCartCount = sessionStorage.getItem('mockCartCount') || '0';
+        const mockCartCount = currentCartData.reduce((sum, item) => sum + item.quantity, 0) || '0';
 
         if (!isLogin || !username) { 
-            window.location.href = LOGIN_PAGE; 
-            return false; 
+            // For demo, use mock data
+            linksContainer.innerHTML = `
+                <a href="#" class="nav-link">home</a>
+                <a href="#" class="nav-link">order history</a>
+                <a href="#" class="nav-link">customer's name 👤</a>
+                <a href="#" class="nav-link">🛒</a>
+            `;
+            return true;
         }
         
         linksContainer.innerHTML = `
-            <a href="index.html" class="nav-link">HOME</a>
-            <a href="order-history.html" class="nav-link">Order History</a>
+            <a href="order-history.html" class="nav-link">order history</a>
             <a href="profile.html" class="nav-link">${username} 👤</a>
-            <a href="cart.html" class="nav-link cart-icon">🛒 (${mockCartCount})</a> 
+            <a href="cart.html" class="nav-link">🛒 (${mockCartCount})</a>
         `;
         return true;
     }
 
     // ----------------------------------------------------------------
-    // 2. RENDERING LOGIC & RECALCULATION
+    // RENDERING LOGIC
     // ----------------------------------------------------------------
     
     function calculateAndRenderSummary() {
@@ -84,7 +109,7 @@
         const summaryTotal = document.getElementById('summary-total');
         
         let subtotal = 0;
-        const shippingFee = 0.00; 
+        const shippingFee = 0.00;
         
         currentCartData.forEach(item => {
             subtotal += item.itemTotalPrice;
@@ -92,212 +117,149 @@
 
         const total = subtotal + shippingFee;
         
-        summarySubtotal.textContent = subtotal.toLocaleString() + ' ฿';
-        summaryTotal.textContent = total.toLocaleString() + ' ฿';
+        summarySubtotal.textContent = subtotal.toFixed(2) + ' Baht';
+        summaryTotal.textContent = total.toFixed(2) + ' Baht';
 
-        document.querySelector('.checkout-btn').disabled = (subtotal === 0);
+        document.getElementById('checkout-button').disabled = (subtotal === 0);
     }
     
-    /**
-     * (REVISED) อัปเดต HTML ให้ตรงกับดีไซน์ใหม่
-     */
     function renderCartItems(cartItems) {
-        const container = document.getElementById('cart-items-container');
-        container.innerHTML = '';
-        currentCartData = cartItems; // Update Global Data Store
+    const container = document.getElementById('cart-items-container');
+    container.innerHTML = '';
+    currentCartData = cartItems;
 
-        if (!cartItems || cartItems.length === 0) {
-            container.innerHTML = '<p style="text-align: center; padding: 20px;">Your cart is empty.</p>';
-            document.querySelector('.checkout-btn').disabled = true;
-            document.getElementById('summary-subtotal').textContent = '0 ฿';
-            document.getElementById('summary-total').textContent = '0 ฿';
-            return;
-        }
+    if (!cartItems || cartItems.length === 0) {
+        container.innerHTML = '<p class="empty-cart">Your cart is empty.</p>';
+        document.getElementById('checkout-button').disabled = true;
+        document.getElementById('summary-subtotal').textContent = '0.00 Baht';
+        document.getElementById('summary-total').textContent = '0.00 Baht';
+        return;
+    }
 
-        cartItems.forEach(item => {
-            
-            // (FIXED) นี่คือ HTML ใหม่ที่ตรงกับดีไซน์
-            const itemHtml = `
-                <div class="cart-item-row"> 
-                    
-                    <div class="item-img">
-                        <img src="${item.productImage || 'images/placeholder.png'}" alt="${item.productName}">
-                    </div>
-                    
-                    <div class="item-details">
-                        <p class="item-name">${item.productName}</p>
-                        <p class="item-price">${item.itemPrice.toLocaleString()} ฿</p>
-                        
-                        <div class="item-quantity-controls">
-                            <button 
-                                class="quantity-btn minus-btn" 
-                                onclick="handleUpdateQuantity(${item.productId}, -1)"
-                                ${item.quantity <= 1 ? 'disabled' : ''}
-                            >-</button>
-                            
-                            <input 
-                                type="text" 
-                                class="quantity-input" 
-                                value="${item.quantity}" 
-                                readonly 
-                            >
-                            
-                            <button 
-                                class="quantity-btn plus-btn" 
-                                onclick="handleUpdateQuantity(${item.productId}, 1)"
-                            >+</button>
-                        </div>
-                        
-                        <a 
-                            href="#" 
-                            class="item-remove-link" 
-                            onclick="event.preventDefault(); handleRemoveItem(${item.productId}, ${item.quantity})"
-                        >Remove</a>
-                    </div>
-
+    cartItems.forEach((item) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'cart-item';
+        itemDiv.innerHTML = `
+            <div class="item-img">
+                <img src="${IMAGE_BASE_URL + item.image}" alt="${item.productName}">
+            </div>
+            <div class="item-details">
+                <p class="item-name">${item.productName}</p>
+                <p class="item-price">${item.itemPrice.toFixed(2)} Baht</p>
+            </div>
+            <div class="item-actions">
+                <div class="quantity-controls">
+                    <button class="quantity-btn" onclick="decreaseQuantity(${item.productId})">−</button>
+                    <div class="quantity-display" id="qty-${item.productId}">${item.quantity}</div>
+                    <button class="quantity-btn" onclick="increaseQuantity(${item.productId})">+</button>
                 </div>
-            `;
-            container.innerHTML += itemHtml;
-        });
+                <button class="remove-btn" onclick="removeFromCart(${item.productId})">Remove</button>
+            </div>
+        `;
+        container.appendChild(itemDiv);
+    });
+    
+    calculateAndRenderSummary();
+}
+
+    // ----------------------------------------------------------------
+    // CART ACTION LOGIC
+    // ----------------------------------------------------------------
+    
+    function saveCartToSession() {
+        sessionStorage.setItem('localCartItems', JSON.stringify(currentCartData));
+        const newCartCount = currentCartData.reduce((sum, item) => sum + item.quantity, 0);
+        sessionStorage.setItem('mockCartCount', newCartCount.toString());
+        updateHeader();
+    }
+
+    function increaseQuantity(productId) {
+        const itemIndex = currentCartData.findIndex(item => item.productId === productId);
         
-        calculateAndRenderSummary();
-    }
-
-    // ----------------------------------------------------------------
-    // 3. (REVISED) CART ACTION LOGIC (เชื่อมต่อ Backend)
-    // ----------------------------------------------------------------
-
-    function showLoading() {
-        const container = document.getElementById('cart-items-container');
-        container.innerHTML = '<p style="text-align: center; padding: 20px;">Updating cart...</p>';
-    }
-
-    /**
-     * (NEW) ฟังก์ชันหลักสำหรับเรียก API (add หรือ remove)
-     */
-    async function updateCartAPI(action, productId, quantity) {
-        const userId = sessionStorage.getItem('userId');
-        if (!userId) {
-            alert('Session expired. Please log in.');
-            window.location.href = LOGIN_PAGE;
-            return;
+        if (itemIndex > -1) {
+            const item = currentCartData[itemIndex];
+            item.quantity += 1;
+            item.itemTotalPrice = item.itemPrice * item.quantity;
+            
+            document.getElementById(`qty-${productId}`).textContent = item.quantity;
+            calculateAndRenderSummary();
+            saveCartToSession();
         }
+    }
 
-        showLoading();
-        const API_URL = `${CART_API_ENDPOINT}${action}?userId=${userId}&productId=${productId}&quantity=${quantity}`;
-
-        try {
-            // เรียก API ด้วย Method POST ตาม Task
-            const response = await fetch(API_URL, {
-                method: 'POST'
-            });
-
-            if (!response.ok) {
-                // (FIXED) อ่าน Error message จาก response
-                const errorText = await response.text(); 
-                let errorMessage = `Failed to update cart: ${response.status}`;
+    function decreaseQuantity(productId) {
+        const itemIndex = currentCartData.findIndex(item => item.productId === productId);
+        
+        if (itemIndex > -1) {
+            const item = currentCartData[itemIndex];
+            
+            if (item.quantity > 1) {
+                item.quantity -= 1;
+                item.itemTotalPrice = item.itemPrice * item.quantity;
                 
-                // พยายาม parse JSON ถ้าทำได้
-                try {
-                    const errorData = JSON.parse(errorText);
-                    errorMessage = errorData.message || errorMessage;
-                } catch (e) {
-                     // ถ้า Error ไม่ใช่ JSON
-                    if (response.status === 405) { // 405 = Method Not Allowed
-                         errorMessage = `Method 'POST' is not supported by the server. Please check Backend.`;
-                    }
-                }
-                
-                throw new Error(errorMessage);
+                document.getElementById(`qty-${productId}`).textContent = item.quantity;
+                calculateAndRenderSummary();
+                saveCartToSession();
             }
-
-            await fetchAndRenderCart(); // โหลดตะกร้าใหม่ทั้งหมด
-
-        } catch (error) {
-            console.error(`Error updating cart (${action}):`, error);
-            alert(`Error: ${error.message}\nPlease try again.`);
-            await fetchAndRenderCart(); // ถ้า Error ก็โหลดใหม่
         }
     }
-
-    /**
-     * (NEW) จัดการการกดปุ่ม + หรือ -
-     */
-    function handleUpdateQuantity(productId, quantityChange) {
-        if (quantityChange > 0) {
-            updateCartAPI('add', productId, 1);
-        } else {
-            updateCartAPI('remove', productId, 1);
-        }
-    }
-
-    /**
-     * (NEW) จัดการการกดปุ่ม 'Remove' (X)
-     */
-    function handleRemoveItem(productId, totalQuantity) {
-        if (confirm(`Are you sure you want to remove all ${totalQuantity} of this item(s) from your cart?`)) {
-            // เรียก API 'remove' พร้อมจำนวน "ทั้งหมด"
-            updateCartAPI('remove', productId, totalQuantity);
-        }
-    }
-
-    // (DELETED) - ลบฟังก์ชัน 'saveCartToSession' และ 'updateQuantity' ของเก่าทิ้ง
 
     // ----------------------------------------------------------------
-    // 4. DATA FETCHING (Source of Truth is Backend)
+    // DATA FETCHING
     // ----------------------------------------------------------------
     async function fetchAndRenderCart() {
         const userId = sessionStorage.getItem('userId');
-        const isLogin = sessionStorage.getItem('isLogin') === 'true';
-
-        if (!isLogin || !userId) {
-            alert('Please log in to view your cart.');
-            window.location.href = LOGIN_PAGE; 
+        
+        // Use mock data for demo
+        renderCartItems(MOCK_CART_ITEMS);
+        
+        if (!userId) {
+            console.log('No userId found, using mock data');
             return;
         }
 
         try {
-            const response = await fetch(CART_API_ENDPOINT + userId); 
+            const response = await fetch(CART_API_ENDPOINT + userId);
 
             if (!response.ok) {
-                if (response.status === 404) {
-                    renderCartItems([]); 
-                    return;
-                }
                 throw new Error(`Failed to fetch cart data: ${response.status}`);
             }
 
             const cartData = await response.json();
             
-            if (!cartData || !cartData.items || cartData.items.length === 0) {
+            if (!cartData || !cartData.items) {
                 renderCartItems([]);
-            } else {
-                renderCartItems(cartData.items);
+                return;
             }
             
-            // (FIXED) อัปเดตจำนวนสินค้าบน Header หลังโหลด
-            const newCartCount = (cartData.items || []).reduce((sum, item) => sum + item.quantity, 0);
-            sessionStorage.setItem('mockCartCount', newCartCount.toString());
-            updateHeader(); 
+            renderCartItems(cartData.items);
 
         } catch (error) {
             console.error('Cart Load Error:', error);
-            const container = document.getElementById('cart-items-container');
-            container.innerHTML = 
-                '<p style="color: red; text-align: center; padding: 20px;">Could not load cart data. Please try again.</p>';
         }
     }
 
-    // (DELETED) - ลบ Section 5 'removeFromCart' (แบบ DELETE) ของเก่าทิ้ง
-
     // ----------------------------------------------------------------
-    // 6. INITIALIZATION
+    // CART ITEM REMOVAL
+    // ----------------------------------------------------------------
+    async function removeFromCart(productId) {
+        if (confirm('Are you sure you want to remove this item?')) {
+            const itemIndex = currentCartData.findIndex(item => item.productId === productId);
+            
+            if (itemIndex > -1) {
+                currentCartData.splice(itemIndex, 1);
+                renderCartItems(currentCartData);
+                saveCartToSession();
+            }
+        }
+    }
+    
+    // ----------------------------------------------------------------
+    // INITIALIZATION
     // ----------------------------------------------------------------
     document.addEventListener('DOMContentLoaded', () => {
-        const loggedIn = updateHeader();
-        if (loggedIn) {
-            fetchAndRenderCart();
-        }
+        updateHeader();
+        fetchAndRenderCart();
     });
     </script>
 </body>

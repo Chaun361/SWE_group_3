@@ -88,28 +88,30 @@
     }
 
     function renderProducts(products) {
-        const gridElement = document.getElementById('products-grid');
-        gridElement.innerHTML = ''; 
+    const gridElement = document.getElementById('products-grid');
+    gridElement.innerHTML = ''; 
 
         products.forEach(product => {
+            // ใช้ชื่อฟิลด์ใหม่: productId, productName, stockQuantity
             const cardHtml = `
-                <div class="product-card" onclick="window.location.href='product-detail.html?id=${product.id}'">
-                    <div class="product-image">
-                        <img src="images/${product.id}.jpg" alt="${product.productName}" onerror="this.src='images/placeholder.png'">
+                <div class="product-card">
+                    <div class="product-image" onclick="window.location.href='product-detail.html?id=${product.id}'">
+                        <img src="images/${product.id}.jpg" alt="${product.productName}" style="width: 100%; height: auto;">
                     </div>
                     <div class="product-info-grid">
                         <div class="product-text-details">
                             <p class="product-name">${product.productName}</p>
-                            <p class="product-price">${product.price.toLocaleString()} Baht</p>
-                            <p class="product-stock">In stock: x${product.stockQuantity || 0}</p>
+                            <p class="product-price">฿ ${product.price.toLocaleString()}</p>
+                            <p class="product-stock">in stock: x${product.stockQuantity || '?'}</p> 
                         </div>
-                        <button class="add-to-cart-btn" data-product-id="${product.id}" onclick="event.stopPropagation();">Add</button>
+                        <button class="add-to-cart-btn" data-product-id="${product.id}">Add</button>
                     </div>
                 </div>
             `;
             gridElement.innerHTML += cardHtml;
         });
     }
+    
 
     async function fetchAndDisplayProducts() {
         const gridElement = document.getElementById('products-grid');
@@ -151,7 +153,8 @@
         let cart = JSON.parse(sessionStorage.getItem(cartKey) || '[]'); 
         const productId = parseInt(productIdStr);
 
-        const productDetails = FALLBACK_PRODUCTS.find(p => p.productId === productId);
+        const productDetails = FALLBACK_PRODUCTS.find(p => p.productId === parseInt(productId));
+        const productName = productDetails ? productDetails.productName : `Product ${productId}`;
         
         if (!productDetails) {
             console.error(`Product ID ${productId} not found for local storage!`);
@@ -189,9 +192,17 @@
         const productId = button.getAttribute('data-product-id');
         if (!productId) return;
 
+        // ดึงชื่อสินค้าจาก product card ที่อยู่บนหน้าเว็บ (มาจาก backend)
+        const productCard = button.closest('.product-card');
+        const productNameElement = productCard.querySelector('.product-name');
+        const productName = productNameElement ? productNameElement.textContent : `Product ${productId}`;
+
+        // MODIFIED: Use the actual API endpoint with POST method
         try {
+            // Create the URL with query parameters
             const url = `${ADD_TO_CART_API}?userId=${userId}&productId=${productId}&quantity=${QUANTITY}`;
             
+            // Make the POST request
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
@@ -199,23 +210,31 @@
                 }
             });
             
+            // Check if the request was successful
             if (response.ok) {
                 const data = await response.json();
                 
+                // Check if the API response indicates success
                 if (data && data.items) {
-                    alert(`Product added to cart successfully!`); 
+                    alert(`Added ${productName} to the cart!`); 
                     
+                    // * FIXED: อัปเดต Local Cart Store ด้วยรายละเอียดสินค้า *
                     updateLocalCart(productId, QUANTITY); 
                     
+                    // Update Cart Count based on API response
+                    // Calculate total items in cart from the API response
                     const totalItems = data.items.reduce((total, item) => total + item.quantity, 0);
                     sessionStorage.setItem('mockCartCount', totalItems.toString()); 
-                    currentCartCount = totalItems;
                     
                     fetchCartCount(); 
                 } else {
                     alert("Failed to add item to cart. Please try again.");
                 }
+            } else if (response.status === 400) {
+                // สินค้าหมดสต็อก
+                alert(`${productName} out of stock!`);
             } else {
+                // Handle other HTTP error status
                 const errorText = await response.text();
                 console.error('API Error:', response.status, errorText);
                 alert(`Failed to add item to cart. Server returned ${response.status}.`);
@@ -226,6 +245,7 @@
             alert('Server connection error. Cannot add item to cart.');
         }
     }
+
 
     function setupAddToCartHandlers() {
         const productsGrid = document.getElementById('products-grid');

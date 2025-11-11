@@ -114,6 +114,22 @@
     display: none;
 }
 
+/* ✅ โค้ดใหม่ (เพื่อให้แสดงผล) */
+.quantity-selector-custom { /* หรือใช้ .quantity-selector ถ้าคุณใช้ชื่อเดิม */
+    display: flex; /* เปลี่ยนจาก none */
+    align-items: center;
+    margin-bottom: 20px;
+}
+.quantity-selector-custom label {
+    margin-right: 10px;
+}
+.quantity-selector-custom input {
+    /* กำหนดสไตล์พื้นฐาน */
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
 /* ปุ่ม Add to Cart */
 .add-to-cart-btn.large {
     padding: 13px 55px;
@@ -133,4 +149,3 @@
 .add-to-cart-btn.large:hover {
     background-color: #000;
 }
-
