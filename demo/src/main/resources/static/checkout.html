@@ -11,8 +11,9 @@
 
     <header class="main-header">
         <div class="logo">WEBSITE NAME</div>
+        <a href="index.html" class="index">home</a>
         <nav class="auth-links" id="header-auth-links">
-            </nav>
+        </nav>
     </header>
 
     <main class="container">
@@ -22,20 +23,20 @@
             
             <div class="checkout-forms">
                 <div class="checkout-box" id="shipping-address-box">
-                    <h2>Shipping Address</h2>
+                    <h2>Your Shipping Address</h2>
                     <p>Loading address...</p>
                 </div>
 
                 <div class="checkout-box">
-                    <h2>Payment Method</h2>
+                    <h2>Payment method</h2>
                     
                     <div class="form-group">
                 
-                        <div class="payment-option selected">
+                        <div class="payment-option">
                             <input type="radio" name="payment" value="mastercard" id="mc" checked>
                             <label for="mc" class="payment-label">
                                 <img src="images/mastercard.png" alt="MasterCard" class="card-icon">
-                                <span>MasterCard</span>
+                                <span>mastercard</span>
                             </label>
                         </div>
                     
@@ -43,15 +44,15 @@
                             <input type="radio" name="payment" value="visa" id="visa">
                             <label for="visa" class="payment-label">
                                 <img src="images/visa.png" alt="Visa" class="card-icon">
-                                <span>VISA</span>
+                                <span>visa</span>
                             </label>
                         </div>
 
                         <div class="payment-option">
                             <input type="radio" name="payment" value="qr_payment" id="qr">
                             <label for="qr" class="payment-label">
-                                <img src="images/promptpay.png" alt="QR Payment" class="card-icon qr-icon">
-                                <span>Prompt Pay</span>
+                                <img src="images/promptpay.png" alt="QR Payment" class="card-icon">
+                                <span>prompt pay</span>
                             </label>
                         </div>
                 
@@ -124,7 +125,6 @@
 
         const mockCartCount = sessionStorage.getItem('mockCartCount') || '0';
         linksContainer.innerHTML = `
-            <a href="index.html" class="nav-link">HOME</a>
             <a href="order-history.html" class="nav-link">order history</a>
             <a href="profile.html" class="nav-link">${username} 👤</a>
             <a href="cart.html" class="nav-link cart-icon">🛒 (${mockCartCount})</a> 
