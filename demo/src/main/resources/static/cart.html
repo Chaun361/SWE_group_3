@@ -79,7 +79,14 @@
         const username = sessionStorage.getItem('username');
         const isLogin = sessionStorage.getItem('isLogin') === 'true';
         const linksContainer = document.getElementById('header-auth-links');
-        const mockCartCount = currentCartData.reduce((sum, item) => sum + item.quantity, 0) || '0';
+        const savedCartJSON = sessionStorage.getItem('localCartItems');
+        let realCartCount = 0;
+
+        if (savedCartJSON) {
+            const savedCart = JSON.parse(savedCartJSON);
+            // นับจำนวนของจริง (จาก quantity ของแต่ละชิ้น)
+            realCartCount = savedCart.reduce((sum, item) => sum + item.quantity, 0);
+        }
 
         if (!isLogin || !username) { 
             // For demo, use mock data
@@ -87,7 +94,7 @@
                 <a href="#" class="nav-link">home</a>
                 <a href="#" class="nav-link">order history</a>
                 <a href="#" class="nav-link">customer's name 👤</a>
-                <a href="#" class="nav-link">🛒</a>
+                <a href="#" class="nav-link">🛒 (${realCartCount})</a>
             `;
             return true;
         }
@@ -95,7 +102,7 @@
         linksContainer.innerHTML = `
             <a href="order-history.html" class="nav-link">order history</a>
             <a href="profile.html" class="nav-link">${username} 👤</a>
-            <a href="cart.html" class="nav-link">🛒 (${mockCartCount})</a>
+            <a href="cart.html" class="nav-link">🛒 (${realCartCount})</a>
         `;
         return true;
     }
@@ -210,21 +217,18 @@
     async function fetchAndRenderCart() {
         const userId = sessionStorage.getItem('userId');
         
-        // 1. (FIX) พยายามดึงข้อมูลจาก Session Storage ก่อน!
+        // พยายามดึงข้อมูลจาก Session Storage ก่อน
         const savedCart = sessionStorage.getItem('localCartItems');
 
         if (savedCart) {
-            // 2. ถ้ามีข้อมูลที่เซฟไว้ (เช่น ลบไปแล้ว), ให้ใช้ข้อมูลนั้น
             console.log('Loading cart from Session Storage');
             renderCartItems(JSON.parse(savedCart));
-            return; // จบการทำงาน
+            return; 
         }
         
-        // 3. ถ้าไม่มีข้อมูลใน Session (โหลดครั้งแรก)
-        // ค่อยใช้ MOCK_CART_ITEMS เป็นค่าเริ่มต้น
         console.log('No session data, using MOCK_CART_ITEMS');
         renderCartItems(MOCK_CART_ITEMS);
-        saveCartToSession(); // เซฟ Mock data ลง session ไว้เลย
+        saveCartToSession(); 
     }
 
     // ----------------------------------------------------------------
