@@ -123,9 +123,15 @@
         });
 
         const total = subtotal + shippingFee;
+
+        const formatOptions = {
+            style: 'decimal',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        };
         
-        summarySubtotal.textContent = subtotal.toFixed(2) + ' Baht';
-        summaryTotal.textContent = total.toFixed(2) + ' Baht';
+        summarySubtotal.textContent = subtotal.toLocaleString('en-US', formatOptions) + ' Baht';
+        summaryTotal.textContent = total.toLocaleString('en-US', formatOptions) + ' Baht';
 
         document.getElementById('checkout-button').disabled = (subtotal === 0);
     }
@@ -152,7 +158,7 @@
             </div>
             <div class="item-details">
                 <p class="item-name">${item.name}</p>
-                <p class="item-price">${item.price.toFixed(2)} Baht</p>
+                <p class="item-price">${item.price.toLocaleString('en-US', { minimumFractionDigits: 2 })} Baht</p>
             </div>
             <div class="item-actions">
                 <div class="quantity-controls">
