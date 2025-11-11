@@ -210,33 +210,21 @@
     async function fetchAndRenderCart() {
         const userId = sessionStorage.getItem('userId');
         
-        // Use mock data for demo
-        renderCartItems(MOCK_CART_ITEMS);
+        // 1. (FIX) พยายามดึงข้อมูลจาก Session Storage ก่อน!
+        const savedCart = sessionStorage.getItem('localCartItems');
+
+        if (savedCart) {
+            // 2. ถ้ามีข้อมูลที่เซฟไว้ (เช่น ลบไปแล้ว), ให้ใช้ข้อมูลนั้น
+            console.log('Loading cart from Session Storage');
+            renderCartItems(JSON.parse(savedCart));
+            return; // จบการทำงาน
+        }
         
-        if (!userId) {
-            console.log('No userId found, using mock data');
-            return;
-        }
-
-        try {
-            const response = await fetch(CART_API_ENDPOINT + userId);
-
-            if (!response.ok) {
-                throw new Error(`Failed to fetch cart data: ${response.status}`);
-            }
-
-            const cartData = await response.json();
-            
-            if (!cartData || !cartData.items) {
-                renderCartItems([]);
-                return;
-            }
-            
-            renderCartItems(cartData.items);
-
-        } catch (error) {
-            console.error('Cart Load Error:', error);
-        }
+        // 3. ถ้าไม่มีข้อมูลใน Session (โหลดครั้งแรก)
+        // ค่อยใช้ MOCK_CART_ITEMS เป็นค่าเริ่มต้น
+        console.log('No session data, using MOCK_CART_ITEMS');
+        renderCartItems(MOCK_CART_ITEMS);
+        saveCartToSession(); // เซฟ Mock data ลง session ไว้เลย
     }
 
     // ----------------------------------------------------------------
