@@ -186,7 +186,7 @@
         if (itemIndex > -1) {
             const item = currentCartData[itemIndex];
             item.quantity += 1;
-            item.itemTotalPrice = item.itemPrice * item.quantity;
+            item.subtotal = item.price * item.quantity;
             
             document.getElementById(`qty-${productId}`).textContent = item.quantity;
             calculateAndRenderSummary();
@@ -202,7 +202,7 @@
             
             if (item.quantity > 1) {
                 item.quantity -= 1;
-                item.itemTotalPrice = item.itemPrice * item.quantity;
+                item.subtotal = item.price * item.quantity;
                 
                 document.getElementById(`qty-${productId}`).textContent = item.quantity;
                 calculateAndRenderSummary();
