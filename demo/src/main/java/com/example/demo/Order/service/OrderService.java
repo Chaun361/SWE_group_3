@@ -120,11 +120,11 @@ public class OrderService {
     }
     
     public List<OrderModel> getOrdersByUserId(Long userId) {
-        return orderRepository.findByUserId(userId);
+        return orderRepository.findByUserID(userId);
     }
     
     public List<OrderHistoryDTO> getOrderHistory(Long userId) {
-        List<OrderModel> orders = orderRepository.findByUserId(userId);
+        List<OrderModel> orders = orderRepository.findByUserID(userId);
         List<OrderHistoryDTO> historyList = new ArrayList<>();
 
         for (OrderModel order : orders) {
