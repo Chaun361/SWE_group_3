@@ -13,6 +13,8 @@ import com.example.demo.Cart.model.CartItemsModel;
 import com.example.demo.Cart.model.CartModel;
 import com.example.demo.Cart.repository.CartItemsRepository;
 import com.example.demo.Cart.repository.CartRepository;
+import com.example.demo.Order.DTO.OrderHistoryDTO;
+import com.example.demo.Order.DTO.OrderHistoryItemDTO;
 import com.example.demo.Order.model.OrderItemModel;
 import com.example.demo.Order.model.OrderModel;
 import com.example.demo.Order.repository.OrderItemRepository;
@@ -40,6 +42,13 @@ public class OrderService {
     // แก้ไข: เปลี่ยนชื่อ Repository ให้ตรงกับไฟล์ Model
     @Autowired
     private OrderItemRepository orderItemRepository;
+
+    @Autowired 
+    private UserRepository userRepository;
+
+    public boolean validateUserSession(Long userId) {
+        return userRepository.existsById(userId);
+    }
 
     @Transactional
     public OrderModel checkout(Long userId) {
@@ -84,7 +93,7 @@ public class OrderService {
             orderItem.setOrder(savedOrder); // เชื่อมกับ Order หลัก
             orderItem.setProductID(product.getId());
             orderItem.setQuantity(item.getQuantity());
-            orderItem.setPricePerUnit(product.getPrice()); // บันทึกราคา ณ ตอนที่สั่งซื้อ
+            orderItem.setUnitPrice(product.getPrice()); // บันทึกราคา ณ ตอนที่สั่งซื้อ
             orderItems.add(orderItem);
 
             // 4c. คำนวณราคารวม
@@ -108,5 +117,56 @@ public class OrderService {
         cartItemsRepository.deleteAll(cartItems);
 
         return savedOrder;
+    }
+    
+    public List<OrderModel> getOrdersByUserId(Long userId) {
+        return orderRepository.findByUserID(userId);
+    }
+    
+    public List<OrderHistoryDTO> getOrderHistory(Long userId) {
+        List<OrderModel> orders = orderRepository.findByUserID(userId);
+        List<OrderHistoryDTO> historyList = new ArrayList<>();
+
+        for (OrderModel order : orders) {
+            List<OrderHistoryItemDTO> items = getOrderItems(order);
+
+            OrderHistoryDTO dto = new OrderHistoryDTO(
+                    order.getOrderID(),
+                    order.getOrderDate(),
+                    order.getStatus(),
+                    items,
+                    order.getTotalAmount()
+            );
+
+            historyList.add(dto);
+        }
+
+        return historyList;
+    }
+
+    private List<OrderHistoryItemDTO> getOrderItems(OrderModel order) {
+        List<OrderItemModel> orderItemModels = order.getOrderItems();
+        List<OrderHistoryItemDTO> itemDTOList = new ArrayList<>();
+
+        for (OrderItemModel item : orderItemModels) {
+            String productName = getProductDetail(item.getProductID());
+
+            OrderHistoryItemDTO itemDTO = new OrderHistoryItemDTO(
+                    item.getProductID(),
+                    productName,
+                    item.getPricePerUnit(),
+                    item.getQuantity()
+            );
+
+            itemDTOList.add(itemDTO);
+        }
+
+        return itemDTOList;
+    }
+
+    private String getProductDetail(Long productId) {
+        ProductModel product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "ID", productId));
+        return product.getProductName();
     }
 }
