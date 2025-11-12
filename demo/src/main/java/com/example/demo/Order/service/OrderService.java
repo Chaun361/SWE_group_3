@@ -93,7 +93,7 @@ public class OrderService {
             orderItem.setOrder(savedOrder); // เชื่อมกับ Order หลัก
             orderItem.setProductID(product.getId());
             orderItem.setQuantity(item.getQuantity());
-            orderItem.setPricePerUnit(product.getPrice()); // บันทึกราคา ณ ตอนที่สั่งซื้อ
+            orderItem.setUnitPrice(product.getPrice()); // บันทึกราคา ณ ตอนที่สั่งซื้อ
             orderItems.add(orderItem);
 
             // 4c. คำนวณราคารวม

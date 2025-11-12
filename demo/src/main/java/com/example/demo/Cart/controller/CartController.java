@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.example.demo.Cart.dto.CartDTO;
 import com.example.demo.Cart.service.CartService;
 
+
+
 @RestController
 public class CartController {
 
@@ -37,5 +39,14 @@ public class CartController {
                 + ", quantity=" + quantity);
         return cartService.addProductToCart(userId, productId, quantity);
     }
+
+    @PostMapping("/api/cart/remove")
+    public CartDTO removeProductFromCart(
+            @RequestParam Long userId,
+            @RequestParam Long productId,
+            @RequestParam int quantity) {
+        return cartService.removeProductFromCart(userId, productId, quantity);
+    }
+    
 
 }
