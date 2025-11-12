@@ -25,8 +25,71 @@
     <h1 class="page-title">Order history</h1>
     <div id="order-list" class="order-list">Loading...</div>
   </main>
+  <script>
+    async function loadOrderHistory(userId) {
+      try {
+        const response = await fetch("http://localhost:8080/api/orders/history/" + userId);
+      if (!response.ok) throw new Error("Failed to fetch order history");
 
-  
+      const orders = await response.json();
+      const container = document.getElementById('order-list');
+      container.innerHTML = '';
 
+      if (!orders.length) {
+      container.innerHTML = '<p>No order history found.</p>';
+      return;
+    }
+
+    orders.forEach(order => {
+      const total = order.orderItems?.reduce(
+        (sum, item) => sum + item.pricePerUnit * item.quantity, 0
+      ) || 0;
+
+      const div = document.createElement('div');
+      div.className = 'order-card';
+      div.innerHTML = `
+        <div class="order-header">
+          <div class="order-left">
+            <img src="https://cdn-icons-png.flaticon.com/512/3081/3081559.png" class="order-icon">
+            <div>
+              <h3>Order #${order.orderId}</h3>
+              <p class="order-date">📅 ${order.orderDate.split('T')[0]}</p>
+            </div>
+          </div>
+          <span class="order-status ${order.status.toLowerCase()}">${order.status}</span>
+        </div>
+
+        <div class="order-body">
+          ${order.orderItems.map(i => `
+            <div class="item-row">
+              <div class="item-left">
+                <p>${i.productName}</p>
+                <small>${(i.pricePerUnit).toLocaleString()} Baht x${i.quantity}</small>
+              </div>
+              <div class="item-right">
+                <strong>${(i.pricePerUnit * i.quantity).toLocaleString()} Baht</strong>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="order-footer">
+          <hr>
+          <p class="order-total"><strong>Total:</strong> ${total.toLocaleString()} Baht</p>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+    } catch (err) {
+      console.error(err);
+      document.getElementById('order-list').innerHTML = '<p>Cannot load order history.</p>';
+    }
+  }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const userId = 1; // สมมุติ user id = 1
+      loadOrderHistory(userId);
+    });
+  </script>
 </body>
 </html>
