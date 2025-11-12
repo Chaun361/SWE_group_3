@@ -141,7 +141,7 @@
         itemDiv.className = 'cart-item';
         itemDiv.innerHTML = `
             <div class="item-img">
-                <img src="${IMAGE_BASE_URL + item.image}" alt="${item.productName}">
+                <img src="./images/${item.productId}.jpg" alt="${item.productName}">
             </div>
             <div class="item-details">
                 <p class="item-name">${item.productName}</p>
@@ -209,10 +209,6 @@
     // ----------------------------------------------------------------
     async function fetchAndRenderCart() {
         const userId = sessionStorage.getItem('userId');
-        
-        // Use mock data for demo
-        renderCartItems(MOCK_CART_ITEMS);
-        
         if (!userId) {
             console.log('No userId found, using mock data');
             return;
