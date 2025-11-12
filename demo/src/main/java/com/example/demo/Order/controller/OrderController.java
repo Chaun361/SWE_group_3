@@ -2,17 +2,14 @@ package com.example.demo.Order.controller;
 
 import com.example.demo.Cart.exception.ResourceNotFoundException;
 import com.example.demo.Cart.exception.StockException;
-import com.example.demo.Order.exception.ErrorResponse;
+import com.example.demo.Order.DTO.ErrorResponse;
 import com.example.demo.Order.model.OrderModel;
 import com.example.demo.Order.service.OrderService;
-import com.example.demo.Order.DTO.OrderHistoryDTO;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -21,35 +18,6 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
-
-     // ดึงประวัติ Order ตาม User ID
-     @GetMapping("/history/{userId}")
-    public ResponseEntity<?> getOrderHistory(@PathVariable Long userId) {
-
-        // 1. Validate User ก่อน (ตาม UML validateUserSession)
-        boolean isValidUser = orderService.validateUserSession(userId);
-
-        if (!isValidUser) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(new ErrorResponse("User session invalid or not exist."));
-        }
-
-        // 2. ดึง Order History จาก Service
-        List<OrderHistoryDTO> historyList = orderService.getOrderHistory(userId);
-
-        // 3. Map to Response object 
-        List<OrderHistoryDTO> response = mapToResponse(historyList);
-        return ResponseEntity.ok(response);
-
-    }
-
-
-    // mapToResponse ตาม UML (setOrders + getOrders)
-    public List<OrderHistoryDTO> mapToResponse(List<OrderHistoryDTO> orders) {
-    return orders;
-}
-
 
     @PostMapping("/checkout")
     public ResponseEntity<?> checkout(@RequestBody Map<String, Object> payload) {
@@ -70,7 +38,7 @@ public class OrderController {
                         .body(new ErrorResponse("Invalid userId format. Must be a numeric value."));
             }
 
-            // แปลงจาก Number เป็น Long โดยตรง
+            // แปลงจาก Number เป็น Long โดยตรง ปลอดภัยกว่าและไม่มีสีเหลือง
             Long userId = ((Number) userIdObj).longValue();
 
 

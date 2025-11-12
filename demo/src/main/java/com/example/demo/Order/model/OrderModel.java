@@ -49,8 +49,8 @@ public class OrderModel {
         return UserID;
     }
 
-    public void setUserID(long userId) {
-        UserID = userId;
+    public void setUserID(long userID) {
+        UserID = userID;
     }
 
     public LocalDateTime getOrderDate() { // <-- แก้ Type ที่ return
