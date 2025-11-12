@@ -1,5 +1,12 @@
 package com.example.demo.Order.service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.example.demo.Cart.exception.ResourceNotFoundException;
 import com.example.demo.Cart.exception.StockException;
 import com.example.demo.Cart.model.CartItemsModel;
@@ -14,15 +21,8 @@ import com.example.demo.Order.repository.OrderItemRepository;
 import com.example.demo.Order.repository.OrderRepository;
 import com.example.demo.Product.model.ProductModel;
 import com.example.demo.Product.repository.ProductRepository;
-import com.example.demo.auth.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 public class OrderService {
