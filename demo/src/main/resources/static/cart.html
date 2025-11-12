@@ -79,18 +79,7 @@
         const username = sessionStorage.getItem('username');
         const isLogin = sessionStorage.getItem('isLogin') === 'true';
         const linksContainer = document.getElementById('header-auth-links');
-<<<<<<< HEAD
         const mockCartCount = currentCartData.reduce((sum, item) => sum + item.quantity, 0) || '0';
-=======
-        const savedCartJSON = sessionStorage.getItem('localCartItems');
-        let realCartCount = 0;
-
-        if (savedCartJSON) {
-            const savedCart = JSON.parse(savedCartJSON);
-            // นับจำนวนของจริง (จาก quantity ของแต่ละชิ้น)
-            realCartCount = savedCart.reduce((sum, item) => sum + item.quantity, 0);
-        }
->>>>>>> 1d7d33bbd71f645f14ed8ab900fb2b7d83a0a157
 
         if (!isLogin || !username) { 
             // For demo, use mock data
@@ -98,11 +87,7 @@
                 <a href="#" class="nav-link">home</a>
                 <a href="#" class="nav-link">order history</a>
                 <a href="#" class="nav-link">customer's name 👤</a>
-<<<<<<< HEAD
                 <a href="#" class="nav-link">🛒</a>
-=======
-                <a href="#" class="nav-link">🛒 (${realCartCount})</a>
->>>>>>> 1d7d33bbd71f645f14ed8ab900fb2b7d83a0a157
             `;
             return true;
         }
@@ -110,11 +95,7 @@
         linksContainer.innerHTML = `
             <a href="order-history.html" class="nav-link">order history</a>
             <a href="profile.html" class="nav-link">${username} 👤</a>
-<<<<<<< HEAD
             <a href="cart.html" class="nav-link">🛒 (${mockCartCount})</a>
-=======
-            <a href="cart.html" class="nav-link">🛒 (${realCartCount})</a>
->>>>>>> 1d7d33bbd71f645f14ed8ab900fb2b7d83a0a157
         `;
         return true;
     }
@@ -131,27 +112,14 @@
         const shippingFee = 0.00;
         
         currentCartData.forEach(item => {
-            subtotal += item.subtotal;
+            subtotal += item.itemTotalPrice;
         });
 
         const total = subtotal + shippingFee;
-<<<<<<< HEAD
         
         summarySubtotal.textContent = subtotal.toFixed(2) + ' Baht';
         summaryTotal.textContent = total.toFixed(2) + ' Baht';
 
-=======
-
-        const formatOptions = {
-            style: 'decimal',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        };
-        
-        summarySubtotal.textContent = subtotal.toLocaleString('en-US', formatOptions) + ' Baht';
-        summaryTotal.textContent = total.toLocaleString('en-US', formatOptions) + ' Baht';
-
->>>>>>> 1d7d33bbd71f645f14ed8ab900fb2b7d83a0a157
         document.getElementById('checkout-button').disabled = (subtotal === 0);
     }
     
@@ -173,19 +141,11 @@
         itemDiv.className = 'cart-item';
         itemDiv.innerHTML = `
             <div class="item-img">
-<<<<<<< HEAD
                 <img src="./images/${item.productId}.jpg" alt="${item.productName}">
             </div>
             <div class="item-details">
                 <p class="item-name">${item.productName}</p>
                 <p class="item-price">${item.itemPrice.toFixed(2)} Baht</p>
-=======
-                <img src="${IMAGE_BASE_URL + (item.image || 'placeholder.png')}" alt="${item.name}">
-            </div>
-            <div class="item-details">
-                <p class="item-name">${item.name}</p>
-                <p class="item-price">${item.price.toLocaleString('en-US', { minimumFractionDigits: 2 })} Baht</p>
->>>>>>> 1d7d33bbd71f645f14ed8ab900fb2b7d83a0a157
             </div>
             <div class="item-actions">
                 <div class="quantity-controls">
@@ -200,11 +160,7 @@
     });
     
     calculateAndRenderSummary();
-<<<<<<< HEAD
 }
-=======
-    }
->>>>>>> 1d7d33bbd71f645f14ed8ab900fb2b7d83a0a157
 
     // ----------------------------------------------------------------
     // CART ACTION LOGIC
@@ -223,11 +179,7 @@
         if (itemIndex > -1) {
             const item = currentCartData[itemIndex];
             item.quantity += 1;
-<<<<<<< HEAD
             item.itemTotalPrice = item.itemPrice * item.quantity;
-=======
-            item.subtotal = item.price * item.quantity;
->>>>>>> 1d7d33bbd71f645f14ed8ab900fb2b7d83a0a157
             
             document.getElementById(`qty-${productId}`).textContent = item.quantity;
             calculateAndRenderSummary();
@@ -243,11 +195,7 @@
             
             if (item.quantity > 1) {
                 item.quantity -= 1;
-<<<<<<< HEAD
                 item.itemTotalPrice = item.itemPrice * item.quantity;
-=======
-                item.subtotal = item.price * item.quantity;
->>>>>>> 1d7d33bbd71f645f14ed8ab900fb2b7d83a0a157
                 
                 document.getElementById(`qty-${productId}`).textContent = item.quantity;
                 calculateAndRenderSummary();
@@ -261,7 +209,6 @@
     // ----------------------------------------------------------------
     async function fetchAndRenderCart() {
         const userId = sessionStorage.getItem('userId');
-<<<<<<< HEAD
         if (!userId) {
             console.log('No userId found, using mock data');
             return;
@@ -285,21 +232,7 @@
 
         } catch (error) {
             console.error('Cart Load Error:', error);
-=======
-        
-        // พยายามดึงข้อมูลจาก Session Storage ก่อน
-        const savedCart = sessionStorage.getItem('localCartItems');
-
-        if (savedCart) {
-            console.log('Loading cart from Session Storage');
-            renderCartItems(JSON.parse(savedCart));
-            return; 
->>>>>>> 1d7d33bbd71f645f14ed8ab900fb2b7d83a0a157
         }
-        
-        console.log('No session data, using MOCK_CART_ITEMS');
-        renderCartItems(MOCK_CART_ITEMS);
-        saveCartToSession(); 
     }
 
     // ----------------------------------------------------------------
