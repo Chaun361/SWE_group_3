@@ -21,6 +21,7 @@ import com.example.demo.Order.repository.OrderItemRepository;
 import com.example.demo.Order.repository.OrderRepository;
 import com.example.demo.Product.model.ProductModel;
 import com.example.demo.Product.repository.ProductRepository;
+import com.example.demo.auth.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -43,7 +44,7 @@ public class OrderService {
     @Autowired
     private OrderItemRepository orderItemRepository;
 
-    @Autowired 
+    @Autowired
     private UserRepository userRepository;
 
     public boolean validateUserSession(Long userId) {
@@ -68,7 +69,7 @@ public class OrderService {
         newOrder.setUserID(userId);
         newOrder.setOrderDate(LocalDateTime.now());
         newOrder.setStatus("Pending");
-        
+
         // บันทึก Order หลักก่อนเพื่อเอา Order ID มาใช้
         OrderModel savedOrder = orderRepository.save(newOrder);
 
@@ -86,7 +87,7 @@ public class OrderService {
                 throw new StockException("Not enough stock for product: " + product.getProductName() +
                         ". Requested: " + item.getQuantity() + ", Available: " + product.getStockQuantity());
             }
-            
+
             // 4b. สร้าง OrderItem
             // แก้ไข: สร้าง Instance ของ OrderItemsModel
             OrderItemModel orderItem = new OrderItemModel();
@@ -98,31 +99,31 @@ public class OrderService {
 
             // 4c. คำนวณราคารวม
             totalAmount += item.getQuantity() * product.getPrice();
-            
+
             // 5. อัปเดต Stock สินค้า
             product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
             productRepository.save(product);
         }
-        
+
         // 6. บันทึก OrderItems ทั้งหมด
         orderItemRepository.saveAll(orderItems);
 
         // 7. อัปเดต TotalAmount และตั้งค่าสถานะสุดท้ายใน Order หลัก
         savedOrder.setTotalAmount(totalAmount);
         // แก้ไข: เปลี่ยนสถานะเป็น "PLACED" ตาม Definition of Done
-        savedOrder.setStatus("PLACED"); 
+        savedOrder.setStatus("PLACED");
         orderRepository.save(savedOrder);
-        
+
         // 8. ลบ CartItems ทั้งหมดของ cart ที่ active แล้ว
         cartItemsRepository.deleteAll(cartItems);
 
         return savedOrder;
     }
-    
+
     public List<OrderModel> getOrdersByUserId(Long userId) {
         return orderRepository.findByUserID(userId);
     }
-    
+
     public List<OrderHistoryDTO> getOrderHistory(Long userId) {
         List<OrderModel> orders = orderRepository.findByUserID(userId);
         List<OrderHistoryDTO> historyList = new ArrayList<>();
@@ -135,8 +136,7 @@ public class OrderService {
                     order.getOrderDate(),
                     order.getStatus(),
                     items,
-                    order.getTotalAmount()
-            );
+                    order.getTotalAmount());
 
             historyList.add(dto);
         }
@@ -154,9 +154,8 @@ public class OrderService {
             OrderHistoryItemDTO itemDTO = new OrderHistoryItemDTO(
                     item.getProductID(),
                     productName,
-                    item.getPricePerUnit(),
-                    item.getQuantity()
-            );
+                    item.getUnitPrice(),
+                    item.getQuantity());
 
             itemDTOList.add(itemDTO);
         }
