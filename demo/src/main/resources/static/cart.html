@@ -56,30 +56,15 @@
     const LOGIN_PAGE = 'login.html';
     let currentCartData = [];
 
-    // Mock Data
-    const MOCK_CART_ITEMS = [
-        { productId: 1, name: 'ProductName1', price: 2000, quantity: 2, subtotal: 4000, image: 'Core' },
-        { productId: 2, name: 'ProductName2', price: 2000, quantity: 1, subtotal: 2000, image: 'PS5' },
-        { productId: 3, name: 'ProductName3', price: 2000, quantity: 2, subtotal: 4000, image: 'Device' }
-    ];
-    // หมายเหตุ: ผมแก้ MOCK_CART_ITEMS ให้ใช้ 'name', 'price', 'subtotal'
-    // เพื่อให้มันตรงกับมาตรฐานใหม่ที่คุณเลือก (โค้ดจะได้ไม่พังตอน test)
 
     // ----------------------------------------------------------------
     // HEADER LOGIC
     // ----------------------------------------------------------------
-    function updateHeader() {
+    function updateHeader(cartItems = []) {
         const username = sessionStorage.getItem('username');
         const isLogin = sessionStorage.getItem('isLogin') === 'true';
         const linksContainer = document.getElementById('header-auth-links');
-        
-        // FIX: ใช้ logic เดียวในการนับจำนวนตะกร้า
-        const savedCartJSON = sessionStorage.getItem('localCartItems');
-        let realCartCount = 0;
-        if (savedCartJSON) {
-            const savedCart = JSON.parse(savedCartJSON);
-            realCartCount = savedCart.reduce((sum, item) => sum + item.quantity, 0);
-        }
+        const realCartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
         if (!isLogin || !username) { 
             linksContainer.innerHTML = `
@@ -88,16 +73,18 @@
                 <a href="#" class="nav-link">customer's name 👤</a>
                 <a href="#" class="nav-link">🛒 (${realCartCount})</a>
             `;
-        } else {
-            // FIX: ลบตะกร้าที่ซ้ำซ้อนออก
-            linksContainer.innerHTML = `
-                <a href="order-history.html" class="nav-link">order history</a>
-                <a href="profile.html" class="nav-link">${username} 👤</a>
-                <a href="cart.html" class="nav-link">🛒 (${realCartCount})</a>
-            `;
-        }
-        return true;
-    }
+            return true;
+        } 
+           
+        linksContainer.innerHTML = `
+          <a href="order-history.html" class="nav-link">order history</a>
+          <a href="profile.html" class="nav-link">${username} 👤</a>
+          <a href="cart.html" class="nav-link">🛒 (${realCartCount})</a>
+         `;
+        return true;
+    }
+       
+    
 
     // ----------------------------------------------------------------
     // RENDERING LOGIC
@@ -110,8 +97,8 @@
         const shippingFee = 0.00;
 
         currentCartData.forEach(item => {
-            // ใช้ 'subtotal' ที่เราตกลงกันไว้
-            subtotal += (item.subtotal || 0); 
+            const itemTotal = item.subtotal || item.itemTotalPrice || 0;
+            subtotal += itemTotal;
         });
 
         const total = subtotal + shippingFee;
@@ -137,131 +124,150 @@
         }
 
         cartItems.forEach((item) => {
-            const itemDiv = document.createElement('div');
+            const itemName = item.name || item.productName || 'Unnamed Product';
+            const itemPrice = item.price || item.itemPrice || 0;
+
+            const itemDiv = document.createElement('div');
             itemDiv.className = 'cart-item';
             itemDiv.innerHTML = `
-                <div class="item-img">
-                    <img src="${IMAGE_BASE_URL + (item.image || 'placeholder.png')}" alt="${item.name}">
+                <div class="item-img">
+                    <img src="./images/${item.productId}.jpg" alt="${itemName}">
                 </div>
-                <div class="item-details">
-                    <p class="item-name">${item.name}</p>
-                    <p class="item-price">${item.price.toLocaleString('en-US', { minimumFractionDigits: 2 })} Baht</p>
-                </div>
-                <div class="item-actions">
-                    <div class="quantity-controls">
-                        <button class="quantity-btn" onclick="decreaseQuantity(${item.productId})">−</button>
-                        <div class="quantity-display" id="qty-${item.productId}">${item.quantity}</div>
-                        <button class="quantity-btn" onclick="increaseQuantity(${item.productId})">+</button>
-                    </div>
-                    <button class="remove-btn" onclick="removeFromCart(${item.productId})">Remove</button>
-                </div>
-            `;
-            container.appendChild(itemDiv);
-        });
-        calculateAndRenderSummary();
+                <div class="item-details">
+                    <p class="item-name">${itemName}</p> 
+                    <p class="item-price">${itemPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })} Baht</p>
+                </div>
+                <div class="item-actions">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="handleUpdateQuantity(${item.productId}, -1)" ${item.quantity <= 1 ? 'disabled' : ''}>−</button>
+                        <div class="quantity-display" id="qty-${item.productId}">${item.quantity}</div>
+                        <button class="quantity-btn" onclick="handleUpdateQuantity(${item.productId}, 1)">+</button>
+                    </div>
+                    <button class="remove-btn" onclick="handleRemoveItem(${item.productId}, ${item.quantity})">Remove</button>
+                </div>
+            `;
+            container.appendChild(itemDiv);
+        });
+        calculateAndRenderSummary();
     }
 
     // ----------------------------------------------------------------
     // CART ACTION LOGIC
     // ----------------------------------------------------------------
-    function saveCartToSession() {
-        sessionStorage.setItem('localCartItems', JSON.stringify(currentCartData));
-        const newCartCount = currentCartData.reduce((sum, item) => sum + item.quantity, 0);
-        sessionStorage.setItem('mockCartCount', newCartCount.toString()); // (ตัวแปรนี้อาจไม่จำเป็นแล้ว แต่เก็บไว้เผื่อ)
-        updateHeader(); // อัปเดต Header ทุกครั้งที่เซฟ
-    }
+    async function updateCartAPI(action, productId, quantity) {
+        // (สมมติว่า 'userId' ถูกเซฟไว้ใน session ตอน login)
+        const userId = sessionStorage.getItem('userId'); 
+        if (!userId) {
+            alert('Session expired. Please log in.');
+            window.location.href = LOGIN_PAGE;
+            return;
+        }
 
-    function increaseQuantity(productId) {
-        const itemIndex = currentCartData.findIndex(item => item.productId === productId);
-        if (itemIndex > -1) {
-            const item = currentCartData[itemIndex];
-            item.quantity += 1;
-            item.subtotal = item.price * item.quantity; 
-            document.getElementById(`qty-${productId}`).textContent = item.quantity;
-            calculateAndRenderSummary();
-            saveCartToSession();
-        }
-    }
+        document.getElementById('cart-items-container').innerHTML = '<p class="empty-cart">Updating cart...</p>';
+        
+        const API_URL = `${CART_API_ENDPOINT}${action}?userId=${userId}&productId=${productId}&quantity=${quantity}`;
 
-    function decreaseQuantity(productId) {
-        const itemIndex = currentCartData.findIndex(item => item.productId === productId);
-        if (itemIndex > -1) {
-            const item = currentCartData[itemIndex];
-            if (item.quantity > 1) {
-                item.quantity -= 1;
-                item.subtotal = item.price * item.quantity;
-                document.getElementById(`qty-${productId}`).textContent = item.quantity;
-                calculateAndRenderSummary();
-                saveCartToSession();
-            }
-        }
-    }
+        try {
+            // (DoD 1 & 2) "ยิง" POST ไปที่ Backend
+            const response = await fetch(API_URL, {
+                method: 'POST'
+            });
+
+            if (!response.ok) {
+                // (ถ้า Backend ตอบ 405 "Method Not Allowed" หรือ 500)
+                const errorText = await response.text();
+                throw new Error(errorText || `Failed to ${action} item`);
+            }
+            
+            // (DoD 3) "Merge" (ซิงก์)
+            // ถ้าสำเร็จ... "โหลดตะกร้าใหม่ทั้งหมด" จาก Server
+            console.log(`Successfully ${action}ed item. Refreshing cart...`);
+            await fetchAndRenderCart();
+
+        } catch (error) {
+            console.error(`Error updating cart (${action}):`, error);
+            alert(`Error: ${error.message}\nPlease try again.`);
+            await fetchAndRenderCart(); 
+        }
+    }
+
+    function handleUpdateQuantity(productId, quantityChange) {
+        if (quantityChange > 0) {
+            // (DoD 1) เพิ่ม 1 ชิ้น
+            updateCartAPI('add', productId, 1);
+        } else {
+            // (DoD 1) ลบ 1 ชิ้น
+            updateCartAPI('remove', productId, 1);
+        }
+    }
+
+    async function handleRemoveItem(productId, totalQuantity) {
+        // (DoD 2) ลบตามจำนวนสินค้าทั้งหมด
+        if (confirm(`Are you sure you want to remove all ${totalQuantity} of this item(s) from your cart?`)) {
+            updateCartAPI('remove', productId, totalQuantity);
+        }
+    }
 
     // ----------------------------------------------------------------
     // DATA FETCHING
     // ----------------------------------------------------------------
     
-    // FIX: มีฟังก์ชันเดียวที่รวม Logic ทั้งหมด
     async function fetchAndRenderCart() {
-        // 1. ลองดึงจาก Session Storage ก่อน
-        const savedCart = sessionStorage.getItem('localCartItems');
-        if (savedCart) {
-            console.log('Loading cart from Session Storage');
-            renderCartItems(JSON.parse(savedCart));
-            return; 
-        }
+        console.log('Fetching cart from "Source of Truth" (Backend API)...');
+        const userId = sessionStorage.getItem('userId');
+        
+        // (FIX) "โกง" ระบบ... ถ้า Login ไม่ได้... ให้ยัด userId ปลอม
+        if (!userId) {
+             console.warn('No userId found! HACK: Injecting userId=1 for testing.');
+             sessionStorage.setItem('userId', '1'); // <-- (นี่คือ "การโกง" ที่เราคุยกัน)
+             sessionStorage.setItem('username', 'max');
+             sessionStorage.setItem('isLogin', 'true');
+             // (เรียกตัวเองซ้ำ... แต่คราวนี้จะมี userId แล้ว)
+             fetchAndRenderCart();
+             return;
+        }
+        
+        const container = document.getElementById('cart-items-container');
 
-        // 2. ถ้าไม่มี, ลองยิง API (ถ้ามี userId)
-        const userId = sessionStorage.getItem('userId');
-        if (userId) {
-            try {
-                console.log('No session data, fetching from API...');
-                const response = await fetch(CART_API_ENDPOINT + userId);
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch cart data: ${response.status}`);
-                }
-                const cartData = await response.json();
-                
-                if (!cartData || !cartData.items || cartData.items.length === 0) {
-                    renderCartItems([]); // ตะกร้าว่าง
-                } else {
-                    renderCartItems(cartData.items);
-                    saveCartToSession(); // เซฟของจริงลง Session
-                }
-                return; // จบ
-            } catch (error) {
-                console.error('Cart Load Error:', error);
-                // ถ้า API ล่ม, ให้ไปใช้ Mock data ข้างล่าง
-            }
-        }
+        try {
+            // 1. "ยิง" GET ไปที่ Backend
+            const response = await fetch(CART_API_ENDPOINT + userId); 
+            if (!response.ok) {
+                if (response.status === 404) {
+                    console.log('Cart not found (404). Rendering empty cart.');
+                    renderCartItems([]);
+                    updateHeader([]);
+                    return;
+                }
+                throw new Error(`Failed to fetch cart data: ${response.status}`);
+            }
 
-        // 3. ทางเลือกสุดท้าย (ไม่มี userId หรือ API ล่ม)
-        console.log('No session data or API failed, using MOCK_CART_ITEMS');
-        renderCartItems(MOCK_CART_ITEMS);
-        saveCartToSession(); 
-    }
+            const cartData = await response.json();
+            
+            // 2. ถ้าสำเร็จ... ส่ง "ของจริง" (cartData.items) ไปวาด
+            if (!cartData || !cartData.items || cartData.items.length === 0) {
+                renderCartItems([]);
+                updateHeader([]);
+            } else {
+                renderCartItems(cartData.items);
+                // (FIX) ส่ง "ของจริง" ไปอัปเดต Header ด้วย
+                updateHeader(cartData.items);
+            }
 
-    // ----------------------------------------------------------------
-    // CART ITEM REMOVAL
-    // ----------------------------------------------------------------
-    async function removeFromCart(productId) {
-        if (confirm('Are you sure you want to remove this item?')) {
-            const itemIndex = currentCartData.findIndex(item => item.productId === productId);
-            if (itemIndex > -1) {
-                currentCartData.splice(itemIndex, 1);
-                renderCartItems(currentCartData);
-                saveCartToSession();
-            }
-        }
-    }
+        } catch (error) {
+            console.error('Cart Load Error:', error);
+            container.innerHTML = `<p class="empty-cart" style="color: red;">Could not load cart data. ${error.message}</p>`;
+        }
+    }
     
     // ----------------------------------------------------------------
     // INITIALIZATION
     // ----------------------------------------------------------------
-    document.addEventListener('DOMContentLoaded', () => {
-        updateHeader();
-        fetchAndRenderCart();
-    });
+    window.addEventListener('pageshow', (event) => {
+        // (ใช้ pageshow เพื่อแก้บั๊กปุ่ม Back)
+        console.log("Page is visible: Running update.");
+        fetchAndRenderCart();
+    });
     </script>
 </body>
 </html>
