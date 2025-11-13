@@ -186,7 +186,22 @@
 
         } catch (error) {
             console.error(`Error updating cart (${action}):`, error);
-            alert(`Error: ${error.message}\nPlease try again.`);
+            let friendlyMessage;
+            if (error.message && error.message.includes('StockException')) {
+                const failedItem = currentCartData.find(item => item.productId === productId);
+                
+                if (failedItem) {
+                    const productName = failedItem.name || failedItem.productName || 'This item';
+                    friendlyMessage = `${productName} out of stock!`;
+                } else {
+                    friendlyMessage = 'Sorry! That item is currently out of stock.';
+                }
+
+            } else {
+                friendlyMessage = `Error updating cart. Please try again.\n(${error.message})`;
+            }
+
+            alert(friendlyMessage);
             await fetchAndRenderCart(); 
         }
     }
