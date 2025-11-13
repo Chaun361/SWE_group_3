@@ -117,5 +117,25 @@ public class CartService {
         return mapCartToDTO(cart.getCartId());
     }
 
-    // ... (method อื่นๆ)
+    public CartDTO removeProductFromCart(Long userId, Long productId, int quantity) {
+        CartModel cart = cartRepository.findByUserIdAndIsActiveTrue(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Active Cart", "User ID", userId));
+
+        CartItemsModel cartItem = cartItemsRepository.findByCart_CartIdAndProductId(cart.getCartId(), productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart Item", "Product ID", productId));
+
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Quantity must be greater than zero.");
+        }
+
+        if (cartItem.getQuantity() <= quantity) {
+            cartItemsRepository.delete(cartItem);
+        } else {
+            cartItem.setQuantity(cartItem.getQuantity() - quantity);
+            cartItemsRepository.save(cartItem);
+        }
+
+        return mapCartToDTO(cart.getCartId());
+    }
+       
 }
