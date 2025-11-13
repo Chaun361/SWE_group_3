@@ -1,4 +1,4 @@
-package com.example.demo.Order.DTO;
+package com.example.demo.Order.exception;
 
 public class ErrorResponse {
     private String message;
