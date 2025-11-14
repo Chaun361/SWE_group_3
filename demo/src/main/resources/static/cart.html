@@ -48,6 +48,16 @@
         </div>
     </main>
 
+    <div id="delete-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 class="modal-title">ต้องการลบสินค้าหรือไม่?</h3>
+            <div class="modal-actions">
+                <button class="modal-btn btn-cancel" onclick="closeDeleteModal()">ยกเลิก</button>
+                <button class="modal-btn btn-confirm" onclick="confirmDeleteAction()">ลบ</button>
+            </div>
+        </div>
+    </div>
+
     <script>
     // API Endpoints
     const CART_API_ENDPOINT = 'http://localhost:8080/api/cart/';
@@ -216,11 +226,27 @@
         }
     }
 
-    async function handleRemoveItem(productId, totalQuantity) {
-        // (DoD 2) ลบตามจำนวนสินค้าทั้งหมด
-        if (confirm(`Are you sure you want to remove all ${totalQuantity} of this item(s) from your cart?`)) {
-            updateCartAPI('remove', productId, totalQuantity);
+    let pendingDeleteItem = null;
+    
+    //ฟังก์ชันเปิด Modal เมื่อกดปุ่ม Remove
+    function handleRemoveItem(productId, totalQuantity) {
+        pendingDeleteItem = { productId, totalQuantity };
+        document.getElementById('delete-modal').classList.remove('hidden');
+    }
+
+    //ฟังก์ชันปิด Modal
+    function closeDeleteModal() {
+        document.getElementById('delete-modal').classList.add('hidden');
+        pendingDeleteItem = null;
+    }
+
+    // ฟังก์ชันยืนยันการลบ
+    function confirmDeleteAction() {
+        if (pendingDeleteItem) {
+            // เรียก API เพื่อลบสินค้าจริงๆ
+            updateCartAPI('remove', pendingDeleteItem.productId, pendingDeleteItem.totalQuantity);
         }
+        closeDeleteModal();
     }
 
     // ----------------------------------------------------------------
