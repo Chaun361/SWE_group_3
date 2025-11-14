@@ -149,7 +149,7 @@
                 </div>
                 <div class="item-actions">
                     <div class="quantity-controls">
-                        <button class="quantity-btn" onclick="handleUpdateQuantity(${item.productId}, -1)" ${item.quantity <= 1 ? 'disabled' : ''}>−</button>
+                        <button class="quantity-btn" onclick="${item.quantity > 1 ? `handleUpdateQuantity(${item.productId}, -1)` : `handleRemoveItem(${item.productId}, ${item.quantity})`}">−</button>
                         <div class="quantity-display" id="qty-${item.productId}">${item.quantity}</div>
                         <button class="quantity-btn" onclick="handleUpdateQuantity(${item.productId}, 1)">+</button>
                     </div>
