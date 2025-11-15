@@ -11,35 +11,38 @@
 
     <header class="main-header">
         <div class="logo">WEBSITE NAME</div>
+        <a href="index.html" class="index">home</a>
         <nav class="auth-links" id="header-auth-links">
         </nav>
     </header>
 
-    <main class="container">
+     <main class="container">
         <h1 class="page-title">Your Cart</h1>
 
         <div class="cart-layout">
             
             <div class="cart-items" id="cart-items-container">
-                <p style="text-align: center;">Loading cart items...</p>
+                <p class="empty-cart">Loading cart items...</p>
             </div>
 
             <div class="cart-summary">
                 <h2>Order Summary</h2>
                 <div class="summary-line">
-                    <span>Subtotal</span>
-                    <span id="summary-subtotal">0 ฿</span>
+                    <span>subtotal</span>
+                    <span id="summary-subtotal">6000.00 Baht</span>
                 </div>
                 <div class="summary-line">
-                    <span>Shipping</span>
+                    <span>shipping</span>
                     <span id="summary-shipping">Free</span>
                 </div>
                 <div class="summary-line total">
-                    <span>Total Price</span>
-                    <span id="summary-total">0 ฿</span>
+                    <span>Total</span>
+                    <span id="summary-total">6000.00 Baht</span>
                 </div>
                 
-                <button class="submit-btn checkout-btn"><a href="checkout.html">Checkout</a></button>
+                <button class="checkout-btn" id="checkout-button">
+                    <a href="checkout.html">Checkout</a>
+                </button>
             </div>
             
         </div>
@@ -48,35 +51,76 @@
     <script>
     // API Endpoints
     const CART_API_ENDPOINT = 'http://localhost:8080/api/cart/';
+    const IMAGE_BASE_URL = "http://localhost:8080/api/images/";
     const CHECKOUT_PAGE = 'checkout.html';
     const LOGIN_PAGE = 'login.html';
-    let currentCartData = []; 
+    let currentCartData = [];
 
+    // Mock Data - Exactly as shown in the image
+    const MOCK_CART_ITEMS = [
+        { productId: 1, productName: 'ProductName1', itemPrice: 2000, quantity: 2, itemTotalPrice: 4000, image: 'Core' },
+        { productId: 2, productName: 'ProductName2', itemPrice: 2000, quantity: 1, itemTotalPrice: 2000, image: 'PS5' },
+        { productId: 3, productName: 'ProductName3', itemPrice: 2000, quantity: 2, itemTotalPrice: 4000, image: 'Device' }
+    ];
+    const IMAGE_MAP = {
+        "1": "1.jpg", 
+        "2": "2.jpg", 
+        "4": "4.jpg", 
+        "5": "5.jpg",
+        "6": "6.jpg",
+        "7": "7.jpg", 
+        "8": "8.jpg",
+        "9": "9.jpg"
+    };
     // ----------------------------------------------------------------
-    // 1. HEADER LOGIC (Task 5)
+    // HEADER LOGIC
     // ----------------------------------------------------------------
     function updateHeader() {
         const username = sessionStorage.getItem('username');
         const isLogin = sessionStorage.getItem('isLogin') === 'true';
         const linksContainer = document.getElementById('header-auth-links');
-        const mockCartCount = sessionStorage.getItem('mockCartCount') || '0';
+<<<<<<< HEAD
+        const mockCartCount = currentCartData.reduce((sum, item) => sum + item.quantity, 0) || '0';
+=======
+        const savedCartJSON = sessionStorage.getItem('localCartItems');
+        let realCartCount = 0;
+
+        if (savedCartJSON) {
+            const savedCart = JSON.parse(savedCartJSON);
+            // นับจำนวนของจริง (จาก quantity ของแต่ละชิ้น)
+            realCartCount = savedCart.reduce((sum, item) => sum + item.quantity, 0);
+        }
+>>>>>>> 1d7d33bbd71f645f14ed8ab900fb2b7d83a0a157
 
         if (!isLogin || !username) { 
-            window.location.href = LOGIN_PAGE; 
-            return false; 
+            // For demo, use mock data
+            linksContainer.innerHTML = `
+                <a href="#" class="nav-link">home</a>
+                <a href="#" class="nav-link">order history</a>
+                <a href="#" class="nav-link">customer's name 👤</a>
+<<<<<<< HEAD
+                <a href="#" class="nav-link">🛒</a>
+=======
+                <a href="#" class="nav-link">🛒 (${realCartCount})</a>
+>>>>>>> 1d7d33bbd71f645f14ed8ab900fb2b7d83a0a157
+            `;
+            return true;
         }
         
         linksContainer.innerHTML = `
-            <a href="index.html" class="nav-link">HOME</a>
-            <a href="order-history.html" class="nav-link">Order History</a>
+            <a href="order-history.html" class="nav-link">order history</a>
             <a href="profile.html" class="nav-link">${username} 👤</a>
-            <a href="cart.html" class="nav-link cart-icon">🛒 (${mockCartCount})</a> 
+<<<<<<< HEAD
+            <a href="cart.html" class="nav-link">🛒 (${mockCartCount})</a>
+=======
+            <a href="cart.html" class="nav-link">🛒 (${realCartCount})</a>
+>>>>>>> 1d7d33bbd71f645f14ed8ab900fb2b7d83a0a157
         `;
         return true;
     }
 
     // ----------------------------------------------------------------
-    // 2. RENDERING LOGIC & RECALCULATION
+    // RENDERING LOGIC
     // ----------------------------------------------------------------
     
     function calculateAndRenderSummary() {
@@ -84,112 +128,142 @@
         const summaryTotal = document.getElementById('summary-total');
         
         let subtotal = 0;
-        const shippingFee = 0.00; 
+        const shippingFee = 0.00;
         
-        // Calculate from Global Array
         currentCartData.forEach(item => {
-            subtotal += item.itemTotalPrice;
+            subtotal += item.subtotal;
         });
 
         const total = subtotal + shippingFee;
+<<<<<<< HEAD
         
-        summarySubtotal.textContent = subtotal.toLocaleString() + ' ฿';
-        summaryTotal.textContent = total.toLocaleString() + ' ฿';
+        summarySubtotal.textContent = subtotal.toFixed(2) + ' Baht';
+        summaryTotal.textContent = total.toFixed(2) + ' Baht';
 
-        document.querySelector('.checkout-btn').disabled = (subtotal === 0);
+=======
+
+        const formatOptions = {
+            style: 'decimal',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        };
+        
+        summarySubtotal.textContent = subtotal.toLocaleString('en-US', formatOptions) + ' Baht';
+        summaryTotal.textContent = total.toLocaleString('en-US', formatOptions) + ' Baht';
+
+>>>>>>> 1d7d33bbd71f645f14ed8ab900fb2b7d83a0a157
+        document.getElementById('checkout-button').disabled = (subtotal === 0);
     }
     
     function renderCartItems(cartItems) {
-        const container = document.getElementById('cart-items-container');
-        container.innerHTML = '';
-        currentCartData = cartItems; // Update Global Data Store
+    const container = document.getElementById('cart-items-container');
+    container.innerHTML = '';
+    currentCartData = cartItems;
 
-        if (!cartItems || cartItems.length === 0) {
-            container.innerHTML = '<p style="text-align: center; padding: 20px;">Your cart is empty.</p>';
-            document.querySelector('.checkout-btn').disabled = true;
-            document.getElementById('summary-subtotal').textContent = '0 ฿';
-            document.getElementById('summary-total').textContent = '0 ฿';
-            return;
-        }
-
-        cartItems.forEach(item => {
-            const itemHtml = `
-                <div class="cart-item">
-                    <div class="item-img"></div>
-                    <div class="item-details">
-                        <p class="item-name">${item.productName}</p>
-                        <p class="item-price">${item.itemPrice.toLocaleString()} ฿ / unit</p>
-                    </div>
-                    <div class="item-quantity">
-                        <input 
-                            type="number" 
-                            value="${item.quantity}" 
-                            min="1" 
-                            data-product-id="${item.productId}" 
-                            onchange="updateQuantity(this)"
-                        > 
-                    </div>
-                    <div class="item-subtotal" id="subtotal-${item.productId}">
-                        ${item.itemTotalPrice.toLocaleString()} ฿
-                    </div>
-                    <button class="item-remove" onclick="removeFromCart(${item.productId})">&times;</button>
-                </div>
-            `;
-            container.innerHTML += itemHtml;
-        });
-        
-        calculateAndRenderSummary();
+    if (!cartItems || cartItems.length === 0) {
+        container.innerHTML = '<p class="empty-cart">Your cart is empty.</p>';
+        document.getElementById('checkout-button').disabled = true;
+        document.getElementById('summary-subtotal').textContent = '0.00 Baht';
+        document.getElementById('summary-total').textContent = '0.00 Baht';
+        return;
     }
 
+    cartItems.forEach((item) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'cart-item';
+        itemDiv.innerHTML = `
+            <div class="item-img">
+<<<<<<< HEAD
+                <img src="./images/${item.productId}.jpg" alt="${item.productName}">
+            </div>
+            <div class="item-details">
+                <p class="item-name">${item.productName}</p>
+                <p class="item-price">${item.itemPrice.toFixed(2)} Baht</p>
+=======
+                <img src="${IMAGE_BASE_URL + (item.image || 'placeholder.png')}" alt="${item.name}">
+            </div>
+            <div class="item-details">
+                <p class="item-name">${item.name}</p>
+                <p class="item-price">${item.price.toLocaleString('en-US', { minimumFractionDigits: 2 })} Baht</p>
+>>>>>>> 1d7d33bbd71f645f14ed8ab900fb2b7d83a0a157
+            </div>
+            <div class="item-actions">
+                <div class="quantity-controls">
+                    <button class="quantity-btn" onclick="decreaseQuantity(${item.productId})">−</button>
+                    <div class="quantity-display" id="qty-${item.productId}">${item.quantity}</div>
+                    <button class="quantity-btn" onclick="increaseQuantity(${item.productId})">+</button>
+                </div>
+                <button class="remove-btn" onclick="removeFromCart(${item.productId})">Remove</button>
+            </div>
+        `;
+        container.appendChild(itemDiv);
+    });
+    
+    calculateAndRenderSummary();
+<<<<<<< HEAD
+}
+=======
+    }
+>>>>>>> 1d7d33bbd71f645f14ed8ab900fb2b7d83a0a157
+
     // ----------------------------------------------------------------
-    // 3. CART ACTION LOGIC (Client-side Recalculation)
+    // CART ACTION LOGIC
     // ----------------------------------------------------------------
     
     function saveCartToSession() {
-        // Helper: Save Global Array back to Session
         sessionStorage.setItem('localCartItems', JSON.stringify(currentCartData));
         const newCartCount = currentCartData.reduce((sum, item) => sum + item.quantity, 0);
         sessionStorage.setItem('mockCartCount', newCartCount.toString());
         updateHeader();
     }
 
-    function updateQuantity(inputElement) {
-        const productId = parseInt(inputElement.getAttribute('data-product-id'));
-        const newQuantity = parseInt(inputElement.value);
+    function increaseQuantity(productId) {
+        const itemIndex = currentCartData.findIndex(item => item.productId === productId);
         
-        if (newQuantity < 1) {
-            alert("Quantity must be at least 1.");
-            inputElement.value = 1; 
-            return;
+        if (itemIndex > -1) {
+            const item = currentCartData[itemIndex];
+            item.quantity += 1;
+<<<<<<< HEAD
+            item.itemTotalPrice = item.itemPrice * item.quantity;
+=======
+            item.subtotal = item.price * item.quantity;
+>>>>>>> 1d7d33bbd71f645f14ed8ab900fb2b7d83a0a157
+            
+            document.getElementById(`qty-${productId}`).textContent = item.quantity;
+            calculateAndRenderSummary();
+            saveCartToSession();
         }
+    }
 
+    function decreaseQuantity(productId) {
         const itemIndex = currentCartData.findIndex(item => item.productId === productId);
         
         if (itemIndex > -1) {
             const item = currentCartData[itemIndex];
             
-            item.quantity = newQuantity;
-            item.itemTotalPrice = item.itemPrice * newQuantity; 
-            
-            document.getElementById(`subtotal-${productId}`).textContent = item.itemTotalPrice.toLocaleString() + ' ฿';
-            
-            calculateAndRenderSummary(); 
-            saveCartToSession(); // Save Session after update
-
-            alert(`Mock API: Quantity updated locally. Total recalculated.`);
+            if (item.quantity > 1) {
+                item.quantity -= 1;
+<<<<<<< HEAD
+                item.itemTotalPrice = item.itemPrice * item.quantity;
+=======
+                item.subtotal = item.price * item.quantity;
+>>>>>>> 1d7d33bbd71f645f14ed8ab900fb2b7d83a0a157
+                
+                document.getElementById(`qty-${productId}`).textContent = item.quantity;
+                calculateAndRenderSummary();
+                saveCartToSession();
+            }
         }
     }
 
     // ----------------------------------------------------------------
-    // 4. DATA FETCHING (Source of Truth is sessionStorage)
+    // DATA FETCHING
     // ----------------------------------------------------------------
     async function fetchAndRenderCart() {
         const userId = sessionStorage.getItem('userId');
-        const isLogin = sessionStorage.getItem('isLogin') === 'true';
-
-        if (!isLogin || !userId) {
-            alert('Please log in to view your cart.');
-            window.location.href = LOGIN_PAGE; 
+<<<<<<< HEAD
+        if (!userId) {
+            console.log('No userId found, using mock data');
             return;
         }
 
@@ -197,66 +271,59 @@
             const response = await fetch(CART_API_ENDPOINT + userId);
 
             if (!response.ok) {
-                if (response.status === 404) {
-                    container.innerHTML = '<p style="color: red; text-align: center; padding: 20px;">Cart not found.</p>';
-                    return;
-                }
                 throw new Error(`Failed to fetch cart data: ${response.status}`);
             }
 
             const cartData = await response.json();
             
             if (!cartData || !cartData.items) {
-                renderCartItems([]); // Empty cart
+                renderCartItems([]);
                 return;
             }
             
-            renderCartItems(cartData.items); 
+            renderCartItems(cartData.items);
 
         } catch (error) {
             console.error('Cart Load Error:', error);
-            const container = document.getElementById('cart-items-container');
-            container.innerHTML = 
-                '<p style="color: red; text-align: center; padding: 20px;">Could not load cart data. Please check Mock file/Server.</p>';
+=======
+        
+        // พยายามดึงข้อมูลจาก Session Storage ก่อน
+        const savedCart = sessionStorage.getItem('localCartItems');
+
+        if (savedCart) {
+            console.log('Loading cart from Session Storage');
+            renderCartItems(JSON.parse(savedCart));
+            return; 
+>>>>>>> 1d7d33bbd71f645f14ed8ab900fb2b7d83a0a157
         }
+        
+        console.log('No session data, using MOCK_CART_ITEMS');
+        renderCartItems(MOCK_CART_ITEMS);
+        saveCartToSession(); 
     }
 
     // ----------------------------------------------------------------
-    // 5. CART ITEM REMOVAL
+    // CART ITEM REMOVAL
     // ----------------------------------------------------------------
     async function removeFromCart(productId) {
-        const userId = sessionStorage.getItem('userId');
-        if (!userId) {
-            alert('Please log in to remove items.');
-            return;
-        }
-
-        try {
-            const response = await fetch(`${CART_API_ENDPOINT}${userId}/items/${productId}`, {
-                method: 'DELETE'
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to remove item from cart');
+        if (confirm('Are you sure you want to remove this item?')) {
+            const itemIndex = currentCartData.findIndex(item => item.productId === productId);
+            
+            if (itemIndex > -1) {
+                currentCartData.splice(itemIndex, 1);
+                renderCartItems(currentCartData);
+                saveCartToSession();
             }
-
-            // Refresh cart after successful removal
-            fetchAndRenderCart();
-        } catch (error) {
-            console.error('Error removing item:', error);
-            alert('Failed to remove item from cart. Please try again.');
         }
     }
     
     // ----------------------------------------------------------------
-    // 6. INITIALIZATION
+    // INITIALIZATION
     // ----------------------------------------------------------------
     document.addEventListener('DOMContentLoaded', () => {
-        const loggedIn = updateHeader();
-        if (loggedIn) {
-            fetchAndRenderCart();
-        }
+        updateHeader();
+        fetchAndRenderCart();
     });
-</script>
+    </script>
 </body>
 </html>
