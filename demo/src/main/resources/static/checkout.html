@@ -36,7 +36,7 @@
                             <input type="radio" name="payment" value="mastercard" id="mc" checked>
                             <label for="mc" class="payment-label">
                                 <img src="images/mastercard.png" alt="MasterCard" class="card-icon">
-                                <span>masterard</span>
+                                <span>mastercard</span>
                             </label>
                         </div>
                     
@@ -110,7 +110,7 @@
     ];
 
     // ----------------------------------------------------------------
-    // 1. HEADER & LOGOUT LOGIC (Unchanged)
+    // 1. HEADER & LOGOUT LOGIC
     // ----------------------------------------------------------------
 
     function updateHeader() {
@@ -133,13 +133,12 @@
     }
 
     // ----------------------------------------------------------------
-    // 2. RENDERING LOGIC (Address & Summary) - Unchanged
+    // 2. RENDERING LOGIC (Address & Summary)
     // ----------------------------------------------------------------
 
     function renderAddress(data) {
         const addressBox = document.getElementById('shipping-address-box');
         
-        // REVISED HTML: ใช้ฟิลด์จาก mock-profile.json โดยตรง
         addressBox.innerHTML = `
             <h2>Shipping Address</h2>
             <p class="address-name">${data.fullName}</p>
@@ -149,41 +148,39 @@
     }
 
     function renderSummary(items) {
-    const itemsSummary = document.getElementById('order-items-summary');
-    const summarySubtotal = document.getElementById('summary-subtotal');
-    const summaryTotal = document.getElementById('summary-total');
-    const shippingFeeElement = document.getElementById('summary-shipping');
-    
-    itemsSummary.innerHTML = '';
-    
-    let subtotal = 0;
-    const shippingFee = 0.00; 
+        const itemsSummary = document.getElementById('order-items-summary');
+        const summarySubtotal = document.getElementById('summary-subtotal');
+        const summaryTotal = document.getElementById('summary-total');
+        const shippingFeeElement = document.getElementById('summary-shipping');
+        
+        itemsSummary.innerHTML = '';
+        
+        let subtotal = 0;
+        const shippingFee = 0.00; 
 
-    items.forEach(item => {
-        // ✅ รองรับทั้ง itemPrice และ price * quantity
-        const itemSubtotal = item.itemPrice || (item.price * item.quantity);
-        subtotal += itemSubtotal;
+        items.forEach(item => {
+            const itemSubtotal = item.itemPrice || (item.price * item.quantity);
+            subtotal += itemSubtotal;
+            
+            const itemName = item.productName || item.name;
+            
+            itemsSummary.innerHTML += `
+                <div class="summary-item">
+                    <span>${itemName} x${item.quantity}</span>
+                    <span>${itemSubtotal.toFixed(2)} Baht</span>
+                </div>
+            `;
+        });
         
-        // ✅ รองรับทั้ง productName และ name
-        const itemName = item.productName || item.name;
+        const total = subtotal + shippingFee;
         
-        itemsSummary.innerHTML += `
-            <div class="summary-item">
-                <span>${itemName} x${item.quantity}</span>
-                <span>${itemSubtotal.toFixed(2)} Baht</span>
-            </div>
-        `;
-    });
-    
-    const total = subtotal + shippingFee;
-    
-    summarySubtotal.textContent = `${subtotal.toFixed(2)} Baht`;
-    shippingFeeElement.textContent = (shippingFee === 0) ? 'Free' : `${shippingFee.toFixed(2)} Baht`;
-    summaryTotal.textContent = `${total.toFixed(2)} Baht`;
-}
+        summarySubtotal.textContent = `${subtotal.toFixed(2)} Baht`;
+        shippingFeeElement.textContent = (shippingFee === 0) ? 'Free' : `${shippingFee.toFixed(2)} Baht`;
+        summaryTotal.textContent = `${total.toFixed(2)} Baht`;
+    }
     
     // ----------------------------------------------------------------
-    // 3. FETCH DATA (Address & Summary) - FIXED TRY/CATCH
+    // 3. FETCH DATA (Address & Summary)
     // ----------------------------------------------------------------
 
     async function fetchAddressAndSummary() {
@@ -226,89 +223,100 @@
         }
     }
 
-
     // ----------------------------------------------------------------
     // 4. CHECKOUT LOGIC
     // ----------------------------------------------------------------
 
     async function handlePlaceOrder(e) {
-    e.preventDefault();
-    const userId = sessionStorage.getItem('userId');
-    const selectedPayment = document.querySelector('input[name="payment"]:checked'); 
-    const placeOrderBtn = document.querySelector('.final-checkout');
-    
-    // Debug: ตรวจสอบ userId
-    console.log('userId:', userId);
-    console.log('selectedPayment:', selectedPayment?.value);
-    
-    if (!userId) { 
-        alert('Session expired. Please log in again.'); 
-        window.location.href = LOGIN_PAGE;
-        return; 
-    }
-    if (!selectedPayment) { 
-        alert('Please select a payment method');
-        return; 
-    }
-    
-    placeOrderBtn.textContent = 'Processing...';
-    placeOrderBtn.disabled = true;
-
-    try {
-        // ✅ ส่ง userId ทั้งใน query parameter และ body
-        const response = await fetch(`${CHECKOUT_API}?userId=${userId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                userId: userId,
-                paymentMethod: selectedPayment.value
-            })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        e.preventDefault();
+        const userId = sessionStorage.getItem('userId');
+        const selectedPayment = document.querySelector('input[name="payment"]:checked'); 
+        const placeOrderBtn = document.querySelector('.final-checkout');
+        
+        console.log('=== Checkout Debug ===');
+        console.log('userId from sessionStorage:', userId);
+        console.log('Selected Payment:', selectedPayment ? selectedPayment.value : 'None');
+        
+        if (!userId) { 
+            alert('Session expired. Please log in again.'); 
+            return; 
+        }
+        if (!selectedPayment) { 
+            alert('Please select a payment method');
+            return; 
         }
         
-        const result = await response.json();
-        
-        sessionStorage.removeItem('mockCartCount');
-        
-        const totalText = document.getElementById('summary-total').textContent;
-        const totalAmount = totalText.replace(' Baht', '');
-        
-        alert(`Order placed successfully!\nPayment Method: ${selectedPayment.value}\nTotal: ${totalAmount} Baht`);
-        
-        window.location.href = 'order-history.html';
+        placeOrderBtn.textContent = 'Processing...';
+        placeOrderBtn.disabled = true;
 
-    } catch (error) {
-        console.error('Checkout Error:', error);
-        alert(`Failed to process order: ${error.message}\nPlease try again later.`);
-        
-    } finally {
-        placeOrderBtn.textContent = 'Place Order';
-        placeOrderBtn.disabled = false;
+        try {
+            const requestBody = {
+                userId: parseInt(userId, 10),
+                paymentMethod: selectedPayment.value
+            };
+
+            console.log('Request Body:', requestBody);
+
+            const response = await fetch(CHECKOUT_API, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            console.log('Response Status:', response.status);
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('Error Data:', errorData);
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            console.log('Checkout success:', result);
+
+            sessionStorage.removeItem('mockCartCount');
+
+            const totalText = document.getElementById('summary-total').textContent;
+
+            // ✅ แสดง Modal
+             alert(
+            "Order placed successfully!\n" +
+            "Order ID: " + (result.orderId || 'ORD-123456') + "\n" +
+            "Total: " + totalText
+              );
+
+            // พาไปที่ order history หลังจาก OK ใน alert
+            window.location.href = 'order-history.html';
+
+
+            
+        } catch (error) {
+            console.error('Checkout Error:', error);
+            alert(`Failed to place order: ${error.message}\nPlease try again later.`);
+            
+        } finally {
+            placeOrderBtn.textContent = 'Place Order';
+            placeOrderBtn.disabled = false;
+        }
     }
-}
+
     // ----------------------------------------------------------------
     // 5. INITIALIZATION
     // ----------------------------------------------------------------
 
     document.addEventListener('DOMContentLoaded', () => {
-    const loggedIn = updateHeader(); 
-    if (loggedIn) {
-        fetchAddressAndSummary();
-        // ลบ setupPaymentOptionSelection() ออก
-    }
-    
-    // ✅ จับ event จาก form submit
-    const checkoutForm = document.getElementById('checkout-form');
-    if (checkoutForm) {
-        checkoutForm.addEventListener('submit', handlePlaceOrder); // ✅ ใช้ submit
-    }
-});
-</script> 
+        const loggedIn = updateHeader(); 
+        if (loggedIn) {
+            fetchAddressAndSummary();
+        }
+        
+        const checkoutForm = document.getElementById('checkout-form');
+        if (checkoutForm) {
+            checkoutForm.addEventListener('submit', handlePlaceOrder);
+        }
+    });
+    </script>  
 </body>
 </html>
