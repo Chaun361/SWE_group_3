@@ -91,7 +91,7 @@
     // ----------------------------------------------------------------
     // 0. CONFIGURATION & API ENDPOINTS
     // ----------------------------------------------------------------
-    const CHECKOUT_API = '/api/orders/checkout';
+    const CHECKOUT_API = 'http://localhost:8080/api/orders/checkout';
     const LOGIN_PAGE = 'login.html';
     const USER_API = 'http://localhost:8080/api/users/';
     const CART_API = 'http://localhost:8080/api/cart/';
@@ -232,83 +232,83 @@
     // ----------------------------------------------------------------
 
     async function handlePlaceOrder(e) {
-        e.preventDefault();
-        const userId = sessionStorage.getItem('userId');
-        
-        const selectedPayment = document.querySelector('input[name="payment"]:checked'); 
-        
-        if (!userId) { alert('Session expired. Please log in again.'); return; }
-        if (!selectedPayment) { alert('Checkout failed: Unable to process order\nPayment processing failed or insufficient inventory'); return; }
-
-        const placeOrderBtn = document.querySelector('.final-checkout'); 
-        
-        // Display Loading/Processing status
-        placeOrderBtn.textContent = 'Processing...';
-        placeOrderBtn.disabled = true;
-
-        try {
-            // ✅ เรียก API จริง: POST to checkout endpoint
-            const response = await fetch(CHECKOUT_API, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    userId: userId,
-                    paymentMethod: selectedPayment.value
-                })
-            });
-
-            // ตรวจสอบ HTTP status
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-            }
-            
-            const result = await response.json();
-            
-            // ตรวจสอบ response ว่าสำเร็จหรือไม่
-            if (result.success) {
-                // Clear cart count from session
-                sessionStorage.removeItem('mockCartCount');
-                
-                // Show success message with order ID
-                alert(`Order placed successfully!\nOrder ID: ${result.orderId}\nTotal: ฿${total.toFixed(2)}`);
-                
-                // Redirect to order confirmation or history page
-                window.location.href = 'order-history.html';
-            } else {
-                // Show error message from server
-                alert(`Checkout failed: ${result.message}\n${result.details || ''}`);
-            }
-
-        } catch (error) {
-            console.error('Checkout Error:', error);
-            alert(`Failed to process order: ${error.message}\nPlease try again later.`);
-            
-        } finally {
-            placeOrderBtn.textContent = 'Place Order';
-            placeOrderBtn.disabled = false;
-        }
+    e.preventDefault();
+    const userId = sessionStorage.getItem('userId');
+    const selectedPayment = document.querySelector('input[name="payment"]:checked'); 
+    const placeOrderBtn = document.querySelector('.final-checkout');
+    
+    // Debug: ตรวจสอบ userId
+    console.log('userId:', userId);
+    console.log('selectedPayment:', selectedPayment?.value);
+    
+    if (!userId) { 
+        alert('Session expired. Please log in again.'); 
+        window.location.href = LOGIN_PAGE;
+        return; 
     }
+    if (!selectedPayment) { 
+        alert('Please select a payment method');
+        return; 
+    }
+    
+    placeOrderBtn.textContent = 'Processing...';
+    placeOrderBtn.disabled = true;
 
+    try {
+        // ✅ ส่ง userId ทั้งใน query parameter และ body
+        const response = await fetch(`${CHECKOUT_API}?userId=${userId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: userId,
+                paymentMethod: selectedPayment.value
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        sessionStorage.removeItem('mockCartCount');
+        
+        const totalText = document.getElementById('summary-total').textContent;
+        const totalAmount = totalText.replace(' Baht', '');
+        
+        alert(`Order placed successfully!\nPayment Method: ${selectedPayment.value}\nTotal: ${totalAmount} Baht`);
+        
+        window.location.href = 'order-history.html';
+
+    } catch (error) {
+        console.error('Checkout Error:', error);
+        alert(`Failed to process order: ${error.message}\nPlease try again later.`);
+        
+    } finally {
+        placeOrderBtn.textContent = 'Place Order';
+        placeOrderBtn.disabled = false;
+    }
+}
     // ----------------------------------------------------------------
     // 5. INITIALIZATION
     // ----------------------------------------------------------------
 
     document.addEventListener('DOMContentLoaded', () => {
-        const loggedIn = updateHeader(); 
-        if (loggedIn) {
-            fetchAddressAndSummary();
-            setupPaymentOptionSelection();
-        }
-        
-        // Add Event Listener ให้กับ Place Order Button
-        const placeOrderBtn = document.querySelector('.final-checkout');
-        if (placeOrderBtn) {
-            placeOrderBtn.addEventListener('click', handlePlaceOrder);
-        }
-    });
+    const loggedIn = updateHeader(); 
+    if (loggedIn) {
+        fetchAddressAndSummary();
+        // ลบ setupPaymentOptionSelection() ออก
+    }
+    
+    // ✅ จับ event จาก form submit
+    const checkoutForm = document.getElementById('checkout-form');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', handlePlaceOrder); // ✅ ใช้ submit
+    }
+});
 </script> 
 </body>
 </html>
