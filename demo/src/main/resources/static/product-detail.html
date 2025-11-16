@@ -24,7 +24,6 @@
     
     <script>
         const LOGIN_PAGE = 'login.html';
-        const ADD_TO_CART_MOCK_ENDPOINT = 'mock/add_to_cart.json'; 
         // Endpoint ที่ถูกต้อง: ชี้ไปที่ Backend Server
         const API_PRODUCT_ENDPOINT = 'http://localhost:8080/api/products'; 
         
@@ -142,48 +141,114 @@
         }
 
         // ----------------------------------------------------------------
-        // 3. ADD TO CART LOGIC (Mock Logic)
-        // ----------------------------------------------------------------
-        async function handleDetailAddToCart(e) {
-            const userId = sessionStorage.getItem('userId');
-            const isLogin = sessionStorage.getItem('isLogin') === 'true';
+// 3. ADD TO CART LOGIC (Real API Integration - Same as Homepage)
+// ----------------------------------------------------------------
+const ADD_TO_CART_API = 'http://localhost:8080/api/cart/add';
+const FALLBACK_PRODUCTS = [
+    { productId: 1, productName: 'Wireless Mouse', price: 450.0, stockQuantity: 30 }, 
+    { productId: 2, productName: 'Mechanical Keyboard', price: 1250.0, stockQuantity: 20 },
+    { productId: 4, productName: 'Gaming Headset', price: 990.0, stockQuantity: 25 },
+    { productId: 5, productName: 'USB-C Charger 65W', price: 799.0, stockQuantity: 40 },
+    { productId: 6, productName: '27-inch 4K Monitor', price: 8990.0, stockQuantity: 8 },
+    { productId: 7, productName: 'Laptop Stand Adjustable', price: 650.0, stockQuantity: 18 },
+    { productId: 8, productName: 'External SSD 1TB', price: 3290.0, stockQuantity: 12 },
+    { productId: 9, productName: 'Bluetooth Speaker', price: 1150.0, stockQuantity: 22 },
+];
 
-            if (!isLogin || !userId) {
-                alert('Please log in to add items to your cart.');
-                return;
+function updateLocalCart(productIdStr, quantity) {
+    const cartKey = 'localCartItems';
+    let cart = JSON.parse(sessionStorage.getItem(cartKey) || '[]'); 
+    const productId = parseInt(productIdStr);
+
+    const productDetails = FALLBACK_PRODUCTS.find(p => p.productId === parseInt(productId));
+    
+    if (!productDetails) {
+        console.error(`Product ID ${productId} not found for local storage!`);
+        return;
+    }
+
+    const itemIndex = cart.findIndex(item => item.productId === productId);
+    
+    if (itemIndex > -1) {
+        cart[itemIndex].quantity += quantity;
+        cart[itemIndex].subtotal = cart[itemIndex].price * cart[itemIndex].quantity; 
+    } else {
+        cart.push({
+            productId: productId,
+            name: productDetails.productName,
+            price: productDetails.price,
+            quantity: quantity,
+            subtotal: productDetails.price * quantity
+        });
+    }
+
+    sessionStorage.setItem(cartKey, JSON.stringify(cart));
+}
+
+async function handleDetailAddToCart(e) {
+    const userId = sessionStorage.getItem('userId');
+    const isLogin = sessionStorage.getItem('isLogin') === 'true';
+
+    if (!isLogin || !userId) {
+        alert('Please log in to add items to your cart.');
+        window.location.href = LOGIN_PAGE;
+        return;
+    }
+
+    const productId = e.target.getAttribute('data-product-id');
+    const quantityInput = document.getElementById('quantity');
+    const quantity = parseInt(quantityInput?.value) || 1;
+
+    if (!productId) return;
+
+    // ดึงชื่อสินค้าจากหน้าเว็บ
+    const productNameElement = document.querySelector('.product-name h1');
+    const productName = productNameElement ? productNameElement.textContent : `Product ${productId}`;
+
+    try {
+        // เรียก API จริง (เหมือนหน้า Home)
+        const url = `${ADD_TO_CART_API}?userId=${userId}&productId=${productId}&quantity=${quantity}`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
             }
-
-            const productId = e.target.getAttribute('data-product-id');
-            const quantityInput = document.getElementById('quantity');
-            const quantity = parseInt(quantityInput.value) || 1;
-
-            if (!productId) return;
-
-            // Mock API Logic
-            try {
-                const response = await fetch(ADD_TO_CART_MOCK_ENDPOINT);
-                const data = await response.json();
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            if (data && data.items) {
+                alert(`Added ${quantity} x ${productName} to the cart!`); 
                 
-                if (data.success) {
-                    alert(`${quantity} of Product ID ${productId} added to cart successfully!`); 
-                    
-                    // Update Mock Cart Count (Task 2 Logic)
-                    let currentCount = parseInt(sessionStorage.getItem('mockCartCount') || '0');
-                    currentCount += quantity;
-                    sessionStorage.setItem('mockCartCount', currentCount.toString()); 
-                    
-                    // Update Header Display
-                    const countElement = document.getElementById('cart-count');
-                    if (countElement) countElement.textContent = currentCount.toString();
-                    
-                } else {
-                    alert(data.message || "An error occurred. Out of stock?"); 
-                }
-
-            } catch (error) {
-                alert('Server/Mock connection error. Cannot add item to cart.');
+                // อัปเดต Local Cart
+                updateLocalCart(productId, quantity); 
+                
+                // อัปเดตจำนวนสินค้าในตะกร้า
+                const totalItems = data.items.reduce((total, item) => total + item.quantity, 0);
+                sessionStorage.setItem('mockCartCount', totalItems.toString()); 
+                
+                // อัปเดต Header
+                const countElement = document.getElementById('cart-count');
+                if (countElement) countElement.textContent = totalItems.toString();
+            } else {
+                alert("Failed to add item to cart. Please try again.");
             }
+        } else if (response.status === 400) {
+            // ✅ แจ้งเตือนเมื่อสินค้าหมด
+            alert(`${productName} out of stock!`);
+        } else {
+            const errorText = await response.text();
+            console.error('API Error:', response.status, errorText);
+            alert(`Failed to add item to cart. Server returned ${response.status}.`);
         }
+
+    } catch (error) {
+        console.error('Add to Cart Error:', error);
+        alert('Server connection error. Cannot add item to cart.');
+    }
+}
         
         
         // ----------------------------------------------------------------
