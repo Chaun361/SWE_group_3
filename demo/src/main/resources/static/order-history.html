@@ -4,35 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Order History</title>
-
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="order-history.css" />
-
-  <style>
-    /* สีสถานะ */
-    .status-badge {
-      padding: 6px 15px;
-      border-radius: 20px;
-      font-weight: bold;
-      font-size: 14px;
-      text-transform: capitalize;
-    }
-
-    .status-pending {
-      background: #f9e7b4;
-      color: #b38b00;
-    }
-
-    .status-completed {
-      background: #c8f7c5;
-      color: #2e8b57;
-    }
-
-    .status-cancelled {
-      background: #f8c7c7;
-      color: #c0392b;
-    }
-  </style>
+  <link rel="stylesheet" href="order-history.css">
 </head>
 
 <body>
@@ -40,18 +13,14 @@
   <!-- NAVBAR -->
   <header class="navbar">
     <div class="nav-left">
-      <h2 class="logo">WEBSITE NAME</h2>
-    </div>
-
-    <div class="nav-center">
-      <a href="index.html">home</a>
-      <a href="order-history.html" class="active">order history</a>
+        <h2 class="logo">WEBSITE NAME</h2>
+        <a href="index.html" class="nav-item">home</a>
     </div>
 
     <div class="nav-right">
-      <a href="profile.html">customer’s name</a>
-      <span class="user-icon">👤</span>
-      <a href="cart.html" class="cart-icon">🛒</a>
+        <a href="order-history.html" class="nav-item">order history</a>
+        <a href="profile.html" id="username-link" class="nav-item"><span id="username-display"></span> 👤</a>
+        <a href="cart.html" class=" nav-item cart-icon">🛒 <span id="cart-count">(0)</span></a>
     </div>
   </header>
 
@@ -61,7 +30,18 @@
   </main>
 
   <!-- JS -->
-  <script>
+  <script>  
+
+  document.addEventListener("DOMContentLoaded", () => {
+  // ดึงชื่อผู้ใช้จาก sessionStorage
+  const username = sessionStorage.getItem("username") || "guest";
+  document.getElementById("username-display").textContent = username;
+
+  // mock cart count หรือข้อมูลจริงจาก backend
+  const cart = sessionStorage.getItem("mockCartCount") || 0;
+  document.getElementById("cart-count").textContent = `(${cart})`;
+  });
+
   document.addEventListener("DOMContentLoaded", loadOrderHistory);
 
   const userId = sessionStorage.getItem("userId") || 1;
