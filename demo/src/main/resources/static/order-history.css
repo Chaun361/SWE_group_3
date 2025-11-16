@@ -1,54 +1,41 @@
+/* GENERAL */
 body {
   font-family: "Segoe UI", sans-serif;
-  background: #f5f5f5;
-  margin: 0;
-  color: #222;
+  background: #f7f7f7;
 }
 
+.order-container {
+  width: 80%;
+  margin: 40px auto;
+}
+
+/* NAVBAR */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 32px;
-  background: white;
+  background: #ffffff;
+  padding: 15px 40px;
   border-bottom: 1px solid #ddd;
 }
 
-.logo {
-  margin: 0;
-  font-weight: bold;
-}
-
-.nav-right a {
-  margin-left: 20px;
+.navbar a {
   text-decoration: none;
-  color: #333;
-  font-weight: 500;
+  color: #000;
+  margin: 0 15px;
 }
 
-.nav-right a.active {
-  font-weight: bold;
-  border-bottom: 2px solid #222;
+.nav-right span {
+  margin-left: 10px;
 }
 
-.container {
-  width: 85%;
-  max-width: 900px;
-  margin: 40px auto;
-}
-
-.page-title {
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 24px;
-}
-
-.order-card {
+/* ORDER BOX */
+.order-box {
   background: white;
-  padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  margin-bottom: 24px;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 .order-header {
@@ -57,138 +44,52 @@ body {
   align-items: center;
 }
 
-.order-info {
+.order-header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
 }
 
-.icon {
-  width: 36px;
-  height: 36px;
+.order-icon {
+  font-size: 28px;
+  margin-right: 10px;
 }
 
-.order-status {
-  background: #fde9b8;
-  color: #8a6d00;
-  padding: 6px 16px;
-  border-radius: 15px;
+.order-date {
+  display: flex;
+  align-items: center;
+  margin-top: 3px;
+  color: gray;
   font-size: 14px;
-  font-weight: 600;
 }
 
+.status-badge {
+  background: #f9e7b4;
+  color: #b38b00;
+  padding: 6px 15px;
+  border-radius: 20px;
+  font-weight: bold;
+}
+
+/* ITEM LIST */
 .order-items {
-  margin: 16px 0;
-  padding: 12px 0;
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
+  margin-top: 15px;
 }
 
 .item-row {
   display: flex;
   justify-content: space-between;
-  font-weight: 500;
+  padding: 6px 0;
 }
 
-.item-sub {
-  font-size: 14px;
-  color: #666;
-  margin-left: 8px;
+.item-name {
+  font-weight: bold;
 }
 
-.order-total {
-  display: flex;
-  justify-content: space-between;
-  font-weight: 600;
-  padding-top: 10px;
-}
-
-@media (max-width: 600px) {
-  .order-card {
-    padding: 16px;
-  }
-  .page-title {
-    font-size: 22px;
-  }
-}
-
-/* ─── Layout ─────────────────────────────────────────────── */
-.container {
-  max-width: 900px;
-  margin: 50px auto;
-  font-family: "Kanit", sans-serif;
-  color: #222;
-}
-
-/* ─── Card ───────────────────────────────────────────────── */
-.order-card {
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  padding: 20px 25px;
-  margin-bottom: 30px;
-  transition: transform 0.2s;
-}
-.order-card:hover {
-  transform: translateY(-3px);
-}
-
-/* ─── Header ─────────────────────────────────────────────── */
-.order-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-.order-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.order-icon {
-  width: 40px;
-  height: 40px;
-}
-.order-date {
-  font-size: 0.9rem;
-  color: #555;
-}
-.order-status {
-  background: #fff7e0;
-  color: #d49c00;
-  border-radius: 20px;
-  padding: 4px 14px;
-  font-weight: 500;
-}
-.order-status.pending {
-  background: #fff7e0;
-  color: #d49c00;
-}
-.order-status.completed {
-  background: #e6fff2;
-  color: #0c9a4a;
-}
-
-/* ─── Body ─────────────────────────────────────────────── */
-.order-body .item-row {
-  display: flex;
-  justify-content: space-between;
-  margin: 8px 0;
-}
-.item-left p {
-  margin: 0;
-  font-weight: 500;
-}
-.item-left small {
-  color: #666;
-}
-
-/* ─── Footer ────────────────────────────────────────────── */
-.order-footer {
-  text-align: right;
+.total-row {
   margin-top: 10px;
-}
-.order-total {
-  font-size: 1.1rem;
-  font-weight: 600;
+  border-top: 1px solid #ddd;
+  padding-top: 10px;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
 }
