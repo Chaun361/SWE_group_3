@@ -1,7 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+
 /* GENERAL */
 body {
-  font-family: "Segoe UI", sans-serif;
+  font-family: 'Kanit', sans-serif;
   background: #f7f7f7;
+}
+
+.logo {
+  color: #000;
+  font-size: 20px;
+  font-weight: 700;
 }
 
 .order-container {
@@ -9,27 +17,73 @@ body {
   margin: 40px auto;
 }
 
-/* NAVBAR */
+/* ================= NAVBAR MAIN ================= */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #ffffff;
+  background: white;
   padding: 15px 40px;
   border-bottom: 1px solid #ddd;
+  font-family: 'Kanit', sans-serif;
 }
 
-.navbar a {
+/* LEFT SIDE */
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+/* RIGHT SIDE */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+/* Navigation links (home, history, username, cart) */
+.nav-item {
   text-decoration: none;
-  color: #000;
-  margin: 0 15px;
+  color: black;
+  font-size: 14px;
+  padding: 8px 18px;
+  border-radius: 10px;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.nav-right span {
-  margin-left: 10px;
+/* Hover effect — กล่องเทา */
+.nav-item:hover {
+  background-color: #f1f1f1;
+  border-radius: 10px;
 }
 
-/* ORDER BOX */
+/* Disable active styling (no bold, no background) */
+.nav-item.active {
+  background-color: transparent !important;
+  font-weight: normal !important;
+}
+
+/* Username */
+.nav-user {
+  font-size: 14px;
+}
+
+/* Icons */
+.user-icon {
+  font-size: 20px;
+}
+
+.cart-icon {
+  text-decoration: none;
+  color: black;
+  font-size: 14px;
+}
+
+/* ================= ORDER BOX ================= */
 .order-box {
   background: white;
   padding: 20px;
@@ -50,7 +104,7 @@ body {
 }
 
 .order-icon {
-  font-size: 28px;
+  font-size: 14px;
   margin-right: 10px;
 }
 
@@ -62,15 +116,7 @@ body {
   font-size: 14px;
 }
 
-.status-badge {
-  background: #f9e7b4;
-  color: #b38b00;
-  padding: 6px 15px;
-  border-radius: 20px;
-  font-weight: bold;
-}
-
-/* ITEM LIST */
+/* ================= ITEM LIST ================= */
 .order-items {
   margin-top: 15px;
 }
@@ -92,4 +138,31 @@ body {
   font-weight: bold;
   display: flex;
   justify-content: space-between;
+}
+
+/* ================= STATUS BADGES ================= */
+.status-badge {
+  padding: 6px 15px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 14px;
+  text-transform: capitalize;
+}
+
+/* Pending = Yellow */
+.status-pending {
+  background: #f9e7b4;
+  color: #b38b00;
+}
+
+/* Completed = Green */
+.status-completed {
+  background: #c8f7c5;
+  color: #2e8b57;
+}
+
+/* Cancelled = Red */
+.status-cancelled {
+  background: #f8c7c7;
+  color: #c0392b;
 }
