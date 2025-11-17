@@ -317,6 +317,27 @@
             checkoutForm.addEventListener('submit', handlePlaceOrder);
         }
     });
+
+    const paymentRadios = document.querySelectorAll('input[name="payment"]');
+    const paymentOptions = document.querySelectorAll('.payment-option');
+
+    function syncPaymentHighlight() {
+        paymentOptions.forEach(option => {
+            option.classList.remove('selected');
+        });
+            
+        const checkedRadio = document.querySelector('input[name="payment"]:checked');
+        if (checkedRadio) {
+            checkedRadio.closest('.payment-option').classList.add('selected');
+        }
+    }
+
+    paymentRadios.forEach(radio => {
+        radio.addEventListener('change', syncPaymentHighlight);
+    });
+
+    syncPaymentHighlight();
+
     </script>  
 </body>
 </html>
