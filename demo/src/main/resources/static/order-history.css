@@ -1,54 +1,95 @@
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+
+/* GENERAL */
 body {
-  font-family: "Segoe UI", sans-serif;
-  background: #f5f5f5;
-  margin: 0;
-  color: #222;
+  font-family: 'Kanit', sans-serif;
+  background: #f7f7f7;
 }
 
+.logo {
+  color: #000;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.order-container {
+  width: 80%;
+  margin: 40px auto;
+}
+
+/* ================= NAVBAR MAIN ================= */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 32px;
   background: white;
+  padding: 15px 40px;
   border-bottom: 1px solid #ddd;
+  font-family: 'Kanit', sans-serif;
 }
 
-.logo {
-  margin: 0;
-  font-weight: bold;
+/* LEFT SIDE */
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 25px;
 }
 
-.nav-right a {
-  margin-left: 20px;
+/* RIGHT SIDE */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+/* Navigation links (home, history, username, cart) */
+.nav-item {
   text-decoration: none;
-  color: #333;
-  font-weight: 500;
+  color: black;
+  font-size: 14px;
+  padding: 8px 18px;
+  border-radius: 10px;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.nav-right a.active {
-  font-weight: bold;
-  border-bottom: 2px solid #222;
+/* Hover effect — กล่องเทา */
+.nav-item:hover {
+  background-color: #f1f1f1;
+  border-radius: 10px;
 }
 
-.container {
-  width: 85%;
-  max-width: 900px;
-  margin: 40px auto;
+/* Disable active styling (no bold, no background) */
+.nav-item.active {
+  background-color: transparent !important;
+  font-weight: normal !important;
 }
 
-.page-title {
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 24px;
+/* Username */
+.nav-user {
+  font-size: 14px;
 }
 
-.order-card {
+/* Icons */
+.user-icon {
+  font-size: 20px;
+}
+
+.cart-icon {
+  text-decoration: none;
+  color: black;
+  font-size: 14px;
+}
+
+/* ================= ORDER BOX ================= */
+.order-box {
   background: white;
-  padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  margin-bottom: 24px;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 .order-header {
@@ -57,138 +98,71 @@ body {
   align-items: center;
 }
 
-.order-info {
+.order-header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
 }
 
-.icon {
-  width: 36px;
-  height: 36px;
-}
-
-.order-status {
-  background: #fde9b8;
-  color: #8a6d00;
-  padding: 6px 16px;
-  border-radius: 15px;
+.order-icon {
   font-size: 14px;
-  font-weight: 600;
+  margin-right: 10px;
 }
 
+.order-date {
+  display: flex;
+  align-items: center;
+  margin-top: 3px;
+  color: gray;
+  font-size: 14px;
+}
+
+/* ================= ITEM LIST ================= */
 .order-items {
-  margin: 16px 0;
-  padding: 12px 0;
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
+  margin-top: 15px;
 }
 
 .item-row {
   display: flex;
   justify-content: space-between;
-  font-weight: 500;
+  padding: 6px 0;
 }
 
-.item-sub {
-  font-size: 14px;
-  color: #666;
-  margin-left: 8px;
+.item-name {
+  font-weight: bold;
 }
 
-.order-total {
-  display: flex;
-  justify-content: space-between;
-  font-weight: 600;
-  padding-top: 10px;
-}
-
-@media (max-width: 600px) {
-  .order-card {
-    padding: 16px;
-  }
-  .page-title {
-    font-size: 22px;
-  }
-}
-
-/* ─── Layout ─────────────────────────────────────────────── */
-.container {
-  max-width: 900px;
-  margin: 50px auto;
-  font-family: "Kanit", sans-serif;
-  color: #222;
-}
-
-/* ─── Card ───────────────────────────────────────────────── */
-.order-card {
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  padding: 20px 25px;
-  margin-bottom: 30px;
-  transition: transform 0.2s;
-}
-.order-card:hover {
-  transform: translateY(-3px);
-}
-
-/* ─── Header ─────────────────────────────────────────────── */
-.order-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-.order-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.order-icon {
-  width: 40px;
-  height: 40px;
-}
-.order-date {
-  font-size: 0.9rem;
-  color: #555;
-}
-.order-status {
-  background: #fff7e0;
-  color: #d49c00;
-  border-radius: 20px;
-  padding: 4px 14px;
-  font-weight: 500;
-}
-.order-status.pending {
-  background: #fff7e0;
-  color: #d49c00;
-}
-.order-status.completed {
-  background: #e6fff2;
-  color: #0c9a4a;
-}
-
-/* ─── Body ─────────────────────────────────────────────── */
-.order-body .item-row {
-  display: flex;
-  justify-content: space-between;
-  margin: 8px 0;
-}
-.item-left p {
-  margin: 0;
-  font-weight: 500;
-}
-.item-left small {
-  color: #666;
-}
-
-/* ─── Footer ────────────────────────────────────────────── */
-.order-footer {
-  text-align: right;
+.total-row {
   margin-top: 10px;
+  border-top: 1px solid #ddd;
+  padding-top: 10px;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
 }
-.order-total {
-  font-size: 1.1rem;
-  font-weight: 600;
+
+/* ================= STATUS BADGES ================= */
+.status-badge {
+  padding: 6px 15px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 14px;
+  text-transform: capitalize;
+}
+
+/* Pending = Yellow */
+.status-pending {
+  background: #f9e7b4;
+  color: #b38b00;
+}
+
+/* Completed = Green */
+.status-completed {
+  background: #c8f7c5;
+  color: #2e8b57;
+}
+
+/* Cancelled = Red */
+.status-cancelled {
+  background: #f8c7c7;
+  color: #c0392b;
 }

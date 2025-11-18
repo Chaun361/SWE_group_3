@@ -6,14 +6,15 @@
     <title>Register | WEBSITE NAME</title>
     <link rel="stylesheet" href="styles.css"> 
     <link rel="stylesheet" href="register.css"> 
+    <link rel="stylesheet" href="login.css"> 
 </head>
 <body>
 
-    <header class="main-header">
+   <header class="main-header">
         <div class="logo">WEBSITE NAME</div>
+        <a href="index.html" class="index">home</a>
         <nav class="auth-links">
-            <a href="login.html" class="nav-link">Login</a>
-            <a href="register.html" class="nav-link">Register</a>
+            <a href="login.html" class="nav-link">login 👤</a>
         </nav>
     </header>
 
@@ -50,12 +51,9 @@
                     <textarea id="address" name="address" rows="3" required></textarea>
                 </div>
                 
-                <button type="submit" class="submit-btn">Submit</button>
+                <button type="submit" class="register-btn">Register</button>
             </form>
 
-            <p class="register-link">
-                Already have an account? <a href="login.html">Login here</a>
-            </p>
         </div>
     </main>
     
@@ -64,18 +62,18 @@
         const { username, password, phone, fullName, userAddress } = data;  // Changed 'address' to 'userAddress'
         
         if (!username || !password || !phone || !fullName || !userAddress) {
-            alert("Registration Error: All fields are required.");
+            alert("Registration Error: Username นี้ถูกใช้ไปแล้ว");
             return false;
         }
 
         const phoneRegex = /^\d{10}$/;
         if (!phoneRegex.test(phone)) {
-            alert("Registration Error: Phone number must be exactly 10 digits.");
+            alert("Registration Error: เบอร์โทรศัพท์มือถือต้องครบ 10 หลัก");
             return false;
         }
 
         if (password.length < 6) {
-            alert("Registration Error: Password must be at least 6 characters long.");
+            alert("Registration Error: รหัสผ่านต้องไม่น้อยกว่า 6 ตัวอักษร");
             return false;
         }
 
