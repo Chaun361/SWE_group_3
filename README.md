@@ -2,6 +2,7 @@
 
 ### Figma: https://www.figma.com/design/MaKrNKpUG15iTaNADvWosh/prototype?node-id=0-1&t=y67YSCU86o9XK5BS-1
 
+### Canva: https://www.canva.com/design/DAG4xeqYwaU/G2rDtRRJIRjLfcPO5A7KaA/edit?utm_content=DAG4xeqYwaU&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
 
 คู่มือนี้จะช่วยให้คุณเปิดใช้งาน SQL Server Database ผ่าน Docker สำหรับการพัฒนาโปรเจค
 
